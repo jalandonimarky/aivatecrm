@@ -6,7 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Contacts } from "./pages/Contacts";
-import { Deals } from "./pages/Deals"; // Import the new Deals component
+import { Deals } from "./pages/Deals";
+import { Tasks } from "./pages/Tasks"; // Import the new Tasks component
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,15 +31,12 @@ const App = () => (
           } />
           <Route path="/deals" element={
             <Layout>
-              <Deals /> {/* Render the Deals component */}
+              <Deals />
             </Layout>
           } />
           <Route path="/tasks" element={
             <Layout>
-              <div className="text-center py-8">
-                <h1 className="text-2xl font-bold">Tasks Page</h1>
-                <p className="text-muted-foreground">Coming soon...</p>
-              </div>
+              <Tasks /> {/* Render the Tasks component */}
             </Layout>
           } />
           <Route path="/analytics" element={

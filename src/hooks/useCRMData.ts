@@ -287,6 +287,108 @@ export function useCRMData() {
     }
   };
 
+  // CRUD operations for tasks
+  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal'>) => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert([taskData])
+        .select(`
+          *,
+          assigned_user:profiles!tasks_assigned_to_fkey(id, full_name, email),
+          related_contact:contacts(id, name, email, company),
+          related_deal:deals(id, title, value)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setTasks(prev => {
+        const updatedTasks = [data as Task, ...prev];
+        calculateStats(deals, updatedTasks, contacts);
+        return updatedTasks;
+      });
+      toast({
+        title: "Task created",
+        description: "New task has been added successfully.",
+      });
+      return data as Task;
+    } catch (error: any) {
+      toast({
+        title: "Error creating task",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(updates)
+        .eq("id", id)
+        .select(`
+          *,
+          assigned_user:profiles!tasks_assigned_to_fkey(id, full_name, email),
+          related_contact:contacts(id, name, email, company),
+          related_deal:deals(id, title, value)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setTasks(prev => {
+        const updatedTasks = prev.map(task =>
+          task.id === id ? (data as Task) : task
+        );
+        calculateStats(deals, updatedTasks, contacts);
+        return updatedTasks;
+      });
+      toast({
+        title: "Task updated",
+        description: "Task has been updated successfully.",
+      });
+      return data as Task;
+    } catch (error: any) {
+      toast({
+        title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setTasks(prev => {
+        const updatedTasks = prev.filter(task => task.id !== id);
+        calculateStats(deals, updatedTasks, contacts);
+        return updatedTasks;
+      });
+      toast({
+        title: "Task deleted",
+        description: "Task has been removed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting task",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -305,5 +407,8 @@ export function useCRMData() {
     createDeal,
     updateDeal,
     deleteDeal,
+    createTask,
+    updateTask,
+    deleteTask,
   };
 }
