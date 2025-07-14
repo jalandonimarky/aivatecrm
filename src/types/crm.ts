@@ -58,11 +58,16 @@ export interface Task {
   related_deal?: Deal;
 }
 
+interface ChangeMetric {
+  value: number;
+  trend: "up" | "down";
+}
+
 export interface DashboardStats {
   totalRevenue: number;
-  paidDealsValue: number; // Renamed from wonDeals
-  doneCompletedDealsValue: number; // Renamed from lostDeals
-  cancelledDealsValue: number; // Added for dashboard
+  paidDealsValue: number;
+  doneCompletedDealsValue: number;
+  cancelledDealsValue: number;
   pipelineValue: number;
   totalContacts: number;
   completedTasks: number;
@@ -70,4 +75,10 @@ export interface DashboardStats {
   totalTasks: number;
   totalOneOffProjects: number;
   totalSystemDevelopment: number;
+  
+  // New fields for month-over-month changes
+  paidDealsValueChange?: ChangeMetric;
+  pipelineValueChange?: ChangeMetric;
+  totalContactsChange?: ChangeMetric;
+  pendingTasksChange?: ChangeMetric;
 }

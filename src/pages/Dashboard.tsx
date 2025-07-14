@@ -1,4 +1,4 @@
-import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle, Package, Code } from "lucide-react"; // Removed XCircle
+import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle, Package, Code } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -42,26 +42,25 @@ export function Dashboard() {
           title="Paid Deals"
           value={`$${stats.paidDealsValue.toLocaleString()}`}
           icon={DollarSign}
-          change={{ value: 12.5, trend: "up" }}
+          change={stats.paidDealsValueChange}
         />
-        {/* Removed Cancelled Deals StatsCard */}
         <StatsCard
           title="Pipeline Value"
           value={`$${stats.pipelineValue.toLocaleString()}`}
           icon={TrendingUp}
-          change={{ value: 15.3, trend: "up" }}
+          change={stats.pipelineValueChange}
         />
         <StatsCard
           title="Active Contacts"
           value={stats.totalContacts}
           icon={Users}
-          change={{ value: 8.2, trend: "up" }}
+          change={stats.totalContactsChange}
         />
         <StatsCard
           title="Pending Tasks"
           value={stats.totalTasks - stats.completedTasks}
           icon={CheckSquare}
-          change={{ value: -5.1, trend: "down" }}
+          change={stats.pendingTasksChange}
         />
         {/* New Stats Cards for Tiers */}
         <StatsCard
@@ -85,7 +84,7 @@ export function Dashboard() {
           <RevenueChart
             paidDeals={stats.paidDealsValue}
             doneCompletedDeals={stats.doneCompletedDealsValue}
-            cancelledDeals={stats.cancelledDealsValue} // Pass cancelled deals value
+            cancelledDeals={stats.cancelledDealsValue}
             pipelineValue={stats.pipelineValue}
           />
         </div>

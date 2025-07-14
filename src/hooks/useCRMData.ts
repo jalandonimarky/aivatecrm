@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Contact, Deal, Task, Profile, DashboardStats } from "@/types/crm";
+import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -10,9 +11,9 @@ export function useCRMData() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
-    paidDealsValue: 0, // Renamed from wonDeals
-    doneCompletedDealsValue: 0, // Renamed from lostDeals
-    cancelledDealsValue: 0, // Added for dashboard
+    paidDealsValue: 0,
+    doneCompletedDealsValue: 0,
+    cancelledDealsValue: 0,
     pipelineValue: 0,
     totalContacts: 0,
     completedTasks: 0,
@@ -26,6 +27,18 @@ export function useCRMData() {
 
   // Helper to combine first and last name for display
   const getFullName = (profile: Profile) => `${profile.first_name} ${profile.last_name}`;
+
+  // Helper to calculate percentage change
+  const calculatePercentageChange = (current: number, previous: number): { value: number; trend: "up" | "down" } => {
+    if (previous === 0) {
+      return { value: current > 0 ? 100 : 0, trend: current > 0 ? "up" : "down" };
+    }
+    const change = ((current - previous) / previous) * 100;
+    return {
+      value: Math.abs(parseFloat(change.toFixed(1))),
+      trend: change >= 0 ? "up" : "down",
+    };
+  };
 
   // Fetch all data
   const fetchData = async () => {
@@ -44,7 +57,7 @@ export function useCRMData() {
       // Fetch contacts
       const { data: contactsData, error: contactsError } = await supabase
         .from("contacts")
-        .select("id, name, email, phone, company, position, notes, created_by, created_at, updated_at") // Select all fields
+        .select("id, name, email, phone, company, position, notes, created_by, created_at, updated_at")
         .order("created_at", { ascending: false });
 
       if (contactsError) throw contactsError;
@@ -93,30 +106,82 @@ export function useCRMData() {
   };
 
   const calculateStats = (dealsData: Deal[], tasksData: Task[], contactsData: Contact[]) => {
-    const paidDeals = dealsData.filter(deal => deal.stage === 'paid');
-    const doneCompletedDeals = dealsData.filter(deal => deal.stage === 'done_completed');
-    const cancelledDeals = dealsData.filter(deal => deal.stage === 'cancelled'); // New filter for cancelled deals
-    const pipelineDeals = dealsData.filter(deal => !['paid', 'done_completed', 'cancelled'].includes(deal.stage)); // Exclude cancelled from pipeline
-    const completedTasks = tasksData.filter(task => task.status === 'completed');
-    const overdueTasks = tasksData.filter(task => 
-      task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
+    const now = new Date();
+    const currentMonthStart = startOfMonth(now);
+    const currentMonthEnd = endOfMonth(now);
+    const prevMonthStart = startOfMonth(subMonths(now, 1));
+    const prevMonthEnd = endOfMonth(subMonths(now, 1));
+
+    // Filter data for current and previous month
+    const currentMonthDeals = dealsData.filter(deal => 
+      deal.created_at && isWithinInterval(parseISO(deal.created_at), { start: currentMonthStart, end: currentMonthEnd })
+    );
+    const prevMonthDeals = dealsData.filter(deal => 
+      deal.created_at && isWithinInterval(parseISO(deal.created_at), { start: prevMonthStart, end: prevMonthEnd })
     );
 
-    const oneOffProjects = dealsData.filter(deal => deal.tier?.startsWith('1-OFF Projects'));
-    const systemDevelopment = dealsData.filter(deal => deal.tier?.startsWith('System Development'));
+    const currentMonthContacts = contactsData.filter(contact =>
+      contact.created_at && isWithinInterval(parseISO(contact.created_at), { start: currentMonthStart, end: currentMonthEnd })
+    );
+    const prevMonthContacts = contactsData.filter(contact =>
+      contact.created_at && isWithinInterval(parseISO(contact.created_at), { start: prevMonthStart, end: prevMonthEnd })
+    );
+
+    const currentMonthTasks = tasksData.filter(task =>
+      task.created_at && isWithinInterval(parseISO(task.created_at), { start: currentMonthStart, end: currentMonthEnd })
+    );
+    const prevMonthTasks = tasksData.filter(task =>
+      task.created_at && isWithinInterval(parseISO(task.created_at), { start: prevMonthStart, end: prevMonthEnd })
+    );
+
+    // Current month calculations
+    const paidDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'paid');
+    const doneCompletedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'done_completed');
+    const cancelledDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'cancelled');
+    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'done_completed', 'cancelled'].includes(deal.stage));
+    const completedTasksCurrent = currentMonthTasks.filter(task => task.status === 'completed');
+    const overdueTasksCurrent = currentMonthTasks.filter(task => 
+      task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
+    );
+    const pendingTasksCurrentCount = currentMonthTasks.length - completedTasksCurrent.length;
+
+    const oneOffProjectsCurrent = currentMonthDeals.filter(deal => deal.tier?.startsWith('1-OFF Projects'));
+    const systemDevelopmentCurrent = currentMonthDeals.filter(deal => deal.tier?.startsWith('System Development'));
+
+    // Previous month calculations
+    const paidDealsPrev = prevMonthDeals.filter(deal => deal.stage === 'paid');
+    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'done_completed', 'cancelled'].includes(deal.stage));
+    const completedTasksPrev = prevMonthTasks.filter(task => task.status === 'completed');
+    const pendingTasksPrevCount = prevMonthTasks.length - completedTasksPrev.length;
+
+
+    const paidDealsValueCurrent = paidDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0);
+    const paidDealsValuePrev = paidDealsPrev.reduce((sum, deal) => sum + (deal.value || 0), 0);
+
+    const pipelineValueCurrent = pipelineDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0);
+    const pipelineValuePrev = pipelineDealsPrev.reduce((sum, deal) => sum + (deal.value || 0), 0);
+
+    const totalContactsCurrent = currentMonthContacts.length;
+    const totalContactsPrev = prevMonthContacts.length;
 
     setStats({
-      totalRevenue: paidDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
-      paidDealsValue: paidDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
-      doneCompletedDealsValue: doneCompletedDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
-      cancelledDealsValue: cancelledDeals.reduce((sum, deal) => sum + (deal.value || 0), 0), // Calculate value for cancelled deals
-      pipelineValue: pipelineDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
-      totalContacts: contactsData.length,
-      totalTasks: tasksData.length,
-      completedTasks: completedTasks.length,
-      overdueTasks: overdueTasks.length,
-      totalOneOffProjects: oneOffProjects.length,
-      totalSystemDevelopment: systemDevelopment.length,
+      totalRevenue: paidDealsValueCurrent,
+      paidDealsValue: paidDealsValueCurrent,
+      doneCompletedDealsValue: doneCompletedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      cancelledDealsValue: cancelledDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      pipelineValue: pipelineValueCurrent,
+      totalContacts: contactsData.length, // Total contacts overall, not just current month
+      totalTasks: tasksData.length, // Total tasks overall
+      completedTasks: completedTasksCurrent.length,
+      overdueTasks: overdueTasksCurrent.length,
+      totalOneOffProjects: oneOffProjectsCurrent.length,
+      totalSystemDevelopment: systemDevelopmentCurrent.length,
+
+      // Calculate and set change metrics
+      paidDealsValueChange: calculatePercentageChange(paidDealsValueCurrent, paidDealsValuePrev),
+      pipelineValueChange: calculatePercentageChange(pipelineValueCurrent, pipelineValuePrev),
+      totalContactsChange: calculatePercentageChange(totalContactsCurrent, totalContactsPrev),
+      pendingTasksChange: calculatePercentageChange(pendingTasksCurrentCount, pendingTasksPrevCount),
     });
   };
 
@@ -131,7 +196,11 @@ export function useCRMData() {
 
       if (error) throw error;
       
-      setContacts(prev => [data as Contact, ...prev]);
+      setContacts(prev => {
+        const updatedContacts = [data as Contact, ...prev];
+        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        return updatedContacts;
+      });
       toast({
         title: "Contact created",
         description: "New contact has been added successfully.",
@@ -158,9 +227,13 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setContacts(prev => prev.map(contact => 
-        contact.id === id ? (data as Contact) : contact
-      ));
+      setContacts(prev => {
+        const updatedContacts = prev.map(contact => 
+          contact.id === id ? (data as Contact) : contact
+        );
+        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        return updatedContacts;
+      });
       toast({
         title: "Contact updated",
         description: "Contact has been updated successfully.",
@@ -185,7 +258,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setContacts(prev => prev.filter(contact => contact.id !== id));
+      setContacts(prev => {
+        const updatedContacts = prev.filter(contact => contact.id !== id);
+        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        return updatedContacts;
+      });
       toast({
         title: "Contact deleted",
         description: "Contact has been removed successfully.",
