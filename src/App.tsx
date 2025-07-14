@@ -7,7 +7,8 @@ import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Contacts } from "./pages/Contacts";
 import { Deals } from "./pages/Deals";
-import { Tasks } from "./pages/Tasks"; // Import the new Tasks component
+import { Tasks } from "./pages/Tasks";
+import { Analytics } from "./pages/Analytics"; // Import the new Analytics component
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,15 +37,12 @@ const App = () => (
           } />
           <Route path="/tasks" element={
             <Layout>
-              <Tasks /> {/* Render the Tasks component */}
+              <Tasks />
             </Layout>
           } />
           <Route path="/analytics" element={
             <Layout>
-              <div className="text-center py-8">
-                <h1 className="text-2xl font-bold">Analytics Page</h1>
-                <p className="text-muted-foreground">Coming soon...</p>
-              </div>
+              <Analytics /> {/* Render the Analytics component */}
             </Layout>
           } />
           <Route path="/settings" element={

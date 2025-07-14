@@ -1,0 +1,235 @@
+import { useMemo } from "react";
+import { useCRMData } from "@/hooks/useCRMData";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell
+} from "recharts";
+import { format, parseISO, startOfMonth } from "date-fns";
+import type { Deal, Task } from "@/types/crm";
+
+export function Analytics() {
+  const { deals, contacts, tasks, loading } = useCRMData();
+
+  // Helper functions for colors (consistent with existing design)
+  const getStageColor = (stage: Deal['stage']) => {
+    switch (stage) {
+      case 'won': return "hsl(var(--success))";
+      case 'lost': return "hsl(var(--destructive))";
+      case 'prospect': return "hsl(var(--muted-foreground))";
+      case 'qualified': return "hsl(var(--accent))";
+      case 'proposal': return "hsl(var(--primary))";
+      case 'negotiation': return "hsl(var(--warning))";
+      default: return "hsl(var(--foreground))";
+    }
+  };
+
+  const getStatusColor = (status: Task['status']) => {
+    switch (status) {
+      case 'completed': return "hsl(var(--success))";
+      case 'pending': return "hsl(var(--warning))";
+      case 'in_progress': return "hsl(var(--accent))";
+      case 'cancelled': return "hsl(var(--destructive))";
+      default: return "hsl(var(--foreground))";
+    }
+  };
+
+  // Data processing for charts
+  const revenueOverTimeData = useMemo(() => {
+    if (!deals.length) return [];
+    const monthlyRevenue: { [key: string]: number } = {};
+
+    deals.forEach(deal => {
+      if (deal.stage === 'won' && deal.created_at) {
+        const date = parseISO(deal.created_at);
+        const monthYear = format(startOfMonth(date), 'MMM yyyy');
+        monthlyRevenue[monthYear] = (monthlyRevenue[monthYear] || 0) + deal.value;
+      }
+    });
+
+    // Sort by date
+    return Object.keys(monthlyRevenue)
+      .map(key => ({ name: key, revenue: monthlyRevenue[key] }))
+      .sort((a, b) => parseISO(a.name).getTime() - parseISO(b.name).getTime());
+  }, [deals]);
+
+  const dealsByStageData = useMemo(() => {
+    if (!deals.length) return [];
+    const stageCounts: { [key: string]: number } = {};
+    deals.forEach(deal => {
+      stageCounts[deal.stage] = (stageCounts[deal.stage] || 0) + 1;
+    });
+    return Object.keys(stageCounts).map(stage => ({
+      name: stage.charAt(0).toUpperCase() + stage.slice(1),
+      count: stageCounts[stage],
+      color: getStageColor(stage as Deal['stage'])
+    }));
+  }, [deals]);
+
+  const tasksByStatusData = useMemo(() => {
+    if (!tasks.length) return [];
+    const statusCounts: { [key: string]: number } = {};
+    tasks.forEach(task => {
+      statusCounts[task.status] = (statusCounts[task.status] || 0) + 1;
+    });
+    return Object.keys(statusCounts).map(status => ({
+      name: status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      count: statusCounts[status],
+      color: getStatusColor(status as Task['status'])
+    }));
+  }, [tasks]);
+
+  const contactsGrowthData = useMemo(() => {
+    if (!contacts.length) return [];
+    const monthlyContacts: { [key: string]: number } = {};
+    contacts.forEach(contact => {
+      if (contact.created_at) {
+        const date = parseISO(contact.created_at);
+        const monthYear = format(startOfMonth(date), 'MMM yyyy');
+        monthlyContacts[monthYear] = (monthlyContacts[monthYear] || 0) + 1;
+      }
+    });
+    return Object.keys(monthlyContacts)
+      .map(key => ({ name: key, contacts: monthlyContacts[key] }))
+      .sort((a, b) => parseISO(a.name).getTime() - parseISO(b.name).getTime());
+  }, [contacts]);
+
+  // Custom Tooltip for Recharts
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      return (
+        <div className="bg-card p-3 border border-border rounded-lg shadow-medium">
+          <p className="font-medium">{label}</p>
+          <p className="text-sm text-muted-foreground">
+            {data.name}: {typeof data.value === 'number' ? data.value.toLocaleString() : data.value}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          Analytics
+        </h1>
+        <p className="text-muted-foreground mb-6">
+          Gain insights into your CRM data.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Skeleton className="h-80" />
+          <Skeleton className="h-80" />
+          <Skeleton className="h-80" />
+          <Skeleton className="h-80" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        Analytics
+      </h1>
+      <p className="text-muted-foreground mb-6">
+        Gain insights into your CRM data.
+      </p>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Over Time */}
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Revenue Over Time</CardTitle>
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={revenueOverTimeData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={(value) => `$${value.toLocaleString()}`} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" activeDot={{ r: 8 }} name="Won Revenue" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Deals by Stage */}
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Deals by Stage</CardTitle>
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dealsByStageData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar dataKey="count" name="Number of Deals">
+                  {dealsByStageData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Tasks by Status */}
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Tasks by Status</CardTitle>
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={tasksByStatusData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="count"
+                  labelLine={false}
+                  label={({ name, percent, value }) => `${name} (${value.toLocaleString()}) ${(percent * 100).toFixed(0)}%`}
+                >
+                  {tasksByStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Contacts Growth */}
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">New Contacts Growth</CardTitle>
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={contactsGrowthData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Line type="monotone" dataKey="contacts" stroke="hsl(var(--accent))" activeDot={{ r: 8 }} name="New Contacts" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
