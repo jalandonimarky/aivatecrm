@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UserProfileCard } from "@/components/UserProfileCard"; // Import the new component
 import type { Profile } from "@/types/crm"; // Import Profile type
 
 // Zod schema for profile updates
@@ -180,6 +181,7 @@ export function Settings() {
         <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
           Settings
         </h1>
+        <Skeleton className="h-24 w-full mb-6" /> {/* Skeleton for profile card */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Profile Settings</CardTitle>
@@ -210,6 +212,8 @@ export function Settings() {
       <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
         Settings
       </h1>
+
+      {userProfile && <UserProfileCard profile={userProfile} />} {/* Display UserProfileCard */}
 
       {/* Profile Settings Card */}
       <Card className="bg-gradient-card border-border/50">

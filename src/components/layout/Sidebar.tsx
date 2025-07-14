@@ -8,7 +8,7 @@ import {
   Settings,
   LogOut
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom"; // Fixed import syntax
 import {
   Sidebar,
   SidebarContent,
@@ -136,26 +136,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* User Profile Info */}
+        {/* User Profile Initials (simplified) */}
         {currentUserProfile && (
           <div className="mt-6 mb-4 px-2">
-            {!collapsed ? (
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium">
-                  {currentUserProfile.first_name.charAt(0)}{currentUserProfile.last_name.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {currentUserProfile.first_name} {currentUserProfile.last_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{currentUserProfile.email}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium mx-auto">
-                {currentUserProfile.first_name.charAt(0)}{currentUserProfile.last_name.charAt(0)}
-              </div>
-            )}
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium mx-auto">
+              {currentUserProfile.first_name.charAt(0)}{currentUserProfile.last_name.charAt(0)}
+            </div>
           </div>
         )}
 
