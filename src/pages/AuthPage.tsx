@@ -27,16 +27,21 @@ export function AuthPage() {
           description: "Welcome back!",
         });
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        // For sign-up, pass first_name and last_name in user_metadata
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+            }
+          }
+        });
         if (error) throw error;
 
-        if (data.user) {
-          // Insert into profiles table with first_name and last_name
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .insert({ user_id: data.user.id, email: data.user.email!, first_name: firstName, last_name: lastName });
-          if (profileError) throw profileError;
-        }
+        // Profile creation is now handled by a Supabase database trigger (handle_new_user function)
+        // No need to manually insert into profiles table here.
 
         toast({
           title: "Signed up successfully",
