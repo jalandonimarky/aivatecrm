@@ -8,7 +8,8 @@ import { Dashboard } from "./pages/Dashboard";
 import { Contacts } from "./pages/Contacts";
 import { Deals } from "./pages/Deals";
 import { Tasks } from "./pages/Tasks";
-import { Analytics } from "./pages/Analytics"; // Import the new Analytics component
+import { Analytics } from "./pages/Analytics";
+import { Settings } from "./pages/Settings"; // Import the new Settings component
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,15 +43,12 @@ const App = () => (
           } />
           <Route path="/analytics" element={
             <Layout>
-              <Analytics /> {/* Render the Analytics component */}
+              <Analytics />
             </Layout>
           } />
           <Route path="/settings" element={
             <Layout>
-              <div className="text-center py-8">
-                <h1 className="text-2xl font-bold">Settings Page</h1>
-                <p className="text-muted-foreground">Coming soon...</p>
-              </div>
+              <Settings /> {/* Render the Settings component */}
             </Layout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
