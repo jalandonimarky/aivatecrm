@@ -8,13 +8,14 @@ interface RevenueChartProps {
   pipelineValue: number;
 }
 
-export function RevenueChart({ paidDeals, pipelineValue }: RevenueChartProps) { // Removed doneCompletedDeals, cancelledDeals from destructuring
+export function RevenueChart({ paidDeals, cancelledDeals, pipelineValue }: RevenueChartProps) { // Re-added cancelledDeals to destructuring
   const data = [
     { name: "Paid Deals", value: paidDeals, color: "hsl(var(--success))" }, // Green
+    { name: "Cancelled Deals", value: cancelledDeals, color: "hsl(var(--destructive))" }, // Red for cancelled
     { name: "Pipeline", value: pipelineValue, color: "hsl(var(--accent))" }, // Blue
   ];
 
-  const total = paidDeals + pipelineValue; // Updated total calculation to only include paid and pipeline
+  const total = paidDeals + cancelledDeals + pipelineValue; // Updated total calculation to include cancelled
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -72,7 +73,7 @@ export function RevenueChart({ paidDeals, pipelineValue }: RevenueChartProps) { 
           </ResponsiveContainer>
         </div>
         
-        <div className="mt-6 grid grid-cols-2 gap-4"> {/* Changed to grid-cols-2 as there are now only two items */}
+        <div className="mt-6 grid grid-cols-3 gap-4"> {/* Changed to grid-cols-3 to accommodate three items */}
           {data.map((item, index) => (
             <div key={index} className="text-center">
               <div 
