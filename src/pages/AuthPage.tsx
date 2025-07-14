@@ -10,8 +10,8 @@ export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState(""); // New state for first name
-  const [lastName, setLastName] = useState("");   // New state for last name
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -27,27 +27,35 @@ export function AuthPage() {
           description: "Welcome back!",
         });
       } else {
-        // For sign-up, pass first_name and last_name in user_metadata
-        const { error } = await supabase.auth.signUp({ 
-          email, 
-          password,
-          options: {
-            data: {
-              first_name: firstName,
-              last_name: lastName,
-            }
-          }
-        });
-        if (error) throw error;
+        // Client-side email domain validation
+        if (!email.endsWith('@aivate.net')) {
+          toast({
+            title: "Registration Error",
+            description: "Registration is restricted to @aivate.net email addresses.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
 
-        // Profile creation is now handled by a Supabase database trigger (handle_new_user function)
-        // No need to manually insert into profiles table here.
+        // Call the Edge Function for signup
+        const { data, error } = await supabase.functions.invoke('signup-validation', {
+          body: { email, password, first_name: firstName, last_name: lastName },
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
         toast({
           title: "Signed up successfully",
-          description: "Please check your email to confirm your account.",
+          description: data.message || "Please check your email to confirm your account.",
         });
-        setIsLogin(true); // <--- Added this line to switch to login view
+        setIsLogin(true); // Switch to login view after successful signup
       }
     } catch (error: any) {
       toast({
@@ -74,7 +82,7 @@ export function AuthPage() {
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
-              <div className="grid grid-cols-2 gap-4"> {/* Use grid for first/last name */}
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
@@ -104,7 +112,7 @@ export function AuthPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="you@aivate.net"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
