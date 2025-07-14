@@ -56,6 +56,7 @@ export function Tasks() {
     related_deal_id: "unassigned", // Initialize with "unassigned"
     due_date: undefined,
   });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // New state for calendar popover
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -250,7 +251,7 @@ export function Tasks() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="due_date">Due Date</Label>
-                  <Popover>
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}> {/* Control popover with new state */}
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
@@ -267,7 +268,10 @@ export function Tasks() {
                       <Calendar
                         mode="single"
                         selected={formData.due_date}
-                        onSelect={(date) => setFormData(prev => ({ ...prev, due_date: date || undefined }))}
+                        onSelect={(date) => {
+                          setFormData(prev => ({ ...prev, due_date: date || undefined }));
+                          setIsCalendarOpen(false); // Close calendar on date selection
+                        }}
                         initialFocus
                       />
                     </PopoverContent>

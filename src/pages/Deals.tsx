@@ -54,6 +54,7 @@ export function Deals() {
     assigned_to: "unassigned", // Initialize with "unassigned"
     expected_close_date: undefined,
   });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // New state for calendar popover
 
   const dealStages: { value: Deal['stage'], label: string }[] = [ // Explicitly type dealStages
     { value: "lead", label: "Lead" },
@@ -287,7 +288,7 @@ export function Deals() {
 
               <div className="space-y-2">
                 <Label htmlFor="expected_close_date">Expected Close Date</Label>
-                <Popover>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}> {/* Control popover with new state */}
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -304,7 +305,10 @@ export function Deals() {
                     <Calendar
                       mode="single"
                       selected={formData.expected_close_date}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, expected_close_date: date || undefined }))}
+                      onSelect={(date) => {
+                        setFormData(prev => ({ ...prev, expected_close_date: date || undefined }));
+                        setIsCalendarOpen(false); // Close calendar on date selection
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
