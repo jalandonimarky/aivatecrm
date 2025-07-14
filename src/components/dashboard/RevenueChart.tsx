@@ -2,19 +2,21 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recha
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface RevenueChartProps {
-  wonDeals: number;
-  lostDeals: number;
+  paidDeals: number; // Changed from wonDeals
+  doneCompletedDeals: number; // Changed from lostDeals
+  cancelledDeals: number; // Added for chart
   pipelineValue: number;
 }
 
-export function RevenueChart({ wonDeals, lostDeals, pipelineValue }: RevenueChartProps) {
+export function RevenueChart({ paidDeals, doneCompletedDeals, cancelledDeals, pipelineValue }: RevenueChartProps) {
   const data = [
-    { name: "Won Deals", value: wonDeals, color: "hsl(var(--success))" },
-    { name: "Lost Deals", value: lostDeals, color: "hsl(var(--destructive))" },
+    { name: "Paid Deals", value: paidDeals, color: "hsl(var(--success))" },
+    { name: "Done Completed Deals", value: doneCompletedDeals, color: "hsl(var(--destructive))" },
+    { name: "Cancelled Deals", value: cancelledDeals, color: "hsl(var(--secondary))" }, // Added for chart
     { name: "Pipeline", value: pipelineValue, color: "hsl(var(--accent))" },
   ];
 
-  const total = wonDeals + lostDeals + pipelineValue;
+  const total = paidDeals + doneCompletedDeals + cancelledDeals + pipelineValue; // Updated total calculation
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -72,7 +74,7 @@ export function RevenueChart({ wonDeals, lostDeals, pipelineValue }: RevenueChar
           </ResponsiveContainer>
         </div>
         
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-4 gap-4"> {/* Changed to grid-cols-4 to accommodate new item */}
           {data.map((item, index) => (
             <div key={index} className="text-center">
               <div 

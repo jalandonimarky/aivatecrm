@@ -1,4 +1,4 @@
-import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle, Package, Code, XCircle } from "lucide-react"; // Import XCircle for cancelled deals
+import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle, Package, Code } from "lucide-react"; // Removed XCircle
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -39,17 +39,12 @@ export function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Paid Deals" // Updated title
-          value={`$${stats.paidDealsValue.toLocaleString()}`} // Updated value
+          title="Paid Deals"
+          value={`$${stats.paidDealsValue.toLocaleString()}`}
           icon={DollarSign}
           change={{ value: 12.5, trend: "up" }}
         />
-        <StatsCard
-          title="Cancelled Deals" // New stat card
-          value={`$${stats.cancelledDealsValue.toLocaleString()}`} // New value
-          icon={XCircle} // New icon
-          change={{ value: 3.0, trend: "up" }} // Example change
-        />
+        {/* Removed Cancelled Deals StatsCard */}
         <StatsCard
           title="Pipeline Value"
           value={`$${stats.pipelineValue.toLocaleString()}`}
@@ -57,12 +52,11 @@ export function Dashboard() {
           change={{ value: 15.3, trend: "up" }}
         />
         <StatsCard
-          title="Active Contacts" // Moved active contacts here
+          title="Active Contacts"
           value={stats.totalContacts}
           icon={Users}
           change={{ value: 8.2, trend: "up" }}
         />
-        {/* Original Pending Tasks card, now shifted */}
         <StatsCard
           title="Pending Tasks"
           value={stats.totalTasks - stats.completedTasks}
@@ -74,13 +68,13 @@ export function Dashboard() {
           title="1-OFF Projects"
           value={stats.totalOneOffProjects}
           icon={Package}
-          className="lg:col-span-2" // Span two columns for better layout
+          className="lg:col-span-2"
         />
         <StatsCard
           title="System Development"
           value={stats.totalSystemDevelopment}
           icon={Code}
-          className="lg:col-span-2" // Span two columns for better layout
+          className="lg:col-span-2"
         />
       </div>
 
@@ -89,8 +83,9 @@ export function Dashboard() {
         {/* Revenue Chart */}
         <div className="lg:col-span-2">
           <RevenueChart
-            wonDeals={stats.paidDealsValue} // Updated to paidDealsValue
-            lostDeals={stats.doneCompletedDealsValue} // Updated to doneCompletedDealsValue
+            paidDeals={stats.paidDealsValue}
+            doneCompletedDeals={stats.doneCompletedDealsValue}
+            cancelledDeals={stats.cancelledDealsValue} // Pass cancelled deals value
             pipelineValue={stats.pipelineValue}
           />
         </div>
