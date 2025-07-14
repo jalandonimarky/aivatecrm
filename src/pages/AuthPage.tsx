@@ -47,6 +47,7 @@ export function AuthPage() {
           title: "Signed up successfully",
           description: "Please check your email to confirm your account.",
         });
+        setIsLogin(true); // <--- Added this line to switch to login view
       }
     } catch (error: any) {
       toast({
