@@ -11,7 +11,7 @@ import {
   Cell,
   ReferenceLine // Import ReferenceLine for "Today" marker
 } from "recharts";
-import { format, parseISO, differenceInDays, addDays, isPast, startOfDay } from "date-fns";
+import { format, parseISO, differenceInDays, addDays, startOfDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Deal, Profile } from "@/types/crm"; // Import Deal type
 import { useCRMData } from "@/hooks/useCRMData";
@@ -109,14 +109,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
 
   // Custom Bar for Gantt simulation
   const CustomBar = (props: any) => {
-    const { x, y, width, height, fill, payload, containerWidth, margin } = props;
-    const { startDate, duration } = payload;
-
-    const effectiveMargin = margin || { left: 0, right: 0 };
-    const chartWidth = containerWidth - effectiveMargin.left - effectiveMargin.right;
-
-    // Recharts already calculates x and width correctly for a single bar representing duration
-    // We just need to ensure the fill and rounded corners
+    const { x, y, width, height, fill } = props;
     return (
       <rect
         x={x}
@@ -124,8 +117,8 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
         width={width}
         height={height}
         fill={fill}
-        rx={3} // Rounded corners for bars
-        ry={3}
+        rx={4} // Slightly larger rounded corners
+        ry={4}
       />
     );
   };
@@ -160,8 +153,8 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
                 type="category"
                 dataKey="name"
                 stroke="hsl(var(--muted-foreground))"
-                width={120} // Adjust width for deal names
-                tick={{ fill: 'hsl(var(--foreground))' }}
+                width={150} // Increased width for deal names
+                tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }} // Adjusted font size
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
@@ -177,7 +170,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               <Bar
                 dataKey="duration" // This will be the length of the bar
                 fill="hsl(var(--primary))"
-                barSize={20}
+                barSize={25} // Increased bar size
                 shape={<CustomBar />}
               >
                 {chartData.map((entry, index) => (
