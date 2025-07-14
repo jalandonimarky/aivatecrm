@@ -522,6 +522,78 @@ export function useCRMData() {
     }
   };
 
+  const updateDealNote = async (noteId: string, dealId: string, updates: Partial<Omit<DealNote, 'id' | 'deal_id' | 'created_at' | 'created_by' | 'creator'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("deal_notes")
+        .update(updates)
+        .eq("id", noteId)
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { 
+              ...deal, 
+              notes: (deal.notes || []).map(note => 
+                note.id === noteId ? (data as DealNote) : note
+              )
+            }
+          : deal
+      ));
+
+      toast({
+        title: "Note updated",
+        description: "Your note has been updated successfully.",
+      });
+      return data as DealNote;
+    } catch (error: any) {
+      toast({
+        title: "Error updating note",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteDealNote = async (noteId: string, dealId: string) => {
+    try {
+      const { error } = await supabase
+        .from("deal_notes")
+        .delete()
+        .eq("id", noteId);
+
+      if (error) throw error;
+
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { 
+              ...deal, 
+              notes: (deal.notes || []).filter(note => note.id !== noteId)
+            }
+          : deal
+      ));
+
+      toast({
+        title: "Note deleted",
+        description: "Your note has been deleted successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting note",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -540,10 +612,12 @@ export function useCRMData() {
     createDeal,
     updateDeal,
     deleteDeal,
-    createTask,
-    updateTask,
-    deleteTask,
-    createDealNote, // Export new function
-    getFullName, // Export the helper function
+    createTask, // Now defined
+    updateTask, // Now defined
+    deleteTask, // Now defined
+    createDealNote,
+    updateDealNote,
+    deleteDealNote,
+    getFullName,
   };
 }

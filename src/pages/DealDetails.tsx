@@ -8,20 +8,32 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react"; // Import new icons
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // Import DropdownMenu components
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; // Import DialogFooter
 import { format, parseISO } from "date-fns";
-import { UserProfileCard } from "@/components/UserProfileCard"; // Import UserProfileCard
+import { UserProfileCard } from "@/components/UserProfileCard";
 import type { DealNote } from "@/types/crm";
 
 export function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { deals, profiles, loading, createDealNote, getFullName } = useCRMData();
-  const [deal, setDeal] = useState<any>(null); // Use 'any' for now, will refine with full Deal type
+  const { deals, loading, createDealNote, updateDealNote, deleteDealNote, getFullName } = useCRMData();
+  const [deal, setDeal] = useState<any>(null);
   const [businessNoteContent, setBusinessNoteContent] = useState("");
   const [techNoteContent, setTechNoteContent] = useState("");
   const [isAddingBusinessNote, setIsAddingBusinessNote] = useState(false);
   const [isAddingTechNote, setIsAddingTechNote] = useState(false);
+
+  const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<DealNote | null>(null);
+  const [editNoteContent, setEditNoteContent] = useState("");
+  const [editNoteType, setEditNoteType] = useState<'business' | 'tech'>('business');
 
   useEffect(() => {
     if (deals.length > 0 && id) {
@@ -44,6 +56,37 @@ export function DealDetails() {
       }
     } catch (error) {
       // Error handled in useCRMData hook
+    }
+  };
+
+  const handleEditNoteClick = (note: DealNote) => {
+    setEditingNote(note);
+    setEditNoteContent(note.content);
+    setEditNoteType(note.note_type);
+    setIsEditNoteDialogOpen(true);
+  };
+
+  const handleUpdateNoteSubmit = async () => {
+    if (!editingNote || !editNoteContent.trim()) return;
+
+    try {
+      await updateDealNote(editingNote.id, editingNote.deal_id, { content: editNoteContent, note_type: editNoteType });
+      setIsEditNoteDialogOpen(false);
+      setEditingNote(null);
+      setEditNoteContent("");
+      setEditNoteType('business');
+    } catch (error) {
+      // Error handled in useCRMData hook
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string, dealId: string) => {
+    if (confirm("Are you sure you want to delete this note?")) {
+      try {
+        await deleteDealNote(noteId, dealId);
+      } catch (error) {
+        // Error handled in useCRMData hook
+      }
     }
   };
 
@@ -153,11 +196,33 @@ export function DealDetails() {
           <CardContent className="space-y-4">
             {businessNotes.length === 0 && <p className="text-muted-foreground text-sm">No business notes yet.</p>}
             {businessNotes.map((note: DealNote) => (
-              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0">
-                <p className="text-sm text-foreground">{note.content}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                </p>
+              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-foreground">{note.content}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
+                  </p>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteNote(note.id, note.deal_id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
             <div className="mt-4">
@@ -193,11 +258,33 @@ export function DealDetails() {
           <CardContent className="space-y-4">
             {techNotes.length === 0 && <p className="text-muted-foreground text-sm">No tech notes yet.</p>}
             {techNotes.map((note: DealNote) => (
-              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0">
-                <p className="text-sm text-foreground">{note.content}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                </p>
+              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-foreground">{note.content}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
+                  </p>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteNote(note.id, note.deal_id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
             <div className="mt-4">
@@ -207,7 +294,7 @@ export function DealDetails() {
                   <Textarea
                     id="tech-note-content"
                     value={techNoteContent}
-                    onChange={(e) => setTechNoteContent(e.target.value)}
+                    onChange={(e) => setTechNoteContent(prev => e.target.value)}
                     placeholder="Type your technical note here..."
                     rows={3}
                   />
@@ -225,6 +312,42 @@ export function DealDetails() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Note Dialog */}
+      <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Note</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-note-content">Note Content</Label>
+              <Textarea
+                id="edit-note-content"
+                value={editNoteContent}
+                onChange={(e) => setEditNoteContent(e.target.value)}
+                rows={5}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-note-type">Note Type</Label>
+              <select
+                id="edit-note-type"
+                value={editNoteType}
+                onChange={(e) => setEditNoteType(e.target.value as 'business' | 'tech')}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="business">Business</option>
+                <option value="tech">Tech</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditNoteDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateNoteSubmit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
