@@ -225,14 +225,14 @@ export function Deals() {
                 <div className="space-y-2">
                   <Label htmlFor="tier">Tier</Label> {/* Added Tier dropdown */}
                   <Select
-                    value={formData.tier || ""} // Use empty string for Select component if tier is null
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, tier: value === "" ? null : value }))}
+                    value={formData.tier || "none-tier"} // Use "none-tier" when formData.tier is null
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, tier: value === "none-tier" ? null : value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a tier" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem> {/* This is now allowed as it's for placeholder */}
+                      <SelectItem value="none-tier">None</SelectItem> {/* Use a non-empty string value */}
                       {dealTiers.map(tier => (
                         <SelectItem key={tier} value={tier}>
                           {tier}
