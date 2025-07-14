@@ -33,7 +33,7 @@ interface DealFormData {
   description: string;
   value: number;
   stage: Deal['stage']; // Explicitly type stage
-  tier: string; // Added tier
+  tier: string | null; // Changed to string | null
   contact_id: string;
   assigned_to: string;
   expected_close_date: Date | undefined;
@@ -49,7 +49,7 @@ export function Deals() {
     description: "",
     value: 0,
     stage: "prospect",
-    tier: "", // Initialize tier
+    tier: null, // Initialize with null
     contact_id: "unassigned", // Initialize with "unassigned"
     assigned_to: "unassigned", // Initialize with "unassigned"
     expected_close_date: undefined,
@@ -90,7 +90,7 @@ export function Deals() {
         expected_close_date: formData.expected_close_date ? format(formData.expected_close_date, "yyyy-MM-dd") : null,
         contact_id: formData.contact_id === "unassigned" ? null : formData.contact_id, // Convert "unassigned" to null
         assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to, // Convert "unassigned" to null
-        tier: formData.tier === "" ? null : formData.tier, // Convert empty string to null for tier
+        // tier is already null if no selection, no need for extra check
       };
 
       if (editingDeal) {
@@ -111,7 +111,7 @@ export function Deals() {
       description: "",
       value: 0,
       stage: "prospect",
-      tier: "", // Reset tier
+      tier: null, // Reset to null
       contact_id: "unassigned", // Reset to "unassigned"
       assigned_to: "unassigned", // Reset to "unassigned"
       expected_close_date: undefined,
@@ -126,7 +126,7 @@ export function Deals() {
       description: deal.description || "",
       value: deal.value,
       stage: deal.stage,
-      tier: deal.tier || "", // Set tier
+      tier: deal.tier || null, // Set to null if null
       contact_id: deal.contact_id || "unassigned", // Set to "unassigned" if null
       assigned_to: deal.assigned_to || "unassigned", // Set to "unassigned" if null
       expected_close_date: deal.expected_close_date ? new Date(deal.expected_close_date) : undefined,
@@ -225,14 +225,14 @@ export function Deals() {
                 <div className="space-y-2">
                   <Label htmlFor="tier">Tier</Label> {/* Added Tier dropdown */}
                   <Select
-                    value={formData.tier}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, tier: value }))}
+                    value={formData.tier || ""} // Use empty string for Select component if tier is null
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, tier: value === "" ? null : value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a tier" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem> {/* Option for no tier */}
+                      <SelectItem value="">None</SelectItem> {/* This is now allowed as it's for placeholder */}
                       {dealTiers.map(tier => (
                         <SelectItem key={tier} value={tier}>
                           {tier}
