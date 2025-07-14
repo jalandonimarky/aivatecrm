@@ -114,12 +114,14 @@ export function Analytics() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          Analytics
-        </h1>
-        <p className="text-muted-foreground mb-6">
-          Gain insights into your CRM data.
-        </p>
+        <div> {/* Added div for consistency */}
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Analytics
+          </h1>
+          <p className="text-muted-foreground"> {/* Removed mb-6 */}
+            Gain insights into your CRM data.
+          </p>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Skeleton className="h-80" />
           <Skeleton className="h-80" />
@@ -132,12 +134,14 @@ export function Analytics() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-        Analytics
-      </h1>
-      <p className="text-muted-foreground mb-6">
-        Gain insights into your CRM data.
-      </p>
+      <div> {/* Added div for consistency */}
+        <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          Analytics
+        </h1>
+        <p className="text-muted-foreground"> {/* Removed mb-6 */}
+          Gain insights into your CRM data.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Over Time */}
