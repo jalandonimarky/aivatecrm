@@ -59,7 +59,7 @@ export function AuthPage() {
       <Card className="w-full max-w-md bg-gradient-card border-border/50 shadow-medium">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {isLogin ? "Welcome Back" : "Join CRM Pro"}
+            {isLogin ? "Welcome Back" : "Join AIVate CRM"}
           </CardTitle>
           <p className="text-muted-foreground">
             {isLogin ? "Sign in to your account" : "Create your account"}
