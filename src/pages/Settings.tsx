@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserProfileCard } from "@/components/UserProfileCard"; // Import the new component
-import type { Profile } from "@/types/crm"; // Import Profile type
+// Removed import for UserProfileCard
+import type { Profile } from "@/types/crm";
 
 // Zod schema for profile updates
 const profileSchema = z.object({
@@ -32,7 +32,7 @@ const passwordSchema = z.object({
 export function Settings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState<Profile | null>(null); // Use Profile type
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -69,7 +69,7 @@ export function Settings() {
       if (user) {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at") // Select new fields
+          .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
           .eq("user_id", user.id)
           .single();
 
@@ -80,7 +80,7 @@ export function Settings() {
             variant: "destructive",
           });
         } else if (profileData) {
-          setUserProfile(profileData as Profile); // Type assertion
+          setUserProfile(profileData as Profile);
           profileForm.reset({
             firstName: profileData.first_name || "",
             lastName: profileData.last_name || "",
@@ -132,7 +132,7 @@ export function Settings() {
         .eq("user_id", user.id)
         .single();
       if (refetchError) throw refetchError;
-      setUserProfile(profileData as Profile); // Type assertion
+      setUserProfile(profileData as Profile);
       profileForm.reset({
         firstName: profileData.first_name || "",
         lastName: profileData.last_name || "",
@@ -181,7 +181,7 @@ export function Settings() {
         <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
           Settings
         </h1>
-        <Skeleton className="h-24 w-full mb-6" /> {/* Skeleton for profile card */}
+        <Skeleton className="h-24 w-full mb-6" />
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Profile Settings</CardTitle>
@@ -213,7 +213,7 @@ export function Settings() {
         Settings
       </h1>
 
-      {userProfile && <UserProfileCard profile={userProfile} />} {/* Display UserProfileCard */}
+      {/* Removed UserProfileCard from here */}
 
       {/* Profile Settings Card */}
       <Card className="bg-gradient-card border-border/50">

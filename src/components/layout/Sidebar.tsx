@@ -8,7 +8,7 @@ import {
   Settings,
   LogOut
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom"; // Fixed import syntax
+import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -18,13 +18,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar"; // Removed SidebarTrigger
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useCRMData } from "@/hooks/useCRMData"; // Import useCRMData to get current user profile
+import { useCRMData } from "@/hooks/useCRMData";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -42,7 +41,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { toast } = useToast();
-  const { profiles } = useCRMData(); // Get profiles from useCRMData
+  const { profiles } = useCRMData();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 
@@ -58,7 +57,7 @@ export function AppSidebar() {
       }
     };
     fetchUser();
-  }, [profiles]); // Re-run when profiles data changes
+  }, [profiles]);
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -136,14 +135,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* User Profile Initials (simplified) */}
-        {currentUserProfile && (
-          <div className="mt-6 mb-4 px-2">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium mx-auto">
-              {currentUserProfile.first_name.charAt(0)}{currentUserProfile.last_name.charAt(0)}
-            </div>
-          </div>
-        )}
+        {/* Removed User Profile Initials (simplified) */}
 
         {/* Bottom Navigation */}
         <div className="mt-auto space-y-2">
