@@ -8,10 +8,11 @@ import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Contacts } from "./pages/Contacts";
 import { Deals } from "./pages/Deals";
+import { DealDetails } from "./pages/DealDetails"; // Import DealDetails
 import { Tasks } from "./pages/Tasks";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
-import { AuthPage } from "./pages/AuthPage"; // Import the new AuthPage
+import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -61,6 +62,7 @@ const App = () => {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/deals" element={<Deals />} />
+                <Route path="/deals/:id" element={<DealDetails />} /> {/* New route for DealDetails */}
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/settings" element={<Settings />} />

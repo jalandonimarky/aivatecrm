@@ -61,6 +61,48 @@ export type Database = {
           },
         ]
       }
+      deal_notes: {
+        Row: {
+          id: string
+          deal_id: string
+          note_type: string
+          content: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          deal_id: string
+          note_type: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          deal_id?: string
+          note_type?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_notes_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           assigned_to: string | null

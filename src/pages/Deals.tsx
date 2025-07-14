@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCRMData } from "@/hooks/useCRMData";
 import type { Contact, Deal, Profile } from "@/types/crm"; // Import all necessary types
+import { NavLink } from "react-router-dom"; // Import NavLink
 
 interface DealFormData {
   title: string;
@@ -368,7 +369,11 @@ export function Deals() {
               <TableBody>
                 {filteredDeals.map((deal) => (
                   <TableRow key={deal.id} className="hover:bg-muted/50 transition-smooth">
-                    <TableCell className="font-medium">{deal.title}</TableCell>
+                    <TableCell className="font-medium">
+                      <NavLink to={`/deals/${deal.id}`} className="text-primary hover:underline">
+                        {deal.title}
+                      </NavLink>
+                    </TableCell>
                     <TableCell>${deal.value.toLocaleString()}</TableCell>
                     <TableCell>{deal.stage}</TableCell>
                     <TableCell>{deal.tier || "-"}</TableCell> {/* Display tier */}

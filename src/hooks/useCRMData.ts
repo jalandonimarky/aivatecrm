@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote } from "@/types/crm"; // Import DealNote
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -63,13 +63,14 @@ export function useCRMData() {
       if (contactsError) throw contactsError;
       setContacts(contactsData || []);
 
-      // Fetch deals with related data
+      // Fetch deals with related data and notes
       const { data: dealsData, error: dealsError } = await supabase
         .from("deals")
         .select(`
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
-          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email))
         `)
         .order("created_at", { ascending: false });
 
@@ -278,7 +279,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for deals
-  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user'>) => {
+  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes'>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -286,7 +287,8 @@ export function useCRMData() {
         .select(`
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
-          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email))
         `)
         .single();
 
@@ -312,7 +314,7 @@ export function useCRMData() {
     }
   };
 
-  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user'>>) => {
+  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes'>>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -321,7 +323,8 @@ export function useCRMData() {
         .select(`
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
-          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email))
         `)
         .single();
 
@@ -479,6 +482,46 @@ export function useCRMData() {
     }
   };
 
+  // New: CRUD operations for deal notes
+  const createDealNote = async (dealId: string, noteType: 'business' | 'tech', content: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated.");
+
+      const { data, error } = await supabase
+        .from("deal_notes")
+        .insert([{ deal_id: dealId, note_type: noteType, content, created_by: user.id }])
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      // Update the specific deal in the deals state with the new note
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { ...deal, notes: [...(deal.notes || []), data as DealNote] }
+          : deal
+      ));
+
+      toast({
+        title: "Note added",
+        description: "Your note has been added successfully.",
+      });
+      return data as DealNote;
+    } catch (error: any) {
+      toast({
+        title: "Error adding note",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -500,6 +543,7 @@ export function useCRMData() {
     createTask,
     updateTask,
     deleteTask,
+    createDealNote, // Export new function
     getFullName, // Export the helper function
   };
 }

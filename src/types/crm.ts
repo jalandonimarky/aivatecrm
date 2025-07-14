@@ -23,6 +23,16 @@ export interface Contact {
   updated_at: string;
 }
 
+export interface DealNote {
+  id: string;
+  deal_id: string;
+  note_type: 'business' | 'tech';
+  content: string;
+  created_at: string;
+  created_by?: string;
+  creator?: Profile; // To store the profile of the note creator
+}
+
 export interface Deal {
   id: string;
   title: string;
@@ -38,6 +48,7 @@ export interface Deal {
   updated_at: string;
   contact?: Contact;
   assigned_user?: Profile;
+  notes?: DealNote[]; // Added notes array
 }
 
 export interface Task {
