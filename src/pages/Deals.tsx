@@ -33,6 +33,7 @@ interface DealFormData {
   description: string;
   value: number;
   stage: Deal['stage']; // Explicitly type stage
+  tier: string; // Added tier
   contact_id: string;
   assigned_to: string;
   expected_close_date: Date | undefined;
@@ -48,6 +49,7 @@ export function Deals() {
     description: "",
     value: 0,
     stage: "prospect",
+    tier: "", // Initialize tier
     contact_id: "unassigned", // Initialize with "unassigned"
     assigned_to: "unassigned", // Initialize with "unassigned"
     expected_close_date: undefined,
@@ -62,11 +64,21 @@ export function Deals() {
     { value: "lost", label: "Lost" },
   ];
 
+  const dealTiers: string[] = [
+    "1-OFF Projects: T1",
+    "1-OFF Projects: T2",
+    "1-OFF Projects: T3",
+    "System Development: T1",
+    "System Development: T2",
+    "System Development: T3",
+  ];
+
   const filteredDeals = deals.filter(deal =>
     deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (deal.assigned_user && getFullName(deal.assigned_user).toLowerCase().includes(searchTerm.toLowerCase()))
+    (deal.assigned_user && getFullName(deal.assigned_user).toLowerCase().includes(searchTerm.toLowerCase())) ||
+    deal.tier?.toLowerCase().includes(searchTerm.toLowerCase()) // Filter by tier
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,6 +90,7 @@ export function Deals() {
         expected_close_date: formData.expected_close_date ? format(formData.expected_close_date, "yyyy-MM-dd") : null,
         contact_id: formData.contact_id === "unassigned" ? null : formData.contact_id, // Convert "unassigned" to null
         assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to, // Convert "unassigned" to null
+        tier: formData.tier === "" ? null : formData.tier, // Convert empty string to null for tier
       };
 
       if (editingDeal) {
@@ -98,6 +111,7 @@ export function Deals() {
       description: "",
       value: 0,
       stage: "prospect",
+      tier: "", // Reset tier
       contact_id: "unassigned", // Reset to "unassigned"
       assigned_to: "unassigned", // Reset to "unassigned"
       expected_close_date: undefined,
@@ -112,6 +126,7 @@ export function Deals() {
       description: deal.description || "",
       value: deal.value,
       stage: deal.stage,
+      tier: deal.tier || "", // Set tier
       contact_id: deal.contact_id || "unassigned", // Set to "unassigned" if null
       assigned_to: deal.assigned_to || "unassigned", // Set to "unassigned" if null
       expected_close_date: deal.expected_close_date ? new Date(deal.expected_close_date) : undefined,
@@ -208,6 +223,28 @@ export function Deals() {
                   </Select>
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="tier">Tier</Label> {/* Added Tier dropdown */}
+                  <Select
+                    value={formData.tier}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, tier: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a tier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem> {/* Option for no tier */}
+                      {dealTiers.map(tier => (
+                        <SelectItem key={tier} value={tier}>
+                          {tier}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
+                <div className="space-y-2">
                   <Label htmlFor="contact_id">Related Contact</Label>
                   <Select
                     value={formData.contact_id}
@@ -226,9 +263,6 @@ export function Deals() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="assigned_to">Assigned To</Label>
                   <Select
@@ -248,31 +282,32 @@ export function Deals() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="expected_close_date">Expected Close Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !formData.expected_close_date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.expected_close_date ? format(formData.expected_close_date, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={formData.expected_close_date}
-                        onSelect={(date) => setFormData(prev => ({ ...prev, expected_close_date: date || undefined }))}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expected_close_date">Expected Close Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.expected_close_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.expected_close_date ? format(formData.expected_close_date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.expected_close_date}
+                      onSelect={(date) => setFormData(prev => ({ ...prev, expected_close_date: date || undefined }))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -318,6 +353,7 @@ export function Deals() {
                   <TableHead>Title</TableHead>
                   <TableHead>Value</TableHead>
                   <TableHead>Stage</TableHead>
+                  <TableHead>Tier</TableHead> {/* Added Tier column */}
                   <TableHead>Contact</TableHead>
                   <TableHead>Assigned To</TableHead>
                   <TableHead>Close Date</TableHead>
@@ -330,6 +366,7 @@ export function Deals() {
                     <TableCell className="font-medium">{deal.title}</TableCell>
                     <TableCell>${deal.value.toLocaleString()}</TableCell>
                     <TableCell>{deal.stage}</TableCell>
+                    <TableCell>{deal.tier || "-"}</TableCell> {/* Display tier */}
                     <TableCell>{deal.contact?.name || "-"}</TableCell>
                     <TableCell>{deal.assigned_user ? getFullName(deal.assigned_user) : "-"}</TableCell>
                     <TableCell>{deal.expected_close_date ? format(new Date(deal.expected_close_date), "PPP") : "-"}</TableCell>

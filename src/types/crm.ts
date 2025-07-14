@@ -29,6 +29,7 @@ export interface Deal {
   description?: string;
   value: number;
   stage: 'prospect' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost';
+  tier?: string; // Added tier
   contact_id?: string;
   assigned_to?: string;
   expected_close_date?: string;
@@ -66,4 +67,6 @@ export interface DashboardStats {
   completedTasks: number;
   overdueTasks: number;
   totalTasks: number;
+  totalOneOffProjects: number; // Added for dashboard
+  totalSystemDevelopment: number; // Added for dashboard
 }

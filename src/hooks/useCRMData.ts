@@ -17,6 +17,8 @@ export function useCRMData() {
     completedTasks: 0,
     overdueTasks: 0,
     totalTasks: 0,
+    totalOneOffProjects: 0, // Initialize new stats
+    totalSystemDevelopment: 0, // Initialize new stats
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -98,6 +100,9 @@ export function useCRMData() {
       task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
     );
 
+    const oneOffProjects = dealsData.filter(deal => deal.tier?.startsWith('1-OFF Projects'));
+    const systemDevelopment = dealsData.filter(deal => deal.tier?.startsWith('System Development'));
+
     setStats({
       totalRevenue: wonDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
       wonDeals: wonDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
@@ -107,6 +112,8 @@ export function useCRMData() {
       totalTasks: tasksData.length,
       completedTasks: completedTasks.length,
       overdueTasks: overdueTasks.length,
+      totalOneOffProjects: oneOffProjects.length, // Set new stat
+      totalSystemDevelopment: systemDevelopment.length, // Set new stat
     });
   };
 

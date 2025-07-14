@@ -74,6 +74,7 @@ export type Database = {
           title: string
           updated_at: string
           value: number
+          tier: string | null // Added tier
         }
         Insert: {
           assigned_to?: string | null
@@ -87,6 +88,7 @@ export type Database = {
           title: string
           updated_at?: string
           value?: number
+          tier?: string | null // Added tier
         }
         Update: {
           assigned_to?: string | null
@@ -100,6 +102,7 @@ export type Database = {
           title?: string
           updated_at?: string
           value?: number
+          tier?: string | null // Added tier
         }
         Relationships: [
           {
@@ -130,7 +133,8 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
-          full_name: string
+          first_name: string 
+          last_name: string 
           id: string
           role: string
           updated_at: string
@@ -140,7 +144,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email: string
-          full_name: string
+          first_name: string 
+          last_name: string 
           id?: string
           role?: string
           updated_at?: string
@@ -150,7 +155,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
-          full_name?: string
+          first_name?: string 
+          last_name?: string 
           id?: string
           role?: string
           updated_at?: string
@@ -369,4 +375,4 @@ export const Constants = {
   public: {
     Enums: {},
   },
-} as const
+} as const;

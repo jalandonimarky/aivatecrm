@@ -1,4 +1,4 @@
-import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle } from "lucide-react";
+import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle, Package, Code } from "lucide-react"; // Import new icons
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -61,6 +61,19 @@ export function Dashboard() {
           value={stats.totalTasks - stats.completedTasks}
           icon={CheckSquare}
           change={{ value: -5.1, trend: "down" }}
+        />
+        {/* New Stats Cards for Tiers */}
+        <StatsCard
+          title="1-OFF Projects"
+          value={stats.totalOneOffProjects}
+          icon={Package}
+          className="lg:col-span-2" // Span two columns for better layout
+        />
+        <StatsCard
+          title="System Development"
+          value={stats.totalSystemDevelopment}
+          icon={Code}
+          className="lg:col-span-2" // Span two columns for better layout
         />
       </div>
 
