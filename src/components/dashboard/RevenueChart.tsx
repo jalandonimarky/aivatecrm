@@ -2,21 +2,19 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recha
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface RevenueChartProps {
-  paidDeals: number; // Changed from wonDeals
-  doneCompletedDeals: number; // Changed from lostDeals
-  cancelledDeals: number; // Added for chart
+  paidDeals: number;
+  doneCompletedDeals: number; // Still passed, but not used in chart data
+  cancelledDeals: number; // Still passed, but not used in chart data
   pipelineValue: number;
 }
 
-export function RevenueChart({ paidDeals, doneCompletedDeals, cancelledDeals, pipelineValue }: RevenueChartProps) {
+export function RevenueChart({ paidDeals, pipelineValue }: RevenueChartProps) { // Removed doneCompletedDeals, cancelledDeals from destructuring
   const data = [
-    { name: "Paid Deals", value: paidDeals, color: "hsl(var(--success))" },
-    { name: "Done Completed Deals", value: doneCompletedDeals, color: "hsl(var(--destructive))" },
-    { name: "Cancelled Deals", value: cancelledDeals, color: "hsl(var(--secondary))" }, // Added for chart
-    { name: "Pipeline", value: pipelineValue, color: "hsl(var(--accent))" },
+    { name: "Paid Deals", value: paidDeals, color: "hsl(var(--success))" }, // Green
+    { name: "Pipeline", value: pipelineValue, color: "hsl(var(--accent))" }, // Blue
   ];
 
-  const total = paidDeals + doneCompletedDeals + cancelledDeals + pipelineValue; // Updated total calculation
+  const total = paidDeals + pipelineValue; // Updated total calculation to only include paid and pipeline
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -74,7 +72,7 @@ export function RevenueChart({ paidDeals, doneCompletedDeals, cancelledDeals, pi
           </ResponsiveContainer>
         </div>
         
-        <div className="mt-6 grid grid-cols-4 gap-4"> {/* Changed to grid-cols-4 to accommodate new item */}
+        <div className="mt-6 grid grid-cols-2 gap-4"> {/* Changed to grid-cols-2 as there are now only two items */}
           {data.map((item, index) => (
             <div key={index} className="text-center">
               <div 
