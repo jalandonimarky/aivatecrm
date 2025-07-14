@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AppSidebar } from "./Sidebar";
-import { useSidebar, SidebarTrigger } from "@/components/ui/sidebar"; // Removed SidebarProvider import
+import { SidebarProvider, useSidebar, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet } from "react-router-dom";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { useCRMData } from "@/hooks/useCRMData";
@@ -31,36 +31,38 @@ export function Layout() {
   const isSidebarOpen = sidebarState === "expanded";
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      {/* Desktop Sidebar - always rendered, its width changes based on state */}
-      {!isMobile && <AppSidebar />}
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        {/* Desktop Sidebar - always rendered, its width changes based on state */}
+        {!isMobile && <AppSidebar />}
 
-      {/* Main content area */}
-      <div className={`flex-1 flex flex-col 
-        ${!isMobile ? (isSidebarOpen ? 'ml-64' : 'ml-14') : ''} 
-        transition-all duration-300 ease-in-out`}>
-        <header className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center px-6 justify-between">
-          <div className="flex items-center">
-            {isMobile && ( // Mobile menu button and Drawer
-              <Drawer open={isSidebarOpen} onOpenChange={(open) => setSidebarState(open ? "expanded" : "collapsed")}>
-                <DrawerTrigger asChild>
-                  {/* Using SidebarTrigger here */}
-                  <SidebarTrigger className="mr-4">
-                    <Menu className="h-5 w-5" />
-                  </SidebarTrigger>
-                </DrawerTrigger>
-                <DrawerContent side="left" className="w-64 h-full">
-                  <AppSidebar />
-                </DrawerContent>
-              </Drawer>
-            )}
-          </div>
-          {currentUserProfile && <UserProfileCard profile={currentUserProfile} />}
-        </header>
-        <main className="flex-1 p-6 bg-background">
-          <Outlet />
-        </main>
+        {/* Main content area */}
+        <div className={`flex-1 flex flex-col 
+          ${!isMobile ? (isSidebarOpen ? 'ml-64' : 'ml-14') : ''} 
+          transition-all duration-300 ease-in-out`}>
+          <header className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center px-6 justify-between">
+            <div className="flex items-center">
+              {isMobile && ( // Mobile menu button and Drawer
+                <Drawer open={isSidebarOpen} onOpenChange={(open) => setSidebarState(open ? "expanded" : "collapsed")}>
+                  <DrawerTrigger asChild>
+                    {/* Using SidebarTrigger here */}
+                    <SidebarTrigger className="mr-4">
+                      <Menu className="h-5 w-5" />
+                    </SidebarTrigger>
+                  </DrawerTrigger>
+                  <DrawerContent side="left" className="w-64 h-full">
+                    <AppSidebar />
+                  </DrawerContent>
+                </Drawer>
+              )}
+            </div>
+            {currentUserProfile && <UserProfileCard profile={currentUserProfile} />}
+          </header>
+          <main className="flex-1 p-6 bg-background">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

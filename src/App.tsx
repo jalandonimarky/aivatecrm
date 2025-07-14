@@ -14,7 +14,6 @@ import { Settings } from "./pages/Settings";
 import { AuthPage } from "./pages/AuthPage"; // Import the new AuthPage
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
-import { SidebarProvider } from "@/components/ui/sidebar"; // Import SidebarProvider
 
 const queryClient = new QueryClient();
 
@@ -57,9 +56,9 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             {session ? (
-              // Authenticated routes wrapped with SidebarProvider
-              <Route element={<SidebarProvider><Layout /></SidebarProvider>}>
-                <Route index element={<Dashboard />} />
+              // Authenticated routes
+              <Route element={<Layout />}>
+                <Route path="/" element={<Dashboard />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/deals" element={<Deals />} />
                 <Route path="/tasks" element={<Tasks />} />
