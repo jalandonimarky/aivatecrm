@@ -39,7 +39,7 @@ interface DealFormData {
 }
 
 export function Deals() {
-  const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal } = useCRMData();
+  const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData();
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
@@ -66,7 +66,7 @@ export function Deals() {
     deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.assigned_user?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    (deal.assigned_user && getFullName(deal.assigned_user).toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -242,7 +242,7 @@ export function Deals() {
                       <SelectItem value="unassigned">None</SelectItem>
                       {profiles.map(profile => (
                         <SelectItem key={profile.id} value={profile.id}>
-                          {profile.full_name}
+                          {getFullName(profile)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -331,7 +331,7 @@ export function Deals() {
                     <TableCell>${deal.value.toLocaleString()}</TableCell>
                     <TableCell>{deal.stage}</TableCell>
                     <TableCell>{deal.contact?.name || "-"}</TableCell>
-                    <TableCell>{deal.assigned_user?.full_name || "-"}</TableCell>
+                    <TableCell>{deal.assigned_user ? getFullName(deal.assigned_user) : "-"}</TableCell>
                     <TableCell>{deal.expected_close_date ? format(new Date(deal.expected_close_date), "PPP") : "-"}</TableCell>
                     <TableCell>
                       <DropdownMenu>

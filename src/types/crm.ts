@@ -1,7 +1,8 @@
 export interface Profile {
   id: string;
   user_id: string;
-  full_name: string;
+  first_name: string; // Changed from full_name
+  last_name: string;  // Added
   email: string;
   avatar_url?: string;
   role: 'admin' | 'editor' | 'viewer';

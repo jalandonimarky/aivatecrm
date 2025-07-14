@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Home, 
   Users, 
@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useCRMData } from "@/hooks/useCRMData"; // Import useCRMData to get current user profile
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -41,8 +42,23 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { toast } = useToast();
+  const { profiles } = useCRMData(); // Get profiles from useCRMData
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+
+  // Find the current user's profile based on Supabase session
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const profile = profiles.find(p => p.user_id === user.id);
+        setCurrentUserProfile(profile);
+      }
+    };
+    fetchUser();
+  }, [profiles]); // Re-run when profiles data changes
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -119,6 +135,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* User Profile Info */}
+        {currentUserProfile && (
+          <div className="mt-6 mb-4 px-2">
+            {!collapsed ? (
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium">
+                  {currentUserProfile.first_name.charAt(0)}{currentUserProfile.last_name.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">
+                    {currentUserProfile.first_name} {currentUserProfile.last_name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{currentUserProfile.email}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium mx-auto">
+                {currentUserProfile.first_name.charAt(0)}{currentUserProfile.last_name.charAt(0)}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bottom Navigation */}
         <div className="mt-auto space-y-2">

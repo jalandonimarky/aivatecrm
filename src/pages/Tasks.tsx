@@ -40,7 +40,7 @@ interface TaskFormData {
 }
 
 export function Tasks() {
-  const { tasks, contacts, deals, profiles, loading, createTask, updateTask, deleteTask } = useCRMData();
+  const { tasks, contacts, deals, profiles, loading, createTask, updateTask, deleteTask, getFullName } = useCRMData();
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -72,7 +72,7 @@ export function Tasks() {
   const filteredTasks = tasks.filter(task =>
     task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.assigned_user?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (task.assigned_user && getFullName(task.assigned_user).toLowerCase().includes(searchTerm.toLowerCase())) ||
     task.related_contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     task.related_deal?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -240,7 +240,7 @@ export function Tasks() {
                       <SelectItem value="unassigned">None</SelectItem>
                       {profiles.map(profile => (
                         <SelectItem key={profile.id} value={profile.id}>
-                          {profile.full_name}
+                          {getFullName(profile)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -370,7 +370,7 @@ export function Tasks() {
                     <TableCell className="font-medium">{task.title}</TableCell>
                     <TableCell>{task.status}</TableCell>
                     <TableCell>{task.priority}</TableCell>
-                    <TableCell>{task.assigned_user?.full_name || "-"}</TableCell>
+                    <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
                     <TableCell>{task.related_contact?.name || "-"}</TableCell>
                     <TableCell>{task.related_deal?.title || "-"}</TableCell>
                     <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>

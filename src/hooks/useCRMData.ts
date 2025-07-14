@@ -14,12 +14,15 @@ export function useCRMData() {
     lostDeals: 0,
     pipelineValue: 0,
     totalContacts: 0,
-    totalTasks: 0,
     completedTasks: 0,
     overdueTasks: 0,
+    totalTasks: 0,
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  // Helper to combine first and last name for display
+  const getFullName = (profile: Profile) => `${profile.first_name} ${profile.last_name}`;
 
   // Fetch all data
   const fetchData = async () => {
@@ -29,7 +32,7 @@ export function useCRMData() {
       // Fetch profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
         .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -38,7 +41,7 @@ export function useCRMData() {
       // Fetch contacts
       const { data: contactsData, error: contactsError } = await supabase
         .from("contacts")
-        .select("*")
+        .select("id, name, email, phone, company, position, notes, created_by, created_at, updated_at") // Select all fields
         .order("created_at", { ascending: false });
 
       if (contactsError) throw contactsError;
@@ -49,8 +52,8 @@ export function useCRMData() {
         .from("deals")
         .select(`
           *,
-          contact:contacts(id, name, email, company),
-          assigned_user:profiles!deals_assigned_to_fkey(id, full_name, email)
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .order("created_at", { ascending: false });
 
@@ -62,8 +65,8 @@ export function useCRMData() {
         .from("tasks")
         .select(`
           *,
-          assigned_user:profiles!tasks_assigned_to_fkey(id, full_name, email),
-          related_contact:contacts(id, name, email, company),
+          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value)
         `)
         .order("created_at", { ascending: false });
@@ -118,12 +121,12 @@ export function useCRMData() {
 
       if (error) throw error;
       
-      setContacts(prev => [data, ...prev]);
+      setContacts(prev => [data as Contact, ...prev]);
       toast({
         title: "Contact created",
         description: "New contact has been added successfully.",
       });
-      return data;
+      return data as Contact;
     } catch (error: any) {
       toast({
         title: "Error creating contact",
@@ -146,13 +149,13 @@ export function useCRMData() {
       if (error) throw error;
 
       setContacts(prev => prev.map(contact => 
-        contact.id === id ? data : contact
+        contact.id === id ? (data as Contact) : contact
       ));
       toast({
         title: "Contact updated",
         description: "Contact has been updated successfully.",
       });
-      return data;
+      return data as Contact;
     } catch (error: any) {
       toast({
         title: "Error updating contact",
@@ -195,8 +198,8 @@ export function useCRMData() {
         .insert([dealData])
         .select(`
           *,
-          contact:contacts(id, name, email, company),
-          assigned_user:profiles!deals_assigned_to_fkey(id, full_name, email)
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -230,8 +233,8 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          contact:contacts(id, name, email, company),
-          assigned_user:profiles!deals_assigned_to_fkey(id, full_name, email)
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -295,8 +298,8 @@ export function useCRMData() {
         .insert([taskData])
         .select(`
           *,
-          assigned_user:profiles!tasks_assigned_to_fkey(id, full_name, email),
-          related_contact:contacts(id, name, email, company),
+          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value)
         `)
         .single();
@@ -331,8 +334,8 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          assigned_user:profiles!tasks_assigned_to_fkey(id, full_name, email),
-          related_contact:contacts(id, name, email, company),
+          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value)
         `)
         .single();
@@ -410,5 +413,6 @@ export function useCRMData() {
     createTask,
     updateTask,
     deleteTask,
+    getFullName, // Export the helper function
   };
 }

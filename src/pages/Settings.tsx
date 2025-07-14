@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Profile } from "@/types/crm"; // Import Profile type
 
 // Zod schema for profile updates
 const profileSchema = z.object({
@@ -30,7 +31,7 @@ const passwordSchema = z.object({
 export function Settings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState<{ id: string; full_name: string; email: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null); // Use Profile type
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -67,7 +68,7 @@ export function Settings() {
       if (user) {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("id, full_name, email")
+          .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at") // Select new fields
           .eq("user_id", user.id)
           .single();
 
@@ -78,11 +79,10 @@ export function Settings() {
             variant: "destructive",
           });
         } else if (profileData) {
-          setUserProfile(profileData);
-          const [firstName, ...lastNameParts] = profileData.full_name.split(" ");
+          setUserProfile(profileData as Profile); // Type assertion
           profileForm.reset({
-            firstName: firstName || "",
-            lastName: lastNameParts.join(" ") || "",
+            firstName: profileData.first_name || "",
+            lastName: profileData.last_name || "",
             email: profileData.email,
           });
         }
@@ -100,8 +100,6 @@ export function Settings() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
-      const fullName = `${values.firstName} ${values.lastName}`.trim();
-
       // Update email if changed
       if (values.email !== userProfile?.email) {
         const { error: emailUpdateError } = await supabase.auth.updateUser({
@@ -114,10 +112,10 @@ export function Settings() {
         });
       }
 
-      // Update profile table
+      // Update profile table with first_name and last_name
       const { error: profileUpdateError } = await supabase
         .from("profiles")
-        .update({ full_name: fullName, email: values.email })
+        .update({ first_name: values.firstName, last_name: values.lastName, email: values.email })
         .eq("user_id", user.id);
 
       if (profileUpdateError) throw profileUpdateError;
@@ -129,15 +127,14 @@ export function Settings() {
       // Re-fetch user profile to update local state and forms
       const { data: profileData, error: refetchError } = await supabase
         .from("profiles")
-        .select("id, full_name, email")
+        .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
         .eq("user_id", user.id)
         .single();
       if (refetchError) throw refetchError;
-      setUserProfile(profileData);
-      const [firstName, ...lastNameParts] = profileData.full_name.split(" ");
+      setUserProfile(profileData as Profile); // Type assertion
       profileForm.reset({
-        firstName: firstName || "",
-        lastName: lastNameParts.join(" ") || "",
+        firstName: profileData.first_name || "",
+        lastName: profileData.last_name || "",
         email: profileData.email,
       });
 

@@ -10,7 +10,8 @@ export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState(""); // New state for first name
+  const [lastName, setLastName] = useState("");   // New state for last name
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -30,10 +31,10 @@ export function AuthPage() {
         if (error) throw error;
 
         if (data.user) {
-          // Insert into profiles table
+          // Insert into profiles table with first_name and last_name
           const { error: profileError } = await supabase
             .from("profiles")
-            .insert({ user_id: data.user.id, email: data.user.email!, full_name: fullName });
+            .insert({ user_id: data.user.id, email: data.user.email!, first_name: firstName, last_name: lastName });
           if (profileError) throw profileError;
         }
 
@@ -67,16 +68,29 @@ export function AuthPage() {
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4"> {/* Use grid for first/last name */}
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
             )}
             <div className="space-y-2">
