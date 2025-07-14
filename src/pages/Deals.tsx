@@ -155,7 +155,7 @@ export function Deals() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="title">Title *</Label>
                   <Input
@@ -187,7 +187,7 @@ export function Deals() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="stage">Stage *</Label>
                   <Select
@@ -228,7 +228,7 @@ export function Deals() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="assigned_to">Assigned To</Label>
                   <Select
@@ -311,53 +311,55 @@ export function Deals() {
           <CardTitle>All Deals ({filteredDeals.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Stage</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Assigned To</TableHead>
-                <TableHead>Close Date</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDeals.map((deal) => (
-                <TableRow key={deal.id} className="hover:bg-muted/50 transition-smooth">
-                  <TableCell className="font-medium">{deal.title}</TableCell>
-                  <TableCell>${deal.value.toLocaleString()}</TableCell>
-                  <TableCell>{deal.stage}</TableCell>
-                  <TableCell>{deal.contact?.name || "-"}</TableCell>
-                  <TableCell>{deal.assigned_user?.full_name || "-"}</TableCell>
-                  <TableCell>{deal.expected_close_date ? format(new Date(deal.expected_close_date), "PPP") : "-"}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => handleEdit(deal)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(deal.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          <div className="overflow-x-auto"> {/* Added overflow-x-auto */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Stage</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Assigned To</TableHead>
+                  <TableHead>Close Date</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredDeals.map((deal) => (
+                  <TableRow key={deal.id} className="hover:bg-muted/50 transition-smooth">
+                    <TableCell className="font-medium">{deal.title}</TableCell>
+                    <TableCell>${deal.value.toLocaleString()}</TableCell>
+                    <TableCell>{deal.stage}</TableCell>
+                    <TableCell>{deal.contact?.name || "-"}</TableCell>
+                    <TableCell>{deal.assigned_user?.full_name || "-"}</TableCell>
+                    <TableCell>{deal.expected_close_date ? format(new Date(deal.expected_close_date), "PPP") : "-"}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleEdit(deal)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(deal.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {filteredDeals.length === 0 && (
             <div className="text-center py-8">

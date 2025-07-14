@@ -185,7 +185,7 @@ export function Tasks() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="status">Status *</Label>
                   <Select
@@ -226,7 +226,7 @@ export function Tasks() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="assigned_to">Assigned To</Label>
                   <Select
@@ -273,7 +273,7 @@ export function Tasks() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="related_contact_id">Related Contact</Label>
                   <Select
@@ -350,55 +350,57 @@ export function Tasks() {
           <CardTitle>All Tasks ({filteredTasks.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Assigned To</TableHead>
-                <TableHead>Related Contact</TableHead>
-                <TableHead>Related Deal</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTasks.map((task) => (
-                <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                  <TableCell className="font-medium">{task.title}</TableCell>
-                  <TableCell>{task.status}</TableCell>
-                  <TableCell>{task.priority}</TableCell>
-                  <TableCell>{task.assigned_user?.full_name || "-"}</TableCell>
-                  <TableCell>{task.related_contact?.name || "-"}</TableCell>
-                  <TableCell>{task.related_deal?.title || "-"}</TableCell>
-                  <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => handleEdit(task)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(task.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          <div className="overflow-x-auto"> {/* Added overflow-x-auto */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Assigned To</TableHead>
+                  <TableHead>Related Contact</TableHead>
+                  <TableHead>Related Deal</TableHead>
+                  <TableHead>Due Date</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredTasks.map((task) => (
+                  <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
+                    <TableCell className="font-medium">{task.title}</TableCell>
+                    <TableCell>{task.status}</TableCell>
+                    <TableCell>{task.priority}</TableCell>
+                    <TableCell>{task.assigned_user?.full_name || "-"}</TableCell>
+                    <TableCell>{task.related_contact?.name || "-"}</TableCell>
+                    <TableCell>{task.related_deal?.title || "-"}</TableCell>
+                    <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleEdit(task)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(task.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {filteredTasks.length === 0 && (
             <div className="text-center py-8">
