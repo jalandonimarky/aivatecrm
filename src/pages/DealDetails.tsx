@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils"; // Import cn for conditional classnames
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
+import { DealGanttChart } from "@/components/deals/DealGanttChart"; // Import the new Gantt chart component
 import type { DealNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -314,6 +315,9 @@ export function DealDetails() {
           )}
         </CardContent>
       </Card>
+
+      {/* Task Timeline (Gantt Chart) */}
+      <DealGanttChart tasks={relatedTasks} profiles={profiles} />
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

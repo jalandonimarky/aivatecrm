@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote } from "@/types/crm"; // Import DealNote
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote } from "@/types/crm";
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]); // Corrected: Removed extra parenthesis
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     paidDealsValue: 0,
@@ -650,6 +650,6 @@ export function useCRMData() {
     createDealNote,
     updateDealNote,
     deleteDealNote,
-    getFullName,
+    getFullName, // Export getFullName
   };
 }
