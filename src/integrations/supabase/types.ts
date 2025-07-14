@@ -133,8 +133,8 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
-          first_name: string 
-          last_name: string 
+          first_name: string // Added this line
+          last_name: string // Added this line
           id: string
           role: string
           updated_at: string
@@ -144,8 +144,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email: string
-          first_name: string 
-          last_name: string 
+          first_name?: string // Added this line
+          last_name?: string // Added this line
           id?: string
           role?: string
           updated_at?: string
@@ -155,14 +155,22 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
-          first_name?: string 
-          last_name?: string 
+          first_name?: string // Added this line
+          last_name?: string // Added this line
           id?: string
           role?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_user_id_fkey" // Ensure this foreign key is present
+            columns: ["user_id"]
+            isOneToOne: true // Assuming a one-to-one relationship with auth.users
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
