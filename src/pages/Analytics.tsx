@@ -15,12 +15,12 @@ export function Analytics() {
   // Helper functions for colors (consistent with existing design)
   const getStageColor = (stage: Deal['stage']) => {
     switch (stage) {
-      case 'paid': return "hsl(var(--success))"; // Updated stage
-      case 'done_completed': return "hsl(var(--destructive))"; // Updated stage
-      case 'lead': return "hsl(var(--muted-foreground))"; // Updated stage
-      case 'in_development': return "hsl(var(--accent))"; // Updated stage
+      case 'paid': return "hsl(var(--success))";
+      case 'done_completed': return "hsl(var(--destructive))";
+      case 'lead': return "hsl(var(--muted-foreground))";
+      case 'in_development': return "hsl(var(--accent))";
       case 'proposal': return "hsl(var(--primary))";
-      case 'discovery_call': return "hsl(var(--warning))"; // Updated stage
+      case 'discovery_call': return "hsl(var(--warning))";
       default: return "hsl(var(--foreground))";
     }
   };
@@ -41,7 +41,7 @@ export function Analytics() {
     const monthlyRevenue: { [key: string]: number } = {};
 
     deals.forEach(deal => {
-      if (deal.stage === 'paid' && deal.created_at) { // Updated stage
+      if (deal.stage === 'paid' && deal.created_at) {
         const date = parseISO(deal.created_at);
         const monthYear = format(startOfMonth(date), 'MMM yyyy');
         monthlyRevenue[monthYear] = (monthlyRevenue[monthYear] || 0) + deal.value;
@@ -58,13 +58,18 @@ export function Analytics() {
     if (!deals.length) return [];
     const stageCounts: { [key: string]: number } = {};
     deals.forEach(deal => {
-      stageCounts[deal.stage] = (stageCounts[deal.stage] || 0) + 1;
+      // Ensure deal.stage is a string, provide a fallback if null/undefined
+      const currentStage = (deal.stage || 'unknown_stage') as Deal['stage'];
+      stageCounts[currentStage] = (stageCounts[currentStage] || 0) + 1;
     });
-    return Object.keys(stageCounts).map(stage => ({
-      name: stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Format for display
-      count: stageCounts[stage],
-      color: getStageColor(stage as Deal['stage'])
-    }));
+    return Object.keys(stageCounts).map(stageKey => {
+      const stage = stageKey as Deal['stage']; // Cast to Deal['stage'] for type safety
+      return {
+        name: stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        count: stageCounts[stage],
+        color: getStageColor(stage)
+      };
+    });
   }, [deals]);
 
   const tasksByStatusData = useMemo(() => {
@@ -114,11 +119,11 @@ export function Analytics() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div> {/* Added div for consistency */}
+        <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Analytics
           </h1>
-          <p className="text-muted-foreground"> {/* Removed mb-6 */}
+          <p className="text-muted-foreground">
             Gain insights into your CRM data.
           </p>
         </div>
@@ -134,11 +139,11 @@ export function Analytics() {
 
   return (
     <div className="space-y-6">
-      <div> {/* Added div for consistency */}
+      <div>
         <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           Analytics
         </h1>
-        <p className="text-muted-foreground"> {/* Removed mb-6 */}
+        <p className="text-muted-foreground">
           Gain insights into your CRM data.
         </p>
       </div>
