@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-// Removed import for UserProfileCard
 import type { Profile } from "@/types/crm";
 
 // Zod schema for profile updates
@@ -52,7 +51,7 @@ export function Settings() {
   });
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchOrCreateUserProfile = async () => {
       setLoading(true);
       const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -67,11 +66,12 @@ export function Settings() {
       }
 
       if (user) {
+        // Use .maybeSingle() to handle cases where no profile exists or multiple exist (though the latter shouldn't happen with correct setup)
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle(); // Changed to maybeSingle()
 
         if (profileError) {
           toast({
@@ -80,18 +80,50 @@ export function Settings() {
             variant: "destructive",
           });
         } else if (profileData) {
+          // Profile found, set it
           setUserProfile(profileData as Profile);
           profileForm.reset({
             firstName: profileData.first_name || "",
             lastName: profileData.last_name || "",
             email: profileData.email,
           });
+        } else {
+          // No profile found, create one
+          const { data: newProfileData, error: createProfileError } = await supabase
+            .from("profiles")
+            .insert({ 
+              user_id: user.id, 
+              email: user.email || "", // Use user's email, fallback to empty string
+              first_name: user.user_metadata?.first_name || "",
+              last_name: user.user_metadata?.last_name || "",
+            })
+            .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
+            .single(); // Use single here as we expect one new row
+
+          if (createProfileError) {
+            toast({
+              title: "Error creating profile",
+              description: createProfileError.message,
+              variant: "destructive",
+            });
+          } else if (newProfileData) {
+            setUserProfile(newProfileData as Profile);
+            profileForm.reset({
+              firstName: newProfileData.first_name || "",
+              lastName: newProfileData.last_name || "",
+              email: newProfileData.email,
+            });
+            toast({
+              title: "Profile Created",
+              description: "A new profile has been created for your account.",
+            });
+          }
         }
       }
       setLoading(false);
     };
 
-    fetchUserProfile();
+    fetchOrCreateUserProfile();
   }, [toast, profileForm]);
 
   const handleProfileSubmit = async (values: z.infer<typeof profileSchema>) => {
@@ -130,13 +162,13 @@ export function Settings() {
         .from("profiles")
         .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle(); // Changed to maybeSingle() for consistency
       if (refetchError) throw refetchError;
       setUserProfile(profileData as Profile);
       profileForm.reset({
-        firstName: profileData.first_name || "",
-        lastName: profileData.last_name || "",
-        email: profileData.email,
+        firstName: profileData?.first_name || "",
+        lastName: profileData?.last_name || "",
+        email: profileData?.email || "",
       });
 
     } catch (error: any) {
@@ -212,8 +244,6 @@ export function Settings() {
       <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
         Settings
       </h1>
-
-      {/* Removed UserProfileCard from here */}
 
       {/* Profile Settings Card */}
       <Card className="bg-gradient-card border-border/50">
