@@ -63,7 +63,7 @@ export interface DashboardStats {
   lostDeals: number;
   pipelineValue: number;
   totalContacts: number;
-  totalTasks: number;
   completedTasks: number;
   overdueTasks: number;
+  totalTasks: number;
 }

@@ -27,6 +27,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCRMData } from "@/hooks/useCRMData";
 import type { Task } from "@/types/crm";
+import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge"; // Import new badge component
+import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge"; // Import new badge component
 
 interface TaskFormData {
   title: string;
@@ -368,8 +370,12 @@ export function Tasks() {
                 {filteredTasks.map((task) => (
                   <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
                     <TableCell className="font-medium">{task.title}</TableCell>
-                    <TableCell>{task.status}</TableCell>
-                    <TableCell>{task.priority}</TableCell>
+                    <TableCell>
+                      <TaskStatusBadge status={task.status} />
+                    </TableCell>
+                    <TableCell>
+                      <TaskPriorityBadge priority={task.priority} />
+                    </TableCell>
                     <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
                     <TableCell>{task.related_contact?.name || "-"}</TableCell>
                     <TableCell>{task.related_deal?.title || "-"}</TableCell>
