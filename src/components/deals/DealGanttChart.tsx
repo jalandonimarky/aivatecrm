@@ -97,16 +97,18 @@ export function DealGanttChart({ tasks, profiles }: DealGanttChartProps) {
 
   // Custom Bar for Gantt simulation
   const CustomBar = (props: any) => {
-    const { x, y, width, height, fill, payload } = props;
+    const { x, y, width, height, fill, payload, containerWidth, margin } = props; // Destructure margin
     const { startDate, duration } = payload;
 
-    // Calculate the actual start X position based on the earliest date in the dataset
-    // This is crucial for the "offset" logic
+    // Provide default values for margin if it's undefined
+    const effectiveMargin = margin || { left: 0, right: 0 };
+
     const minStartDate = chartData.length > 0 ? Math.min(...chartData.map(d => d.startDate)) : 0;
-    const chartWidth = props.containerWidth - props.margin.left - props.margin.right;
+    // Use effectiveMargin
+    const chartWidth = containerWidth - effectiveMargin.left - effectiveMargin.right;
     const scaleX = (value: number) => (value - minStartDate) / (Math.max(...chartData.map(d => d.startDate + d.duration)) - minStartDate) * chartWidth;
 
-    const barStartX = x; // This 'x' is the start of the bar as calculated by Recharts for the 'duration'
+    const barStartX = x;
     const barWidth = width;
 
     return (
