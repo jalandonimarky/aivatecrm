@@ -198,7 +198,7 @@ export function Analytics() {
                   fill="#8884d8"
                   dataKey="count"
                   labelLine={false}
-                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`} {/* Simplified label */}
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                 >
                   {tasksByStatusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
