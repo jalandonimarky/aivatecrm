@@ -48,7 +48,7 @@ export function Deals() {
     title: "",
     description: "",
     value: 0,
-    stage: "prospect",
+    stage: "lead", // Default to new 'lead' stage
     tier: null, // Initialize with null
     contact_id: "unassigned", // Initialize with "unassigned"
     assigned_to: "unassigned", // Initialize with "unassigned"
@@ -56,12 +56,12 @@ export function Deals() {
   });
 
   const dealStages: { value: Deal['stage'], label: string }[] = [ // Explicitly type dealStages
-    { value: "prospect", label: "Prospect" },
-    { value: "qualified", label: "Qualified" },
+    { value: "lead", label: "Lead" },
+    { value: "in_development", label: "In Development" },
     { value: "proposal", label: "Proposal" },
-    { value: "negotiation", label: "Negotiation" },
-    { value: "won", label: "Won" },
-    { value: "lost", label: "Lost" },
+    { value: "discovery_call", label: "Discovery Call" },
+    { value: "paid", label: "Paid" },
+    { value: "done_completed", label: "Done Completed" },
   ];
 
   const dealTiers: string[] = [
@@ -110,7 +110,7 @@ export function Deals() {
       title: "",
       description: "",
       value: 0,
-      stage: "prospect",
+      stage: "lead", // Reset to new 'lead' stage
       tier: null, // Reset to null
       contact_id: "unassigned", // Reset to "unassigned"
       assigned_to: "unassigned", // Reset to "unassigned"

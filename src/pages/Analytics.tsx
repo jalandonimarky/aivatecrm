@@ -15,12 +15,12 @@ export function Analytics() {
   // Helper functions for colors (consistent with existing design)
   const getStageColor = (stage: Deal['stage']) => {
     switch (stage) {
-      case 'won': return "hsl(var(--success))";
-      case 'lost': return "hsl(var(--destructive))";
-      case 'prospect': return "hsl(var(--muted-foreground))";
-      case 'qualified': return "hsl(var(--accent))";
+      case 'paid': return "hsl(var(--success))"; // Updated stage
+      case 'done_completed': return "hsl(var(--destructive))"; // Updated stage
+      case 'lead': return "hsl(var(--muted-foreground))"; // Updated stage
+      case 'in_development': return "hsl(var(--accent))"; // Updated stage
       case 'proposal': return "hsl(var(--primary))";
-      case 'negotiation': return "hsl(var(--warning))";
+      case 'discovery_call': return "hsl(var(--warning))"; // Updated stage
       default: return "hsl(var(--foreground))";
     }
   };
@@ -41,7 +41,7 @@ export function Analytics() {
     const monthlyRevenue: { [key: string]: number } = {};
 
     deals.forEach(deal => {
-      if (deal.stage === 'won' && deal.created_at) {
+      if (deal.stage === 'paid' && deal.created_at) { // Updated stage
         const date = parseISO(deal.created_at);
         const monthYear = format(startOfMonth(date), 'MMM yyyy');
         monthlyRevenue[monthYear] = (monthlyRevenue[monthYear] || 0) + deal.value;
@@ -61,7 +61,7 @@ export function Analytics() {
       stageCounts[deal.stage] = (stageCounts[deal.stage] || 0) + 1;
     });
     return Object.keys(stageCounts).map(stage => ({
-      name: stage.charAt(0).toUpperCase() + stage.slice(1),
+      name: stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Format for display
       count: stageCounts[stage],
       color: getStageColor(stage as Deal['stage'])
     }));

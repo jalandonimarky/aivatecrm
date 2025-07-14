@@ -28,7 +28,7 @@ export interface Deal {
   title: string;
   description?: string;
   value: number;
-  stage: 'prospect' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost';
+  stage: 'lead' | 'in_development' | 'proposal' | 'discovery_call' | 'paid' | 'done_completed'; // Updated stages
   tier?: string; // Added tier
   contact_id?: string;
   assigned_to?: string;

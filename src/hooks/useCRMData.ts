@@ -92,9 +92,9 @@ export function useCRMData() {
   };
 
   const calculateStats = (dealsData: Deal[], tasksData: Task[], contactsData: Contact[]) => {
-    const wonDeals = dealsData.filter(deal => deal.stage === 'won');
-    const lostDeals = dealsData.filter(deal => deal.stage === 'lost');
-    const pipelineDeals = dealsData.filter(deal => !['won', 'lost'].includes(deal.stage));
+    const wonDeals = dealsData.filter(deal => deal.stage === 'paid'); // Updated stage
+    const lostDeals = dealsData.filter(deal => deal.stage === 'done_completed'); // Updated stage
+    const pipelineDeals = dealsData.filter(deal => !['paid', 'done_completed'].includes(deal.stage)); // Updated stages
     const completedTasks = tasksData.filter(task => task.status === 'completed');
     const overdueTasks = tasksData.filter(task => 
       task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
