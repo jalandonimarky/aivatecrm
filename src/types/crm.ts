@@ -49,6 +49,7 @@ export interface Deal {
   contact?: Contact;
   assigned_user?: Profile;
   notes?: DealNote[]; // Added notes array
+  tasks?: Task[]; // Added tasks array
 }
 
 export interface Task {

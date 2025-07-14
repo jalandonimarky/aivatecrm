@@ -70,7 +70,8 @@ export function useCRMData() {
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email))
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title))
         `)
         .order("created_at", { ascending: false });
 
@@ -279,7 +280,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for deals
-  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes'>) => {
+  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes' | 'tasks'>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -288,7 +289,8 @@ export function useCRMData() {
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email))
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title))
         `)
         .single();
 
@@ -314,7 +316,7 @@ export function useCRMData() {
     }
   };
 
-  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes'>>) => {
+  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes' | 'tasks'>>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -324,7 +326,8 @@ export function useCRMData() {
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email))
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title))
         `)
         .single();
 
@@ -401,6 +404,13 @@ export function useCRMData() {
         calculateStats(deals, updatedTasks, contacts);
         return updatedTasks;
       });
+      // Also update the specific deal in the deals state with the new task if it's related
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === data.related_deal_id 
+          ? { ...deal, tasks: [...(deal.tasks || []), data as Task] }
+          : deal
+      ));
+
       toast({
         title: "Task created",
         description: "New task has been added successfully.",
@@ -439,6 +449,18 @@ export function useCRMData() {
         calculateStats(deals, updatedTasks, contacts);
         return updatedTasks;
       });
+      // Also update the specific deal in the deals state with the updated task if it's related
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === data.related_deal_id 
+          ? { 
+              ...deal, 
+              tasks: (deal.tasks || []).map(task => 
+                task.id === id ? (data as Task) : task
+              )
+            }
+          : deal
+      ));
+
       toast({
         title: "Task updated",
         description: "Task has been updated successfully.",
@@ -468,6 +490,16 @@ export function useCRMData() {
         calculateStats(deals, updatedTasks, contacts);
         return updatedTasks;
       });
+      // Also remove the task from the specific deal in the deals state if it was related
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.tasks?.some(task => task.id === id)
+          ? { 
+              ...deal, 
+              tasks: (deal.tasks || []).filter(task => task.id !== id)
+            }
+          : deal
+      ));
+
       toast({
         title: "Task deleted",
         description: "Task has been removed successfully.",
@@ -482,7 +514,7 @@ export function useCRMData() {
     }
   };
 
-  // New: CRUD operations for deal notes
+  // CRUD operations for deal notes
   const createDealNote = async (dealId: string, noteType: 'business' | 'tech', content: string) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -612,9 +644,9 @@ export function useCRMData() {
     createDeal,
     updateDeal,
     deleteDeal,
-    createTask, // Now defined
-    updateTask, // Now defined
-    deleteTask, // Now defined
+    createTask,
+    updateTask,
+    deleteTask,
     createDealNote,
     updateDealNote,
     deleteDealNote,
