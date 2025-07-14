@@ -10,15 +10,16 @@ export function useCRMData() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
-    wonDeals: 0,
-    lostDeals: 0,
+    paidDealsValue: 0, // Renamed from wonDeals
+    doneCompletedDealsValue: 0, // Renamed from lostDeals
+    cancelledDealsValue: 0, // Added for dashboard
     pipelineValue: 0,
     totalContacts: 0,
     completedTasks: 0,
     overdueTasks: 0,
     totalTasks: 0,
-    totalOneOffProjects: 0, // Initialize new stats
-    totalSystemDevelopment: 0, // Initialize new stats
+    totalOneOffProjects: 0,
+    totalSystemDevelopment: 0,
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -92,9 +93,10 @@ export function useCRMData() {
   };
 
   const calculateStats = (dealsData: Deal[], tasksData: Task[], contactsData: Contact[]) => {
-    const wonDeals = dealsData.filter(deal => deal.stage === 'paid'); // Updated stage
-    const lostDeals = dealsData.filter(deal => deal.stage === 'done_completed'); // Updated stage
-    const pipelineDeals = dealsData.filter(deal => !['paid', 'done_completed'].includes(deal.stage)); // Updated stages
+    const paidDeals = dealsData.filter(deal => deal.stage === 'paid');
+    const doneCompletedDeals = dealsData.filter(deal => deal.stage === 'done_completed');
+    const cancelledDeals = dealsData.filter(deal => deal.stage === 'cancelled'); // New filter for cancelled deals
+    const pipelineDeals = dealsData.filter(deal => !['paid', 'done_completed', 'cancelled'].includes(deal.stage)); // Exclude cancelled from pipeline
     const completedTasks = tasksData.filter(task => task.status === 'completed');
     const overdueTasks = tasksData.filter(task => 
       task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
@@ -104,16 +106,17 @@ export function useCRMData() {
     const systemDevelopment = dealsData.filter(deal => deal.tier?.startsWith('System Development'));
 
     setStats({
-      totalRevenue: wonDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
-      wonDeals: wonDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
-      lostDeals: lostDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      totalRevenue: paidDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      paidDealsValue: paidDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      doneCompletedDealsValue: doneCompletedDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      cancelledDealsValue: cancelledDeals.reduce((sum, deal) => sum + (deal.value || 0), 0), // Calculate value for cancelled deals
       pipelineValue: pipelineDeals.reduce((sum, deal) => sum + (deal.value || 0), 0),
       totalContacts: contactsData.length,
       totalTasks: tasksData.length,
       completedTasks: completedTasks.length,
       overdueTasks: overdueTasks.length,
-      totalOneOffProjects: oneOffProjects.length, // Set new stat
-      totalSystemDevelopment: systemDevelopment.length, // Set new stat
+      totalOneOffProjects: oneOffProjects.length,
+      totalSystemDevelopment: systemDevelopment.length,
     });
   };
 

@@ -62,6 +62,7 @@ export function Deals() {
     { value: "discovery_call", label: "Discovery Call" },
     { value: "paid", label: "Paid" },
     { value: "done_completed", label: "Done Completed" },
+    { value: "cancelled", label: "Cancelled" }, // Added new stage
   ];
 
   const dealTiers: string[] = [

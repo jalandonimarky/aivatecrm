@@ -1,4 +1,4 @@
-import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle, Package, Code } from "lucide-react"; // Import new icons
+import { DollarSign, Users, Briefcase, CheckSquare, TrendingUp, AlertCircle, Package, Code, XCircle } from "lucide-react"; // Import XCircle for cancelled deals
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -39,16 +39,16 @@ export function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Total Revenue"
-          value={`$${stats.totalRevenue.toLocaleString()}`}
+          title="Paid Deals" // Updated title
+          value={`$${stats.paidDealsValue.toLocaleString()}`} // Updated value
           icon={DollarSign}
           change={{ value: 12.5, trend: "up" }}
         />
         <StatsCard
-          title="Active Contacts"
-          value={stats.totalContacts}
-          icon={Users}
-          change={{ value: 8.2, trend: "up" }}
+          title="Cancelled Deals" // New stat card
+          value={`$${stats.cancelledDealsValue.toLocaleString()}`} // New value
+          icon={XCircle} // New icon
+          change={{ value: 3.0, trend: "up" }} // Example change
         />
         <StatsCard
           title="Pipeline Value"
@@ -56,6 +56,13 @@ export function Dashboard() {
           icon={TrendingUp}
           change={{ value: 15.3, trend: "up" }}
         />
+        <StatsCard
+          title="Active Contacts" // Moved active contacts here
+          value={stats.totalContacts}
+          icon={Users}
+          change={{ value: 8.2, trend: "up" }}
+        />
+        {/* Original Pending Tasks card, now shifted */}
         <StatsCard
           title="Pending Tasks"
           value={stats.totalTasks - stats.completedTasks}
@@ -82,8 +89,8 @@ export function Dashboard() {
         {/* Revenue Chart */}
         <div className="lg:col-span-2">
           <RevenueChart
-            wonDeals={stats.wonDeals}
-            lostDeals={stats.lostDeals}
+            wonDeals={stats.paidDealsValue} // Updated to paidDealsValue
+            lostDeals={stats.doneCompletedDealsValue} // Updated to doneCompletedDealsValue
             pipelineValue={stats.pipelineValue}
           />
         </div>

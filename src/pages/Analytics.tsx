@@ -21,6 +21,7 @@ export function Analytics() {
       case 'in_development': return "hsl(var(--accent))";
       case 'proposal': return "hsl(var(--primary))";
       case 'discovery_call': return "hsl(var(--warning))";
+      case 'cancelled': return "hsl(var(--secondary))"; // New color for cancelled deals
       default: return "hsl(var(--foreground))";
     }
   };

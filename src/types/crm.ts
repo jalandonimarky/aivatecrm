@@ -28,7 +28,7 @@ export interface Deal {
   title: string;
   description?: string;
   value: number;
-  stage: 'lead' | 'in_development' | 'proposal' | 'discovery_call' | 'paid' | 'done_completed'; // Updated stages
+  stage: 'lead' | 'in_development' | 'proposal' | 'discovery_call' | 'paid' | 'done_completed' | 'cancelled'; // Added 'cancelled' stage
   tier?: string; // Added tier
   contact_id?: string;
   assigned_to?: string;
@@ -60,13 +60,14 @@ export interface Task {
 
 export interface DashboardStats {
   totalRevenue: number;
-  wonDeals: number;
-  lostDeals: number;
+  paidDealsValue: number; // Renamed from wonDeals
+  doneCompletedDealsValue: number; // Renamed from lostDeals
+  cancelledDealsValue: number; // Added for dashboard
   pipelineValue: number;
   totalContacts: number;
   completedTasks: number;
   overdueTasks: number;
   totalTasks: number;
-  totalOneOffProjects: number; // Added for dashboard
-  totalSystemDevelopment: number; // Added for dashboard
+  totalOneOffProjects: number;
+  totalSystemDevelopment: number;
 }
