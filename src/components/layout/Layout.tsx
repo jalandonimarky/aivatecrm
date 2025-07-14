@@ -1,11 +1,8 @@
 import { AppSidebar } from "./Sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Outlet } from "react-router-dom"; // Import Outlet
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-export function Layout({ children }: LayoutProps) {
+export function Layout() { // Removed LayoutProps and children prop
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
@@ -18,7 +15,7 @@ export function Layout({ children }: LayoutProps) {
             </div>
           </header>
           <main className="flex-1 p-6 bg-background">
-            {children}
+            <Outlet /> {/* Render Outlet here */}
           </main>
         </div>
       </div>
