@@ -29,7 +29,7 @@ export function Layout() {
           <header className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center px-6 justify-between"> {/* Added justify-between */}
             <div className="flex items-center">
               {/* Removed SidebarTrigger */}
-              <h1 className="text-lg font-semibold text-foreground">CRM Dashboard</h1>
+              {/* Removed h1 with "CRM Dashboard" */}
             </div>
             {currentUserProfile && <UserProfileCard profile={currentUserProfile} />} {/* Display UserProfileCard */}
           </header>
