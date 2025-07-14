@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils"; // Import cn for conditional classnames
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import { DealGanttChart } from "@/components/deals/DealGanttChart"; // Import the new Gantt chart component
+import { DealLifecycleChart } from "@/components/deals/DealLifecycleChart"; // Import the new DealLifecycleChart component
 import type { DealNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -316,8 +316,8 @@ export function DealDetails() {
         </CardContent>
       </Card>
 
-      {/* Task Timeline (Gantt Chart) */}
-      <DealGanttChart tasks={relatedTasks} profiles={profiles} />
+      {/* Deal Lifecycle Chart */}
+      <DealLifecycleChart deals={[deal]} profiles={profiles} />
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -709,7 +709,6 @@ export function DealDetails() {
                     <SelectValue placeholder="Select a deal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">None</SelectItem>
                     {deals.map(d => (
                       <SelectItem key={d.id} value={d.id}>
                         {d.title} (${d.value.toLocaleString()})
