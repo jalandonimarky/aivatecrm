@@ -48,8 +48,8 @@ export function Deals() {
     description: "",
     value: 0,
     stage: "prospect",
-    contact_id: "",
-    assigned_to: "",
+    contact_id: "unassigned", // Initialize with "unassigned"
+    assigned_to: "unassigned", // Initialize with "unassigned"
     expected_close_date: undefined,
   });
 
@@ -76,8 +76,8 @@ export function Deals() {
         ...formData,
         value: Number(formData.value),
         expected_close_date: formData.expected_close_date ? format(formData.expected_close_date, "yyyy-MM-dd") : null,
-        contact_id: formData.contact_id || null,
-        assigned_to: formData.assigned_to || null,
+        contact_id: formData.contact_id === "unassigned" ? null : formData.contact_id, // Convert "unassigned" to null
+        assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to, // Convert "unassigned" to null
       };
 
       if (editingDeal) {
@@ -98,8 +98,8 @@ export function Deals() {
       description: "",
       value: 0,
       stage: "prospect",
-      contact_id: "",
-      assigned_to: "",
+      contact_id: "unassigned", // Reset to "unassigned"
+      assigned_to: "unassigned", // Reset to "unassigned"
       expected_close_date: undefined,
     });
     setEditingDeal(null);
@@ -112,8 +112,8 @@ export function Deals() {
       description: deal.description || "",
       value: deal.value,
       stage: deal.stage,
-      contact_id: deal.contact_id || "",
-      assigned_to: deal.assigned_to || "",
+      contact_id: deal.contact_id || "unassigned", // Set to "unassigned" if null
+      assigned_to: deal.assigned_to || "unassigned", // Set to "unassigned" if null
       expected_close_date: deal.expected_close_date ? new Date(deal.expected_close_date) : undefined,
     });
     setDialogOpen(true);
@@ -217,7 +217,7 @@ export function Deals() {
                       <SelectValue placeholder="Select a contact" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="unassigned">None</SelectItem>
                       {contacts.map(contact => (
                         <SelectItem key={contact.id} value={contact.id}>
                           {contact.name} ({contact.company})
@@ -239,7 +239,7 @@ export function Deals() {
                       <SelectValue placeholder="Select a user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="unassigned">None</SelectItem>
                       {profiles.map(profile => (
                         <SelectItem key={profile.id} value={profile.id}>
                           {profile.full_name}

@@ -49,9 +49,9 @@ export function Tasks() {
     description: "",
     status: "pending",
     priority: "medium",
-    assigned_to: "",
-    related_contact_id: "",
-    related_deal_id: "",
+    assigned_to: "unassigned", // Initialize with "unassigned"
+    related_contact_id: "unassigned", // Initialize with "unassigned"
+    related_deal_id: "unassigned", // Initialize with "unassigned"
     due_date: undefined,
   });
 
@@ -83,9 +83,9 @@ export function Tasks() {
       const dataToSubmit = {
         ...formData,
         due_date: formData.due_date ? format(formData.due_date, "yyyy-MM-dd") : null,
-        assigned_to: formData.assigned_to || null,
-        related_contact_id: formData.related_contact_id || null,
-        related_deal_id: formData.related_deal_id || null,
+        assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to, // Convert "unassigned" to null
+        related_contact_id: formData.related_contact_id === "unassigned" ? null : formData.related_contact_id, // Convert "unassigned" to null
+        related_deal_id: formData.related_deal_id === "unassigned" ? null : formData.related_deal_id, // Convert "unassigned" to null
       };
 
       if (editingTask) {
@@ -106,9 +106,9 @@ export function Tasks() {
       description: "",
       status: "pending",
       priority: "medium",
-      assigned_to: "",
-      related_contact_id: "",
-      related_deal_id: "",
+      assigned_to: "unassigned", // Reset to "unassigned"
+      related_contact_id: "unassigned", // Reset to "unassigned"
+      related_deal_id: "unassigned", // Reset to "unassigned"
       due_date: undefined,
     });
     setEditingTask(null);
@@ -121,9 +121,9 @@ export function Tasks() {
       description: task.description || "",
       status: task.status,
       priority: task.priority,
-      assigned_to: task.assigned_to || "",
-      related_contact_id: task.related_contact_id || "",
-      related_deal_id: task.related_deal_id || "",
+      assigned_to: task.assigned_to || "unassigned", // Set to "unassigned" if null
+      related_contact_id: task.related_contact_id || "unassigned", // Set to "unassigned" if null
+      related_deal_id: task.related_deal_id || "unassigned", // Set to "unassigned" if null
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setDialogOpen(true);
@@ -237,7 +237,7 @@ export function Tasks() {
                       <SelectValue placeholder="Select a user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="unassigned">None</SelectItem>
                       {profiles.map(profile => (
                         <SelectItem key={profile.id} value={profile.id}>
                           {profile.full_name}
@@ -284,7 +284,7 @@ export function Tasks() {
                       <SelectValue placeholder="Select a contact" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="unassigned">None</SelectItem>
                       {contacts.map(contact => (
                         <SelectItem key={contact.id} value={contact.id}>
                           {contact.name} ({contact.company})
@@ -303,7 +303,7 @@ export function Tasks() {
                       <SelectValue placeholder="Select a deal" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="unassigned">None</SelectItem>
                       {deals.map(deal => (
                         <SelectItem key={deal.id} value={deal.id}>
                           {deal.title} (${deal.value.toLocaleString()})
