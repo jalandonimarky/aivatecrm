@@ -27,16 +27,16 @@ export function AuthPage() {
           description: "Welcome back!",
         });
       } else {
-        // Client-side email domain validation
-        if (!email.endsWith('@aivate.net')) {
-          toast({
-            title: "Registration Error",
-            description: "Registration is restricted to @aivate.net email addresses.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
+        // Removed: Client-side email domain validation
+        // if (!email.endsWith('@aivate.net')) {
+        //   toast({
+        //     title: "Registration Error",
+        //     description: "Registration is restricted to @aivate.net email addresses.",
+        //     variant: "destructive",
+        //   });
+        //   setLoading(false);
+        //   return;
+        // }
 
         // Call the Edge Function for signup
         const { data, error: invokeError } = await supabase.functions.invoke('signup-validation', {
@@ -114,7 +114,7 @@ export function AuthPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@aivate.net"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
