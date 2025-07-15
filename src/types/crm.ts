@@ -26,7 +26,7 @@ export interface Contact {
 export interface DealNote {
   id: string;
   deal_id: string;
-  note_type: 'business' | 'tech';
+  note_type: 'business' | 'development'; // Changed 'tech' to 'development'
   content: string;
   created_at: string;
   created_by?: string;

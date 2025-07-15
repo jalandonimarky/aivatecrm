@@ -515,7 +515,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for deal notes
-  const createDealNote = async (dealId: string, noteType: 'business' | 'tech', content: string) => {
+  const createDealNote = async (dealId: string, noteType: 'business' | 'development', content: string) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;

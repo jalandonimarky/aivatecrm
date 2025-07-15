@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
+import { DealTimeline } from "@/components/deals/DealTimeline"; // Import DealTimeline
 import type { DealNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -52,14 +53,14 @@ export function DealDetails() {
   const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName } = useCRMData();
   const [deal, setDeal] = useState<any>(null);
   const [businessNoteContent, setBusinessNoteContent] = useState("");
-  const [techNoteContent, setTechNoteContent] = useState("");
+  const [developmentNoteContent, setDevelopmentNoteContent] = useState(""); // Renamed from techNoteContent
   const [isAddingBusinessNote, setIsAddingBusinessNote] = useState(false);
-  const [isAddingTechNote, setIsAddingTechNote] = useState(false);
+  const [isAddingDevelopmentNote, setIsAddingDevelopmentNote] = useState(false); // Renamed from isAddingTechNote
 
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<DealNote | null>(null);
   const [editNoteContent, setEditNoteContent] = useState("");
-  const [editNoteType, setEditNoteType] = useState<'business' | 'tech'>('business');
+  const [editNoteType, setEditNoteType] = useState<'business' | 'development'>('business'); // Updated type
 
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -98,7 +99,7 @@ export function DealDetails() {
     }
   }, [deals, id]);
 
-  const handleAddNote = async (noteType: 'business' | 'tech', content: string) => {
+  const handleAddNote = async (noteType: 'business' | 'development', content: string) => { // Updated type
     if (!id || !content.trim()) return;
 
     try {
@@ -107,8 +108,8 @@ export function DealDetails() {
         setBusinessNoteContent("");
         setIsAddingBusinessNote(false);
       } else {
-        setTechNoteContent("");
-        setIsAddingTechNote(false);
+        setDevelopmentNoteContent(""); // Updated state
+        setIsAddingDevelopmentNote(false); // Updated state
       }
     } catch (error) {
       // Error handled in useCRMData hook
@@ -247,7 +248,7 @@ export function DealDetails() {
     parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime()
   );
   const businessNotes = sortedNotes.filter((note: DealNote) => note.note_type === 'business');
-  const techNotes = sortedNotes.filter((note: DealNote) => note.note_type === 'tech');
+  const developmentNotes = sortedNotes.filter((note: DealNote) => note.note_type === 'development'); // Updated filter
 
   const relatedTasks = (deal.tasks || []).sort((a: Task, b: Task) => 
     (a.due_date ? parseISO(a.due_date).getTime() : Infinity) - (b.due_date ? parseISO(b.due_date).getTime() : Infinity)
@@ -315,6 +316,9 @@ export function DealDetails() {
         </CardContent>
       </Card>
 
+      {/* Project Timeline Section */}
+      <DealTimeline deal={deal} />
+
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Business Notes */}
@@ -379,14 +383,14 @@ export function DealDetails() {
           </CardContent>
         </Card>
 
-        {/* Tech Notes */}
+        {/* Development Notes */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Tech Notes</CardTitle>
+            <CardTitle className="text-lg font-semibold">Development Notes</CardTitle> {/* Renamed title */}
           </CardHeader>
           <CardContent className="space-y-4">
-            {techNotes.length === 0 && <p className="text-muted-foreground text-sm">No tech notes yet.</p>}
-            {techNotes.map((note: DealNote) => (
+            {developmentNotes.length === 0 && <p className="text-muted-foreground text-sm">No development notes yet.</p>}
+            {developmentNotes.map((note: DealNote) => (
               <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
                 <div>
                   <p className="text-sm text-foreground">{note.content}</p>
@@ -417,24 +421,24 @@ export function DealDetails() {
               </div>
             ))}
             <div className="mt-4">
-              {isAddingTechNote ? (
+              {isAddingDevelopmentNote ? (
                 <div className="space-y-2">
-                  <Label htmlFor="tech-note-content">Add Tech Note</Label>
+                  <Label htmlFor="development-note-content">Add Development Note</Label> {/* Renamed label */}
                   <Textarea
-                    id="tech-note-content"
-                    value={techNoteContent}
-                    onChange={(e) => setTechNoteContent(prev => e.target.value)}
-                    placeholder="Type your technical note here..."
+                    id="development-note-content"
+                    value={developmentNoteContent}
+                    onChange={(e) => setDevelopmentNoteContent(e.target.value)} // Updated state
+                    placeholder="Type your development note here..."
                     rows={3}
                   />
                   <div className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsAddingTechNote(false)}>Cancel</Button>
-                    <Button onClick={() => handleAddNote('tech', techNoteContent)}>Add Note</Button>
+                    <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(false)}>Cancel</Button> {/* Updated state */}
+                    <Button onClick={() => handleAddNote('development', developmentNoteContent)}>Add Note</Button> {/* Updated type and state */}
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingTechNote(true)} className="w-full">
-                  <Plus className="w-4 h-4 mr-2" /> Add Tech Note
+                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full"> {/* Updated state */}
+                  <Plus className="w-4 h-4 mr-2" /> Add Development Note {/* Renamed button text */}
                 </Button>
               )}
             </div>
@@ -539,11 +543,11 @@ export function DealDetails() {
               <select
                 id="edit-note-type"
                 value={editNoteType}
-                onChange={(e) => setEditNoteType(e.target.value as 'business' | 'tech')}
+                onChange={(e) => setEditNoteType(e.target.value as 'business' | 'development')} // Updated type
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="business">Business</option>
-                <option value="tech">Tech</option>
+                <option value="development">Development</option> {/* Updated option */}
               </select>
             </div>
           </div>
