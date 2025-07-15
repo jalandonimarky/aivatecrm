@@ -16,10 +16,37 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("Rally Trigger received payload:", payload);
 
-    // In a real scenario, you would dispatch this payload to your webhook service here.
-    // Example: fetch('YOUR_WEBHOOK_URL', { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+    const zapierWebhookUrl = Deno.env.get('ZAPIER_WEBHOOK_URL');
 
-    return new Response(JSON.stringify({ message: 'Rally data received and processed by trigger.', data: payload }), {
+    if (!zapierWebhookUrl) {
+      console.error('ZAPIER_WEBHOOK_URL environment variable is not set.');
+      return new Response(JSON.stringify({ error: 'Server configuration error: Zapier webhook URL missing.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    // Dispatch this payload to the Zapier webhook
+    const zapierResponse = await fetch(zapierWebhookUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!zapierResponse.ok) {
+      const errorText = await zapierResponse.text();
+      console.error('Error sending data to Zapier:', zapierResponse.status, errorText);
+      return new Response(JSON.stringify({ error: `Failed to send data to Zapier: ${zapierResponse.statusText}` }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    console.log('Data successfully sent to Zapier.');
+
+    return new Response(JSON.stringify({ message: 'Rally data received and processed by trigger, sent to Zapier.', data: payload }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
