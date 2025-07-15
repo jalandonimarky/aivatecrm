@@ -148,6 +148,18 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
     );
   };
 
+  // Dynamic X-Axis Tick Formatter
+  const getXAxisTickFormatter = (minDate: number, maxDate: number) => {
+    const diffDays = differenceInDays(new Date(maxDate), new Date(minDate));
+    if (diffDays <= 30) { // If range is 30 days or less, show day and month
+      return (tick: number) => format(new Date(tick), "MMM dd");
+    } else if (diffDays <= 365) { // If range is up to a year, show month and year
+      return (tick: number) => format(new Date(tick), "MMM yy");
+    } else { // For longer ranges, just show year
+      return (tick: number) => format(new Date(tick), "yyyy");
+    }
+  };
+
   return (
     <Card className="bg-gradient-card border-border/50">
       <CardHeader>
@@ -170,9 +182,9 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
                 type="number"
                 dataKey="startDate" // This will be the start of the bar
                 domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]} // Extend domain slightly to ensure last date is visible
-                tickFormatter={(tick) => format(new Date(tick), "MMM yy")}
+                tickFormatter={getXAxisTickFormatter(minChartDate, maxChartDate)} // Use dynamic formatter
                 stroke="hsl(var(--muted-foreground))"
-                tickCount={5}
+                // Removed tickCount to let Recharts optimize
               />
               <YAxis
                 type="category"
