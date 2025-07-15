@@ -53,7 +53,6 @@ serve(async (req) => {
       user_metadata: { first_name, last_name },
     });
     
-    // NEW LOGGING: Inspect the raw results
     console.log("Edge Function: createUser call completed. Raw result - user:", user, "Raw result - error:", signUpError);
 
     if (signUpError) {
@@ -65,7 +64,10 @@ serve(async (req) => {
     }
 
     console.log('Edge Function: No signup error. User created successfully, user ID:', user?.user?.id);
-    return new Response(JSON.stringify({ message: 'User created successfully. Please check your email to confirm your account.', user: user?.user }), {
+    console.log('Edge Function: Preparing success response.'); // New log before returning
+
+    // Simplified success response - removed 'user: user?.user'
+    return new Response(JSON.stringify({ message: 'User created successfully. Please check your email to confirm your account.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
