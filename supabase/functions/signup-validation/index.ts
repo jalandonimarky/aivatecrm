@@ -15,7 +15,7 @@ serve(async (req) => {
 
   try {
     const payload = await req.json();
-    console.log("Rally Trigger received payload:", payload);
+    console.log("Signup Validation received payload:", payload); // Corrected log message
 
     const { email, password, first_name, last_name } = payload;
 
