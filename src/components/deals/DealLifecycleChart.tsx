@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  BarChart,
+  ComposedChart, // Changed from BarChart
   Bar,
   XAxis,
   YAxis,
@@ -9,7 +9,8 @@ import {
   ResponsiveContainer,
   Legend,
   Cell,
-  ReferenceLine // Import ReferenceLine for "Today" marker
+  ReferenceLine,
+  Scatter // Added Scatter
 } from "recharts";
 import { format, parseISO, differenceInDays, addDays, startOfDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,8 +71,9 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       return {
         id: deal.id,
         name: deal.title,
-        startDate: chartBarStart, // This is the X position
+        startDate: chartBarStart, // This is the X position for the main bar
         duration: duration * (24 * 60 * 60 * 1000), // Duration for the bar width in milliseconds
+        creationDate: dealCreatedAt.getTime(), // X-position for creation marker
         stage: deal.stage,
         value: deal.value,
         contactName: deal.contact?.name || "N/A",
@@ -94,7 +96,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
     });
 
   // Recalculate min/max dates for the X-axis domain based on the filtered data
-  const allDatesForFutureChart = chartData.flatMap(d => [d.startDate, d.actualEndDate.getTime()]);
+  const allDatesForFutureChart = chartData.flatMap(d => [d.startDate, d.actualEndDate.getTime(), d.creationDate]); // Include creationDate
   const minChartDate = allDatesForFutureChart.length > 0 ? Math.min(...allDatesForFutureChart) : today.getTime();
   const maxChartDate = allDatesForFutureChart.length > 0 ? Math.max(...allDatesForFutureChart) : addDays(today, 60).getTime(); // Default to 60 days from today if no data
 
@@ -118,7 +120,10 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
             Assigned To: {data.assignedTo}
           </p>
           <p className="text-sm text-muted-foreground">
-            Start: {format(data.actualStartDate, "MMM dd, yyyy")}
+            Created: {format(new Date(data.creationDate), "MMM dd, yyyy")}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Current Timeline Start: {format(data.actualStartDate, "MMM dd, yyyy")}
           </p>
           <p className="text-sm text-muted-foreground">
             Expected End: {format(data.actualEndDate, "MMM dd, yyyy")}
@@ -172,7 +177,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <ComposedChart // Changed to ComposedChart
               data={chartData}
               layout="vertical"
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -214,7 +219,10 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Bar>
-            </BarChart>
+
+              {/* Scatter for creation date marker */}
+              <Scatter dataKey="creationDate" fill="hsl(var(--secondary))" shape="circle" radius={5} />
+            </ComposedChart>
           </ResponsiveContainer>
         )}
       </CardContent>
