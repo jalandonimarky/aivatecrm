@@ -83,7 +83,7 @@ export function Dashboard() {
         <div className="lg:col-span-2">
           <RevenueChart
             paidDeals={stats.paidDealsValue}
-            doneCompletedDeals={stats.doneCompletedDealsValue}
+            doneCompletedDeals={stats.completedDealsValue}
             cancelledDeals={stats.cancelledDealsValue}
             pipelineValue={stats.pipelineValue}
           />

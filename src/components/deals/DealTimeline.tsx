@@ -13,10 +13,10 @@ interface DealTimelineProps {
 const getStageBadgeClass = (stage: string) => {
   switch (stage) {
     case 'paid': return "bg-success text-success-foreground";
-    case 'done_completed': return "bg-destructive text-destructive-foreground";
+    case 'completed': return "bg-destructive text-destructive-foreground"; // Changed from 'done_completed'
     case 'lead': return "bg-muted text-muted-foreground";
     case 'in_development': return "bg-accent text-accent-foreground";
-    case 'proposal': return "bg-primary text-primary-foreground";
+    case 'demo': return "bg-primary text-primary-foreground"; // Changed from 'proposal'
     case 'discovery_call': return "bg-warning text-warning-foreground";
     case 'cancelled': return "bg-secondary text-secondary-foreground";
     default: return "bg-muted text-muted-foreground";

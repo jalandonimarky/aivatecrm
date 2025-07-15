@@ -12,7 +12,7 @@ export function useCRMData() {
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     paidDealsValue: 0,
-    doneCompletedDealsValue: 0,
+    completedDealsValue: 0, // Renamed from doneCompletedDealsValue
     cancelledDealsValue: 0,
     pipelineValue: 0,
     totalContacts: 0,
@@ -138,9 +138,9 @@ export function useCRMData() {
 
     // Current month calculations
     const paidDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'paid');
-    const doneCompletedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'done_completed');
+    const completedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'completed'); // Changed from done_completed
     const cancelledDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'cancelled');
-    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'done_completed', 'cancelled'].includes(deal.stage));
+    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
     const completedTasksCurrent = currentMonthTasks.filter(task => task.status === 'completed');
     const overdueTasksCurrent = currentMonthTasks.filter(task => 
       task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
@@ -152,7 +152,7 @@ export function useCRMData() {
 
     // Previous month calculations
     const paidDealsPrev = prevMonthDeals.filter(deal => deal.stage === 'paid');
-    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'done_completed', 'cancelled'].includes(deal.stage));
+    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
     const completedTasksPrev = prevMonthTasks.filter(task => task.status === 'completed');
     const pendingTasksPrevCount = prevMonthTasks.length - completedTasksPrev.length;
 
@@ -169,7 +169,7 @@ export function useCRMData() {
     setStats({
       totalRevenue: paidDealsValueCurrent,
       paidDealsValue: paidDealsValueCurrent,
-      doneCompletedDealsValue: doneCompletedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      completedDealsValue: completedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0), // Changed from doneCompletedDealsValue
       cancelledDealsValue: cancelledDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
       pipelineValue: pipelineValueCurrent,
       totalContacts: contactsData.length, // Total contacts overall, not just current month

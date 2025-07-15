@@ -38,7 +38,7 @@ export interface Deal {
   title: string;
   description?: string;
   value: number;
-  stage: 'lead' | 'in_development' | 'proposal' | 'discovery_call' | 'paid' | 'done_completed' | 'cancelled'; // Added 'cancelled' stage
+  stage: 'lead' | 'in_development' | 'demo' | 'discovery_call' | 'paid' | 'completed' | 'cancelled'; // Updated 'proposal' to 'demo' and 'done_completed' to 'completed'
   tier?: string; // Added tier
   contact_id?: string;
   assigned_to?: string;
@@ -78,7 +78,7 @@ interface ChangeMetric {
 export interface DashboardStats {
   totalRevenue: number;
   paidDealsValue: number;
-  doneCompletedDealsValue: number;
+  completedDealsValue: number; // Renamed from doneCompletedDealsValue
   cancelledDealsValue: number;
   pipelineValue: number;
   totalContacts: number;

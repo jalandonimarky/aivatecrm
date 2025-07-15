@@ -60,10 +60,10 @@ export function Deals() {
   const dealStages: { value: Deal['stage'], label: string }[] = [ // Explicitly type dealStages
     { value: "lead", label: "Lead" },
     { value: "in_development", label: "In Development" },
-    { value: "proposal", label: "Proposal" },
+    { value: "demo", label: "Demo" }, // Changed from 'proposal'
     { value: "discovery_call", label: "Discovery Call" },
     { value: "paid", label: "Paid" },
-    { value: "done_completed", label: "Done Completed" },
+    { value: "completed", label: "Completed" }, // Changed from 'done_completed'
     { value: "cancelled", label: "Cancelled" }, // Added new stage
   ];
 
