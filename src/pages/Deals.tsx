@@ -20,8 +20,8 @@ import {
 import { NavLink } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import type { Deal } from "@/types/crm";
-import { DealFormDialog } from "@/components/deals/DealFormDialog"; // Import the new dialog component
-import { format } from "date-fns"; // Import format
+import { DealFormDialog } from "@/components/deals/DealFormDialog";
+import { format } from "date-fns"; // Ensure this import is present
 
 export function Deals() {
   const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData();
