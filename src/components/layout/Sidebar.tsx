@@ -86,6 +86,10 @@ export function AppSidebar() {
     }
   };
 
+  const handleLogoClick = () => {
+    window.location.reload(); // Force a full page reload
+  };
+
   return (
     <Sidebar
       className={`${collapsed ? "w-14" : "w-64"} transition-smooth bg-gradient-card border-r border-border/50`}
@@ -95,18 +99,18 @@ export function AppSidebar() {
         {/* Logo */}
         <div className="mb-8 px-2">
           {!collapsed ? (
-            <div className="flex items-center space-x-2">
+            <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 AIVate CRM
               </span>
-            </div>
+            </a>
           ) : (
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center mx-auto">
+            <a href="/" onClick={handleLogoClick} className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center mx-auto cursor-pointer">
               <BarChart3 className="w-4 h-4 text-primary-foreground" />
-            </div>
+            </a>
           )}
         </div>
 
