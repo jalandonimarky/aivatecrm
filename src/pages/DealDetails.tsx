@@ -36,6 +36,7 @@ import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { RallyDialog } from "@/components/deals/RallyDialog"; // Import RallyDialog
+import { DataHygieneCard } from "@/components/deals/DataHygieneCard"; // Import DataHygieneCard
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 import type { DealNote, Task } from "@/types/crm";
@@ -405,6 +406,9 @@ export function DealDetails() {
           )}
         </CardContent>
       </Card>
+
+      {/* Data Hygiene Card */}
+      {deal && <DataHygieneCard deal={deal} />}
 
       {/* Project Timeline Section */}
       <DealTimeline deal={deal} />

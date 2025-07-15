@@ -103,3 +103,10 @@ export interface DashboardStats {
   totalContactsChange?: ChangeMetric;
   pendingTasksChange?: ChangeMetric;
 }
+
+// New types for Data Hygiene Checker
+export interface DataHygieneInsights {
+  missingFields: string[];
+  suggestions: string[];
+  dealBreakerWarning: boolean;
+}
