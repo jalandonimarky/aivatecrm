@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon } from "lucide-react";
+import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon, Flag } from "lucide-react"; // Import Flag icon
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +34,10 @@ import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { DealTimeline } from "@/components/deals/DealTimeline";
-import { DealFormDialog } from "@/components/deals/DealFormDialog"; // Import the new dialog component
+import { DealFormDialog } from "@/components/deals/DealFormDialog";
+import { RallyDialog } from "@/components/deals/RallyDialog"; // Import RallyDialog
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 import type { DealNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -52,6 +55,7 @@ export function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal } = useCRMData();
+  const { toast } = useToast(); // Initialize useToast
   const [deal, setDeal] = useState<any>(null);
   const [businessNoteContent, setBusinessNoteContent] = useState("");
   const [developmentNoteContent, setDevelopmentNoteContent] = useState("");
@@ -77,7 +81,8 @@ export function DealDetails() {
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false); // New state for deal edit dialog
+  const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
+  const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false); // New state for Rally dialog
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -230,6 +235,49 @@ export function DealDetails() {
     }
   };
 
+  // New handler for Rally submission
+  const handleRallySubmit = async (date: Date, time: string, note: string) => {
+    if (!deal) return;
+
+    const payload = {
+      rallyDate: format(date, "yyyy-MM-dd"),
+      rallyTime: time,
+      noteDescription: note,
+      dealDetails: {
+        dealId: deal.id,
+        projectTitle: deal.title,
+        value: deal.value,
+        expectedCloseDate: deal.expected_close_date,
+        relatedContact: deal.contact?.name || "N/A",
+        tier: deal.tier || "N/A",
+      },
+    };
+
+    try {
+      // Invoke the Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('rally-trigger', {
+        body: payload,
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: "Rally Scheduled",
+        description: "Rally details sent successfully to the trigger endpoint.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error Scheduling Rally",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading || !deal) {
     return (
       <div className="space-y-6">
@@ -277,13 +325,21 @@ export function DealDetails() {
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold min-w-0 mr-2"> {/* Added min-w-0 and mr-2 */}
+            <CardTitle className="text-2xl font-bold min-w-0 mr-2">
               {deal.title}
             </CardTitle>
-            <div className="flex items-center space-x-2 flex-shrink-0"> {/* Added flex-shrink-0 */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <Badge className={getStageBadgeClass(deal.stage)}>
                 {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsRallyDialogOpen(true)}
+                className="bg-gradient-accent hover:bg-accent/90 text-accent-foreground shadow-glow transition-smooth"
+              >
+                <Flag className="w-4 h-4 mr-2" /> Rally
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
@@ -776,6 +832,16 @@ export function DealDetails() {
         profiles={profiles}
         getFullName={getFullName}
       />
+
+      {/* Rally Dialog */}
+      {deal && (
+        <RallyDialog
+          isOpen={isRallyDialogOpen}
+          onOpenChange={setIsRallyDialogOpen}
+          onSubmit={handleRallySubmit}
+          deal={deal}
+        />
+      )}
     </div>
   );
 }
