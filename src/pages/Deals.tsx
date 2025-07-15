@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,8 @@ import { NavLink } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import type { Deal } from "@/types/crm";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
-import { format } from "date-fns"; // Ensure this import is present
+import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function Deals() {
   const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData();
@@ -29,13 +30,44 @@ export function Deals() {
   const [isDealFormDialogOpen, setIsDealFormDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
 
-  const filteredDeals = deals.filter(deal =>
-    deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (deal.assigned_user && getFullName(deal.assigned_user).toLowerCase().includes(searchTerm.toLowerCase())) ||
-    deal.tier?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter states
+  const [selectedStage, setSelectedStage] = useState<string>("all");
+  const [selectedTier, setSelectedTier] = useState<string>("all");
+  const [selectedAssignedTo, setSelectedAssignedTo] = useState<string>("all");
+
+  const dealStages: { value: Deal['stage'], label: string }[] = [
+    { value: "lead", label: "Lead" },
+    { value: "in_development", label: "In Development" },
+    { value: "demo", label: "Demo" },
+    { value: "discovery_call", label: "Discovery Call" },
+    { value: "paid", label: "Paid" },
+    { value: "completed", label: "Completed" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
+
+  const dealTiers: string[] = [
+    "1-OFF Projects: T1",
+    "1-OFF Projects: T2",
+    "1-OFF Projects: T3",
+    "System Development: T1",
+    "System Development: T2",
+    "System Development: T3",
+  ];
+
+  const filteredDeals = deals.filter(deal => {
+    const matchesSearch =
+      deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (deal.assigned_user && getFullName(deal.assigned_user).toLowerCase().includes(searchTerm.toLowerCase())) ||
+      deal.tier?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStage = selectedStage === "all" || deal.stage === selectedStage;
+    const matchesTier = selectedTier === "all" || deal.tier === selectedTier;
+    const matchesAssignedTo = selectedAssignedTo === "all" || deal.assigned_to === selectedAssignedTo;
+
+    return matchesSearch && matchesStage && matchesTier && matchesAssignedTo;
+  });
 
   const handleAddDealClick = () => {
     setEditingDeal(null);
@@ -63,6 +95,13 @@ export function Deals() {
     }
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedStage("all");
+    setSelectedTier("all");
+    setSelectedAssignedTo("all");
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -85,9 +124,9 @@ export function Deals() {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="flex items-center space-x-4">
-        <div className="relative flex-1 max-w-md">
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search deals..."
@@ -96,6 +135,54 @@ export function Deals() {
             className="pl-10"
           />
         </div>
+
+        <Select value={selectedStage} onValueChange={setSelectedStage}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Stage" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Stages</SelectItem>
+            {dealStages.map(stage => (
+              <SelectItem key={stage.value} value={stage.value}>
+                {stage.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedTier} onValueChange={setSelectedTier}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Tier" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Tiers</SelectItem>
+            {dealTiers.map(tier => (
+              <SelectItem key={tier} value={tier}>
+                {tier}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedAssignedTo} onValueChange={setSelectedAssignedTo}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Assigned To" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Users</SelectItem>
+            {profiles.map(profile => (
+              <SelectItem key={profile.id} value={profile.id}>
+                {getFullName(profile)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {(searchTerm !== "" || selectedStage !== "all" || selectedTier !== "all" || selectedAssignedTo !== "all") && (
+          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+            <Filter className="w-4 h-4 mr-2" /> Clear Filters
+          </Button>
+        )}
       </div>
 
       {/* Deals Table */}
@@ -163,7 +250,9 @@ export function Deals() {
           {filteredDeals.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchTerm ? "No deals found matching your search." : "No deals yet. Create your first deal!"}
+                {searchTerm || selectedStage !== "all" || selectedTier !== "all" || selectedAssignedTo !== "all"
+                  ? "No deals found matching your filters."
+                  : "No deals yet. Create your first deal!"}
               </p>
             </div>
           )}
