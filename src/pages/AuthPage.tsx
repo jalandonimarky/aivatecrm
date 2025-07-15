@@ -39,12 +39,14 @@ export function AuthPage() {
         }
 
         // Call the Edge Function for signup
-        const { data, error } = await supabase.functions.invoke('signup-validation', {
+        const { data, error: invokeError } = await supabase.functions.invoke('signup-validation', {
           body: { email, password, first_name: firstName, last_name: lastName },
         });
 
-        if (error) {
-          throw error;
+        if (invokeError) {
+          // Attempt to get the specific error message from the Edge Function's response
+          const errorMessage = (invokeError as any).data?.error || invokeError.message;
+          throw new Error(errorMessage);
         }
 
         if (data.error) {
