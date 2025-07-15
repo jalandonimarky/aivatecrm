@@ -210,7 +210,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               <Bar
                 dataKey="totalDuration"
                 x="barStartX" // Start X position for the bar
-                fill="hsl(var(--muted))" // Muted background color
+                fill="hsl(var(--muted) / 0.5)" // Make it semi-transparent
                 barSize={25}
                 shape={<CustomBarShape />}
                 name="Total Duration"
@@ -232,7 +232,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               {/* Scatter for creation date marker */}
               <Scatter
                 dataKey="creationMarkerX"
-                fill="hsl(var(--secondary))"
+                fill="hsl(var(--foreground))" // Changed to foreground (black) to match image
                 shape="circle"
                 radius={4}
                 name="Created"
