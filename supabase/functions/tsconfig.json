@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "lib": ["deno.ns"],
-    "target": "es2020",
+    "target": "esnext",
     "module": "esnext",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true
+    "skipLibCheck": true,
+    "noEmit": true
   },
   "include": ["**/*.ts"]
 }
