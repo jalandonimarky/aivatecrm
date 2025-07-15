@@ -275,32 +275,33 @@ export function DealDetails() {
       </Button>
 
       <Card className="bg-gradient-card border-border/50">
-        <CardHeader className="relative"> {/* Added relative for positioning dropdown */}
-          <CardTitle className="text-2xl font-bold flex items-center justify-between">
-            {deal.title}
-            <Badge className={getStageBadgeClass(deal.stage)}>
-              {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-            </Badge>
-          </CardTitle>
+        <CardHeader>
+          <div className="flex items-center justify-between"> {/* New flex container */}
+            <CardTitle className="text-2xl font-bold">
+              {deal.title}
+            </CardTitle>
+            <div className="flex items-center space-x-2"> {/* Group badge and dropdown */}
+              <Badge className={getStageBadgeClass(deal.stage)}>
+                {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={handleEditDealClick}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Deal
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
           <p className="text-muted-foreground text-sm">
             Created: {format(parseISO(deal.created_at), "PPP")}
           </p>
-          {/* Edit Dropdown */}
-          <div className="absolute top-4 right-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleEditDealClick}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Deal
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
