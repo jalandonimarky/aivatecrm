@@ -101,7 +101,7 @@ export function Dashboard() {
                 <div>
                   <h3 className="font-semibold text-warning">Overdue Tasks</h3>
                   <p className="text-sm text-muted-foreground">
-                    You have {stats.overdueTasks} overdue tasks that need attention.
+                    There {stats.overdueTasks === 1 ? "is" : "are"} {stats.overdueTasks} overdue task{stats.overdueTasks === 1 ? "" : "s"} that require attention.
                   </p>
                 </div>
               </div>
