@@ -329,9 +329,6 @@ export function DealDetails() {
               {deal.title}
             </CardTitle>
             <div className="flex items-center space-x-2 flex-shrink-0">
-              <Badge className={getStageBadgeClass(deal.stage)}>
-                {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </Badge>
               <Button
                 variant="outline"
                 size="sm"
@@ -364,6 +361,12 @@ export function DealDetails() {
             <div>
               <p className="text-sm text-muted-foreground">Value</p>
               <p className="text-lg font-semibold">${deal.value.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Stage</p> {/* Moved here */}
+              <Badge className={getStageBadgeClass(deal.stage)}> {/* Moved here */}
+                {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </Badge>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Expected Close Date</p>
