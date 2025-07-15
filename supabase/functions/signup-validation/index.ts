@@ -53,7 +53,7 @@ serve(async (req) => {
       user_metadata: { first_name, last_name },
     });
     
-    console.log("Edge Function: createUser call completed. Raw result - user:", user, "Raw result - error:", signUpError);
+    console.log("Edge Function: createUser call completed. Raw result - user object present:", !!user, "Raw result - error object present:", !!signUpError);
 
     if (signUpError) {
       console.error('Edge Function: Supabase signup error detected:', signUpError.message);
@@ -63,10 +63,7 @@ serve(async (req) => {
       });
     }
 
-    console.log('Edge Function: No signup error. User created successfully, user ID:', user?.user?.id);
-    console.log('Edge Function: Preparing success response.'); // New log before returning
-
-    // Simplified success response - removed 'user: user?.user'
+    console.log('Edge Function: User creation successful. Preparing response.'); // Simplified log
     return new Response(JSON.stringify({ message: 'User created successfully. Please check your email to confirm your account.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
