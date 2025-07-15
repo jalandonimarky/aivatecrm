@@ -8,18 +8,18 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon } from "lucide-react"; // Import new icons
+import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // Import DropdownMenu components
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; // Import DialogFooter
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
-import { Calendar } from "@/components/ui/calendar"; // Import Calendar
-import { Input } from "@/components/ui/input"; // Import Input
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -27,13 +27,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"; // Import Table components
+} from "@/components/ui/table";
 import { format, parseISO } from "date-fns";
-import { cn } from "@/lib/utils"; // Import cn for conditional classnames
+import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import { DealLifecycleChart } from "@/components/deals/DealLifecycleChart"; // Import the new DealLifecycleChart component
 import type { DealNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -315,9 +314,6 @@ export function DealDetails() {
           )}
         </CardContent>
       </Card>
-
-      {/* Deal Lifecycle Chart */}
-      <DealLifecycleChart deals={[deal]} profiles={profiles} />
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
