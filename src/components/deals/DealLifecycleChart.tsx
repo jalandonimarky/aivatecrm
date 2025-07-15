@@ -10,6 +10,7 @@ import {
   Legend,
   Cell,
   ReferenceLine,
+  Scatter // Added Scatter for markers
 } from "recharts";
 import { format, parseISO, differenceInDays, addDays, startOfDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,8 +46,9 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       const dealCreatedAt = parseISO(deal.created_at);
       let dealExpectedCloseDate = deal.expected_close_date ? parseISO(deal.expected_close_date) : addDays(dealCreatedAt, 30);
 
+      // Ensure expected close date is not before created date
       if (dealExpectedCloseDate < dealCreatedAt) {
-        dealExpectedCloseDate = addDays(dealCreatedAt, 1);
+        dealExpectedCloseDate = addDays(dealCreatedAt, 1); // At least 1 day duration
       }
 
       const totalDurationDays = differenceInDays(dealExpectedCloseDate, dealCreatedAt) + 1;
@@ -56,6 +58,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       const actualProgressDays = Math.min(progressDays, totalDurationDays);
       const progressDurationMs = actualProgressDays * (24 * 60 * 60 * 1000);
 
+      // If total duration is zero or negative, it's not a valid timeline to display
       if (totalDurationDays <= 0) {
         return null;
       }
@@ -63,9 +66,16 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       return {
         id: deal.id,
         name: deal.title,
-        startDate: dealCreatedAt.getTime(), // Absolute start of the deal
-        totalDuration: totalDurationMs, // Total length of the bar
-        progressDuration: progressDurationMs, // Filled portion of the bar
+        // Data for the bars
+        barStartX: dealCreatedAt.getTime(), // X-position for the start of both bars
+        totalDuration: totalDurationMs, // Width of the total duration bar
+        progressDuration: progressDurationMs, // Width of the progress bar
+
+        // Data for scatter markers
+        creationMarkerX: dealCreatedAt.getTime(),
+        expectedCloseMarkerX: dealExpectedCloseDate.getTime(),
+        
+        // Other deal data for tooltip and sorting
         stage: deal.stage,
         value: deal.value,
         contactName: deal.contact?.name || "N/A",
@@ -75,20 +85,22 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
         color: getStageColor(deal.stage),
       };
     })
-    .filter(Boolean)
+    .filter(Boolean) // Remove null entries (deals filtered out due to invalid duration)
     .sort((a, b) => {
+      // Sort by stage first, then by creation date
       const stageOrder = ['lead', 'discovery_call', 'in_development', 'proposal', 'paid', 'done_completed', 'cancelled'];
       const stageA = stageOrder.indexOf(a.stage);
       const stageB = stageOrder.indexOf(b.stage);
       if (stageA !== stageB) {
         return stageA - stageB;
       }
-      return a.startDate - b.startDate;
+      return a.barStartX - b.barStartX;
     });
 
-  const allDates = chartData.flatMap(d => [d.startDate, d.actualExpectedCloseDate.getTime()]);
+  // Recalculate min/max dates for the X-axis domain based on all relevant dates
+  const allDates = chartData.flatMap(d => [d.creationMarkerX, d.expectedCloseMarkerX]);
   const minChartDate = allDates.length > 0 ? Math.min(...allDates) : today.getTime();
-  const maxChartDate = allDates.length > 0 ? Math.max(...allDates) : addDays(today, 60).getTime();
+  const maxChartDate = allDates.length > 0 ? Math.max(...allDates) : addDays(today, 60).getTime(); // Default to 60 days from today if no data
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -126,7 +138,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
     return null;
   };
 
-  const CustomBar = (props: any) => {
+  const CustomBarShape = (props: any) => {
     const { x, y, width, height, fill } = props;
     return (
       <rect
@@ -160,7 +172,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       <CardContent className="h-96">
         {chartData.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            No active deals to display in the timeline.
+            No deals to display in the timeline.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -172,8 +184,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               <CartesianGrid strokeDasharray="1 1" stroke="hsl(var(--border))" horizontal={false} />
               <XAxis
                 type="number"
-                dataKey="startDate"
-                domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]}
+                domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]} // Extend domain slightly
                 tickFormatter={getXAxisTickFormatter(minChartDate, maxChartDate)}
                 stroke="hsl(var(--muted-foreground))"
               />
@@ -198,21 +209,43 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               {/* Background bar for total duration */}
               <Bar
                 dataKey="totalDuration"
+                x="barStartX" // Start X position for the bar
                 fill="hsl(var(--muted))" // Muted background color
                 barSize={25}
-                shape={<CustomBar />}
+                shape={<CustomBarShape />}
+                name="Total Duration"
               />
 
               {/* Progress bar overlaid on top */}
               <Bar
                 dataKey="progressDuration"
+                x="barStartX" // Start X position for the bar
                 barSize={25}
-                shape={<CustomBar />}
+                shape={<CustomBarShape />}
+                name="Progress"
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-progress-${index}`} fill={entry.color} /> // Use stage color for progress
                 ))}
               </Bar>
+
+              {/* Scatter for creation date marker */}
+              <Scatter
+                dataKey="creationMarkerX"
+                fill="hsl(var(--secondary))"
+                shape="circle"
+                radius={4}
+                name="Created"
+              />
+
+              {/* Scatter for expected close date marker */}
+              <Scatter
+                dataKey="expectedCloseMarkerX"
+                fill="hsl(var(--destructive))"
+                shape="star" // Using a star shape for expected close
+                radius={5}
+                name="Expected Close"
+              />
             </ComposedChart>
           </ResponsiveContainer>
         )}
