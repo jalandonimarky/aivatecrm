@@ -33,7 +33,8 @@ import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import { DealTimeline } from "@/components/deals/DealTimeline"; // Import DealTimeline
+import { DealTimeline } from "@/components/deals/DealTimeline";
+import { DealFormDialog } from "@/components/deals/DealFormDialog"; // Import the new dialog component
 import type { DealNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -50,17 +51,17 @@ interface TaskFormData {
 export function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName } = useCRMData();
+  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal } = useCRMData();
   const [deal, setDeal] = useState<any>(null);
   const [businessNoteContent, setBusinessNoteContent] = useState("");
-  const [developmentNoteContent, setDevelopmentNoteContent] = useState(""); // Renamed from techNoteContent
+  const [developmentNoteContent, setDevelopmentNoteContent] = useState("");
   const [isAddingBusinessNote, setIsAddingBusinessNote] = useState(false);
-  const [isAddingDevelopmentNote, setIsAddingDevelopmentNote] = useState(false); // Renamed from isAddingTechNote
+  const [isAddingDevelopmentNote, setIsAddingDevelopmentNote] = useState(false);
 
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<DealNote | null>(null);
   const [editNoteContent, setEditNoteContent] = useState("");
-  const [editNoteType, setEditNoteType] = useState<'business' | 'development'>('business'); // Updated type
+  const [editNoteType, setEditNoteType] = useState<'business' | 'development'>('business');
 
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -71,10 +72,12 @@ export function DealDetails() {
     priority: "medium",
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
-    related_deal_id: id || "unassigned", // Pre-fill with current deal ID
+    related_deal_id: id || "unassigned",
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false); // New state for deal edit dialog
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -94,12 +97,11 @@ export function DealDetails() {
     if (deals.length > 0 && id) {
       const foundDeal = deals.find(d => d.id === id);
       setDeal(foundDeal);
-      // Ensure related_deal_id is set when deal is loaded
       setTaskFormData(prev => ({ ...prev, related_deal_id: id }));
     }
   }, [deals, id]);
 
-  const handleAddNote = async (noteType: 'business' | 'development', content: string) => { // Updated type
+  const handleAddNote = async (noteType: 'business' | 'development', content: string) => {
     if (!id || !content.trim()) return;
 
     try {
@@ -108,8 +110,8 @@ export function DealDetails() {
         setBusinessNoteContent("");
         setIsAddingBusinessNote(false);
       } else {
-        setDevelopmentNoteContent(""); // Updated state
-        setIsAddingDevelopmentNote(false); // Updated state
+        setDevelopmentNoteContent("");
+        setIsAddingDevelopmentNote(false);
       }
     } catch (error) {
       // Error handled in useCRMData hook
@@ -155,7 +157,7 @@ export function DealDetails() {
       priority: "medium",
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
-      related_deal_id: id || "unassigned", // Always pre-fill with current deal ID
+      related_deal_id: id || "unassigned",
       due_date: undefined,
     });
     setEditingTask(null);
@@ -175,7 +177,7 @@ export function DealDetails() {
       priority: task.priority,
       assigned_to: task.assigned_to || "unassigned",
       related_contact_id: task.related_contact_id || "unassigned",
-      related_deal_id: task.related_deal_id || id || "unassigned", // Ensure it's the current deal ID
+      related_deal_id: task.related_deal_id || id || "unassigned",
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setIsTaskDialogOpen(true);
@@ -183,7 +185,7 @@ export function DealDetails() {
 
   const handleTaskSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id) return; // Ensure deal ID exists
+    if (!id) return;
 
     try {
       const dataToSubmit = {
@@ -191,7 +193,7 @@ export function DealDetails() {
         due_date: taskFormData.due_date ? format(taskFormData.due_date, "yyyy-MM-dd") : null,
         assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
         related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
-        related_deal_id: id, // Ensure this is always the current deal's ID
+        related_deal_id: id,
       };
 
       if (editingTask) {
@@ -216,6 +218,18 @@ export function DealDetails() {
     }
   };
 
+  // New handlers for deal editing
+  const handleEditDealClick = () => {
+    setIsEditDealDialogOpen(true);
+  };
+
+  const handleUpdateDealSubmit = async (data: any) => {
+    if (deal && id) {
+      await updateDeal(id, data);
+      setIsEditDealDialogOpen(false);
+    }
+  };
+
   if (loading || !deal) {
     return (
       <div className="space-y-6">
@@ -234,10 +248,10 @@ export function DealDetails() {
   const getStageBadgeClass = (stage: string) => {
     switch (stage) {
       case 'paid': return "bg-success text-success-foreground";
-      case 'completed': return "bg-destructive text-destructive-foreground"; // Changed from 'done_completed'
+      case 'completed': return "bg-destructive text-destructive-foreground";
       case 'lead': return "bg-muted text-muted-foreground";
       case 'in_development': return "bg-accent text-accent-foreground";
-      case 'demo': return "bg-primary text-primary-foreground"; // Changed from 'proposal'
+      case 'demo': return "bg-primary text-primary-foreground";
       case 'discovery_call': return "bg-warning text-warning-foreground";
       case 'cancelled': return "bg-secondary text-secondary-foreground";
       default: return "bg-muted text-muted-foreground";
@@ -248,7 +262,7 @@ export function DealDetails() {
     parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime()
   );
   const businessNotes = sortedNotes.filter((note: DealNote) => note.note_type === 'business');
-  const developmentNotes = sortedNotes.filter((note: DealNote) => note.note_type === 'development'); // Updated filter
+  const developmentNotes = sortedNotes.filter((note: DealNote) => note.note_type === 'development');
 
   const relatedTasks = (deal.tasks || []).sort((a: Task, b: Task) => 
     (a.due_date ? parseISO(a.due_date).getTime() : Infinity) - (b.due_date ? parseISO(b.due_date).getTime() : Infinity)
@@ -261,7 +275,7 @@ export function DealDetails() {
       </Button>
 
       <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
+        <CardHeader className="relative"> {/* Added relative for positioning dropdown */}
           <CardTitle className="text-2xl font-bold flex items-center justify-between">
             {deal.title}
             <Badge className={getStageBadgeClass(deal.stage)}>
@@ -271,6 +285,22 @@ export function DealDetails() {
           <p className="text-muted-foreground text-sm">
             Created: {format(parseISO(deal.created_at), "PPP")}
           </p>
+          {/* Edit Dropdown */}
+          <div className="absolute top-4 right-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleEditDealClick}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Deal
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -386,7 +416,7 @@ export function DealDetails() {
         {/* Development Notes */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Development Notes</CardTitle> {/* Renamed title */}
+            <CardTitle className="text-lg font-semibold">Development Notes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {developmentNotes.length === 0 && <p className="text-muted-foreground text-sm">No development notes yet.</p>}
@@ -423,22 +453,22 @@ export function DealDetails() {
             <div className="mt-4">
               {isAddingDevelopmentNote ? (
                 <div className="space-y-2">
-                  <Label htmlFor="development-note-content">Add Development Note</Label> {/* Renamed label */}
+                  <Label htmlFor="development-note-content">Add Development Note</Label>
                   <Textarea
                     id="development-note-content"
                     value={developmentNoteContent}
-                    onChange={(e) => setDevelopmentNoteContent(e.target.value)} // Updated state
+                    onChange={(e) => setDevelopmentNoteContent(e.target.value)}
                     placeholder="Type your development note here..."
                     rows={3}
                   />
                   <div className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(false)}>Cancel</Button> {/* Updated state */}
-                    <Button onClick={() => handleAddNote('development', developmentNoteContent)}>Add Note</Button> {/* Updated type and state */}
+                    <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(false)}>Cancel</Button>
+                    <Button onClick={() => handleAddNote('development', developmentNoteContent)}>Add Note</Button>
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full"> {/* Updated state */}
-                  <Plus className="w-4 h-4 mr-2" /> Add Development Note {/* Renamed button text */}
+                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full">
+                  <Plus className="w-4 h-4 mr-2" /> Add Development Note
                 </Button>
               )}
             </div>
@@ -543,11 +573,11 @@ export function DealDetails() {
               <select
                 id="edit-note-type"
                 value={editNoteType}
-                onChange={(e) => setEditNoteType(e.target.value as 'business' | 'development')} // Updated type
+                onChange={(e) => setEditNoteType(e.target.value as 'business' | 'development')}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="business">Business</option>
-                <option value="development">Development</option> {/* Updated option */}
+                <option value="development">Development</option>
               </select>
             </div>
           </div>
@@ -703,7 +733,7 @@ export function DealDetails() {
                 <Select
                   value={taskFormData.related_deal_id}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}
-                  disabled // Disable as it's pre-filled by the current deal
+                  disabled
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a deal" />
@@ -734,6 +764,17 @@ export function DealDetails() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Deal Edit Dialog */}
+      <DealFormDialog
+        isOpen={isEditDealDialogOpen}
+        onOpenChange={setIsEditDealDialogOpen}
+        initialData={deal}
+        onSubmit={handleUpdateDealSubmit}
+        contacts={contacts}
+        profiles={profiles}
+        getFullName={getFullName}
+      />
     </div>
   );
 }
