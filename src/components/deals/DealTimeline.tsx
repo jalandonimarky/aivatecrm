@@ -13,10 +13,10 @@ interface DealTimelineProps {
 const getStageBadgeClass = (stage: string) => {
   switch (stage) {
     case 'paid': return "bg-success text-success-foreground";
-    case 'completed': return "bg-destructive text-destructive-foreground"; // Changed from 'done_completed'
+    case 'completed': return "bg-destructive text-destructive-foreground";
     case 'lead': return "bg-muted text-muted-foreground";
     case 'in_development': return "bg-accent text-accent-foreground";
-    case 'demo': return "bg-primary text-primary-foreground"; // Changed from 'proposal'
+    case 'demo': return "bg-primary text-primary-foreground";
     case 'discovery_call': return "bg-warning text-warning-foreground";
     case 'cancelled': return "bg-secondary text-secondary-foreground";
     default: return "bg-muted text-muted-foreground";
@@ -32,26 +32,49 @@ export function DealTimeline({ deal }: DealTimelineProps) {
   let daysRemainingText = "N/A";
   let totalDurationText = "N/A";
 
+  // Calculate progress based on deal stage
+  switch (deal.stage) {
+    case 'lead':
+      progressPercentage = 10;
+      break;
+    case 'discovery_call':
+      progressPercentage = 30;
+      break;
+    case 'in_development':
+      progressPercentage = 50;
+      break;
+    case 'demo':
+      progressPercentage = 70;
+      break;
+    case 'paid':
+    case 'completed':
+      progressPercentage = 100;
+      break;
+    case 'cancelled':
+      progressPercentage = 0;
+      break;
+    default:
+      progressPercentage = 0; // Default for unknown stages
+  }
+
+  // The date-based calculation for days remaining/total duration can still be useful
+  // but will not directly influence the progress bar percentage anymore.
   if (createdAt && expectedCloseDate) {
     const totalDurationDays = differenceInDays(expectedCloseDate, createdAt);
-    const elapsedDurationDays = differenceInDays(today, createdAt);
-
+    const remainingDays = differenceInDays(expectedCloseDate, today);
+    
     if (totalDurationDays > 0) {
-      progressPercentage = Math.min(100, Math.max(0, (elapsedDurationDays / totalDurationDays) * 100));
       totalDurationText = `${totalDurationDays} days`;
-    } else if (totalDurationDays === 0) { // Deal created and expected to close on the same day
-      progressPercentage = elapsedDurationDays >= 0 ? 100 : 0;
+    } else if (totalDurationDays === 0) {
       totalDurationText = "1 day";
     }
 
-    const remainingDays = differenceInDays(expectedCloseDate, today);
     if (remainingDays >= 0) {
       daysRemainingText = `${remainingDays} days remaining`;
     } else {
       daysRemainingText = `${Math.abs(remainingDays)} days overdue`;
     }
   } else if (createdAt) {
-    // If no expected close date, just show created date and ongoing status
     daysRemainingText = "No end date set";
     totalDurationText = "Ongoing";
   }
