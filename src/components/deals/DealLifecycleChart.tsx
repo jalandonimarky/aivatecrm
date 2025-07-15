@@ -140,12 +140,12 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               layout="vertical"
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+              <CartesianGrid strokeDasharray="1 1" stroke="hsl(var(--border))" horizontal={false} /> {/* Adjusted strokeDasharray for finer grid */}
               <XAxis
                 type="number"
                 dataKey="startDate" // This will be the start of the bar
                 domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]} // Extend domain slightly
-                tickFormatter={(tick) => format(new Date(tick), "MMM dd")}
+                tickFormatter={(tick) => format(new Date(tick), "MMM yy")} // Changed to "MMM yy"
                 stroke="hsl(var(--muted-foreground))"
                 tickCount={5}
               />
