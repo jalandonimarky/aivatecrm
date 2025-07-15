@@ -48,7 +48,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
 
       // Ensure expected close date is not before created date
       if (dealExpectedCloseDate < dealCreatedAt) {
-        dealExpectedCloseDate = addDays(dealCreatedAt, 1);
+        dealExpectedCloseDate = addDays(dealCreatedAt, 1); // At least 1 day duration
       }
 
       // The start of the bar on the chart should be today, or the deal's creation date if it's in the future
@@ -57,8 +57,9 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       // The end of the bar on the chart should be the expected close date
       const chartBarEnd = dealExpectedCloseDate.getTime();
 
-      // Filter out deals that are entirely in the past relative to today's start.
-      if (chartBarEnd < today.getTime()) {
+      // Filter out deals that have already passed their expected close date relative to today's start.
+      // Or deals where the calculated duration is zero or negative.
+      if (chartBarEnd < today.getTime() || differenceInDays(new Date(chartBarEnd), new Date(chartBarStart)) < 0) {
           return null; 
       }
 
@@ -70,7 +71,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
         id: deal.id,
         name: deal.title,
         startDate: chartBarStart, // This is the X position
-        duration: duration * (24 * 60 * 60 * 1000), // Duration for the bar width
+        duration: duration * (24 * 60 * 60 * 1000), // Duration for the bar width in milliseconds
         stage: deal.stage,
         value: deal.value,
         contactName: deal.contact?.name || "N/A",
@@ -80,7 +81,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
         color: getStageColor(deal.stage),
       };
     })
-    .filter(Boolean) // Remove null entries
+    .filter(Boolean) // Remove null entries (deals filtered out)
     .sort((a, b) => {
       // Sort by stage first, then by start date
       const stageOrder = ['lead', 'discovery_call', 'in_development', 'proposal', 'paid', 'done_completed', 'cancelled'];
@@ -95,7 +96,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
   // Recalculate min/max dates for the X-axis domain based on the filtered data
   const allDatesForFutureChart = chartData.flatMap(d => [d.startDate, d.actualEndDate.getTime()]);
   const minChartDate = allDatesForFutureChart.length > 0 ? Math.min(...allDatesForFutureChart) : today.getTime();
-  const maxChartDate = allDatesForFutureChart.length > 0 ? Math.max(...allDatesForFutureChart) : addDays(today, 30).getTime();
+  const maxChartDate = allDatesForFutureChart.length > 0 ? Math.max(...allDatesForFutureChart) : addDays(today, 60).getTime(); // Default to 60 days from today if no data
 
   // Custom Tooltip for Recharts
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -168,7 +169,7 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               <XAxis
                 type="number"
                 dataKey="startDate" // This will be the start of the bar
-                domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]} // Extend domain slightly
+                domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]} // Extend domain slightly to ensure last date is visible
                 tickFormatter={(tick) => format(new Date(tick), "MMM yy")}
                 stroke="hsl(var(--muted-foreground))"
                 tickCount={5}
