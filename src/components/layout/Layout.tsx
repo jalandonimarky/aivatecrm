@@ -5,6 +5,7 @@ import { Outlet } from "react-router-dom";
 import { UserProfileCard } from "@/components/UserProfileCard"; // Import UserProfileCard
 import { useCRMData } from "@/hooks/useCRMData"; // Import useCRMData
 import { supabase } from "@/integrations/supabase/client"; // Import supabase
+import { NotificationBell } from "./NotificationBell"; // Import NotificationBell
 
 export function Layout() {
   const { profiles } = useCRMData();
@@ -31,7 +32,10 @@ export function Layout() {
               {/* Removed SidebarTrigger */}
               {/* Removed h1 with "CRM Dashboard" */}
             </div>
-            {currentUserProfile && <UserProfileCard profile={currentUserProfile} />} {/* Display UserProfileCard */}
+            <div className="flex items-center space-x-4"> {/* Group notification bell and user profile */}
+              <NotificationBell />
+              {currentUserProfile && <UserProfileCard profile={currentUserProfile} />}
+            </div>
           </header>
           <main className="flex-1 p-6 bg-background">
             <Outlet />

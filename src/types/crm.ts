@@ -70,6 +70,15 @@ export interface Task {
   related_deal?: Deal;
 }
 
+export interface Notification {
+  id: string;
+  user_id: string;
+  task_id?: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 interface ChangeMetric {
   value: number;
   trend: "up" | "down";
