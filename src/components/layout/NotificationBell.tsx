@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, XCircle } from "lucide-react";
+import { Bell, XCircle, Trash2 } from "lucide-react"; // Import Trash2 icon
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -9,7 +9,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNowStrict } from "date-fns";
 
 export function NotificationBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteAllNotifications } = useNotifications();
   const unreadNotifications = notifications.filter(n => !n.is_read);
 
   return (
@@ -30,11 +30,23 @@ export function NotificationBell() {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-4">
           <h4 className="font-semibold">Notifications</h4>
-          {unreadCount > 0 && (
-            <Button variant="link" size="sm" onClick={markAllAsRead} className="h-auto p-0 text-xs">
-              Mark all as read
-            </Button>
-          )}
+          <div className="flex space-x-2"> {/* Group buttons */}
+            {unreadCount > 0 && (
+              <Button variant="link" size="sm" onClick={markAllAsRead} className="h-auto p-0 text-xs">
+                Mark all as read
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button 
+                variant="link" 
+                size="sm" 
+                onClick={deleteAllNotifications} 
+                className="h-auto p-0 text-xs text-destructive"
+              >
+                <Trash2 className="h-3 w-3 mr-1" /> Clear All
+              </Button>
+            )}
+          </div>
         </div>
         <Separator />
         <ScrollArea className="h-72">

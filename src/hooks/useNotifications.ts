@@ -73,6 +73,30 @@ export function useNotifications() {
     }
   };
 
+  const deleteAllNotifications = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setNotifications([]);
+      setUnreadCount(0);
+      toast({
+        title: "Notifications cleared",
+        description: "All your notifications have been removed.",
+      });
+    } catch (error: any) {
+      console.error("Error deleting all notifications:", error);
+      toast({ title: "Error", description: "Failed to clear notifications.", variant: "destructive" });
+    }
+  };
+
   useEffect(() => {
     fetchNotifications();
 
@@ -106,6 +130,7 @@ export function useNotifications() {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    deleteAllNotifications, // Export the new function
     refetchNotifications: fetchNotifications,
   };
 }
