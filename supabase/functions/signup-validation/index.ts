@@ -14,7 +14,10 @@ serve(async (req) => {
   }
 
   try {
-    const { email, password, first_name, last_name } = await req.json();
+    const payload = await req.json();
+    console.log("Rally Trigger received payload:", payload);
+
+    const { email, password, first_name, last_name } = payload;
 
     // Basic validation
     if (!email || !password || !first_name || !last_name) {
@@ -42,7 +45,7 @@ serve(async (req) => {
     const { data: user, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Automatically confirm email if you trust this flow
+      email_confirm: false, // Changed to false to require email confirmation
       user_metadata: { first_name, last_name },
     });
 
@@ -60,7 +63,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in signup-validation Edge Function:', error.message);
-    return new Response(JSON.stringify({ error: 'Internal server error.' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error.', details: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
