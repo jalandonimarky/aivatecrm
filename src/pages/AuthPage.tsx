@@ -27,17 +27,6 @@ export function AuthPage() {
           description: "Welcome back!",
         });
       } else {
-        // Removed: Client-side email domain validation
-        // if (!email.endsWith('@aivate.net')) {
-        //   toast({
-        //     title: "Registration Error",
-        //     description: "Registration is restricted to @aivate.net email addresses.",
-        //     variant: "destructive",
-        //   });
-        //   setLoading(false);
-        //   return;
-        // }
-
         // Call the Edge Function for signup
         const { data, error: invokeError } = await supabase.functions.invoke('signup-validation', {
           body: { email, password, first_name: firstName, last_name: lastName },
@@ -60,9 +49,22 @@ export function AuthPage() {
         setIsLogin(true); // Switch to login view after successful signup
       }
     } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        // For objects that have a 'message' property but are not Error instances
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        // For generic objects, stringify them
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
       toast({
         title: "Authentication Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
