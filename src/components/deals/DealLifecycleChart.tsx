@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  ComposedChart, // Changed from BarChart
+  ComposedChart,
   Bar,
   XAxis,
   YAxis,
@@ -10,19 +10,17 @@ import {
   Legend,
   Cell,
   ReferenceLine,
-  Scatter // Added Scatter
 } from "recharts";
 import { format, parseISO, differenceInDays, addDays, startOfDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Deal, Profile } from "@/types/crm"; // Import Deal type
+import type { Deal, Profile } from "@/types/crm";
 import { useCRMData } from "@/hooks/useCRMData";
 
 interface DealLifecycleChartProps {
-  deals: Deal[]; // Now takes an array of deals
-  profiles: Profile[]; // Still need profiles for assigned user names
+  deals: Deal[];
+  profiles: Profile[];
 }
 
-// Helper to get stage color (consistent with DealDetails badge)
 const getStageColor = (stage: Deal['stage']) => {
   switch (stage) {
     case 'paid': return "hsl(var(--success))";
@@ -37,55 +35,48 @@ const getStageColor = (stage: Deal['stage']) => {
 };
 
 export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps) {
-  const { getFullName } = useCRMData(); // Access getFullName from the hook
+  const { getFullName } = useCRMData();
 
   const today = startOfDay(new Date());
 
   const chartData = deals
-    .filter(deal => deal.created_at) // Only include deals with a creation date
+    .filter(deal => deal.created_at)
     .map((deal) => {
       const dealCreatedAt = parseISO(deal.created_at);
       let dealExpectedCloseDate = deal.expected_close_date ? parseISO(deal.expected_close_date) : addDays(dealCreatedAt, 30);
 
-      // Ensure expected close date is not before created date
       if (dealExpectedCloseDate < dealCreatedAt) {
-        dealExpectedCloseDate = addDays(dealCreatedAt, 1); // At least 1 day duration
+        dealExpectedCloseDate = addDays(dealCreatedAt, 1);
       }
 
-      // The start of the bar on the chart should be today, or the deal's creation date if it's in the future
-      const chartBarStart = Math.max(dealCreatedAt.getTime(), today.getTime());
-      
-      // The end of the bar on the chart should be the expected close date
-      const chartBarEnd = dealExpectedCloseDate.getTime();
+      const totalDurationDays = differenceInDays(dealExpectedCloseDate, dealCreatedAt) + 1;
+      const totalDurationMs = totalDurationDays * (24 * 60 * 60 * 1000);
 
-      // Filter out deals that have already passed their expected close date relative to today's start.
-      // Or deals where the calculated duration is zero or negative.
-      if (chartBarEnd < today.getTime() || differenceInDays(new Date(chartBarEnd), new Date(chartBarStart)) < 0) {
-          return null; 
+      const progressDays = Math.max(0, differenceInDays(today, dealCreatedAt) + 1);
+      const actualProgressDays = Math.min(progressDays, totalDurationDays);
+      const progressDurationMs = actualProgressDays * (24 * 60 * 60 * 1000);
+
+      if (totalDurationDays <= 0) {
+        return null;
       }
-
-      // Calculate duration from chartBarStart to chartBarEnd
-      const duration = differenceInDays(new Date(chartBarEnd), new Date(chartBarStart)) + 1;
-      if (duration <= 0) return null; // Don't show zero or negative duration bars
 
       return {
         id: deal.id,
         name: deal.title,
-        startDate: chartBarStart, // This is the X position for the main bar
-        duration: duration * (24 * 60 * 60 * 1000), // Duration for the bar width in milliseconds
-        creationDate: dealCreatedAt.getTime(), // X-position for creation marker
+        startDate: dealCreatedAt.getTime(), // Absolute start of the deal
+        totalDuration: totalDurationMs, // Total length of the bar
+        progressDuration: progressDurationMs, // Filled portion of the bar
         stage: deal.stage,
         value: deal.value,
         contactName: deal.contact?.name || "N/A",
         assignedTo: deal.assigned_user ? getFullName(deal.assigned_user) : "Unassigned",
-        actualStartDate: new Date(chartBarStart), // For tooltip
-        actualEndDate: new Date(chartBarEnd), // For tooltip
+        actualCreatedAt: dealCreatedAt, // For tooltip
+        actualExpectedCloseDate: dealExpectedCloseDate, // For tooltip
         color: getStageColor(deal.stage),
       };
     })
-    .filter(Boolean) // Remove null entries (deals filtered out)
+    .filter(Boolean)
     .sort((a, b) => {
-      // Sort by stage first, then by start date
       const stageOrder = ['lead', 'discovery_call', 'in_development', 'proposal', 'paid', 'done_completed', 'cancelled'];
       const stageA = stageOrder.indexOf(a.stage);
       const stageB = stageOrder.indexOf(b.stage);
@@ -95,15 +86,13 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       return a.startDate - b.startDate;
     });
 
-  // Recalculate min/max dates for the X-axis domain based on the filtered data
-  const allDatesForFutureChart = chartData.flatMap(d => [d.startDate, d.actualEndDate.getTime(), d.creationDate]); // Include creationDate
-  const minChartDate = allDatesForFutureChart.length > 0 ? Math.min(...allDatesForFutureChart) : today.getTime();
-  const maxChartDate = allDatesForFutureChart.length > 0 ? Math.max(...allDatesForFutureChart) : addDays(today, 60).getTime(); // Default to 60 days from today if no data
+  const allDates = chartData.flatMap(d => [d.startDate, d.actualExpectedCloseDate.getTime()]);
+  const minChartDate = allDates.length > 0 ? Math.min(...allDates) : today.getTime();
+  const maxChartDate = allDates.length > 0 ? Math.max(...allDates) : addDays(today, 60).getTime();
 
-  // Custom Tooltip for Recharts
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload; // Access the actual data object
+      const data = payload[0].payload;
       return (
         <Card className="p-3 border border-border rounded-lg shadow-medium">
           <p className="font-medium text-foreground">{data.name}</p>
@@ -120,16 +109,16 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
             Assigned To: {data.assignedTo}
           </p>
           <p className="text-sm text-muted-foreground">
-            Created: {format(new Date(data.creationDate), "MMM dd, yyyy")}
+            Created: {format(data.actualCreatedAt, "MMM dd, yyyy")}
           </p>
           <p className="text-sm text-muted-foreground">
-            Current Timeline Start: {format(data.actualStartDate, "MMM dd, yyyy")}
+            Expected End: {format(data.actualExpectedCloseDate, "MMM dd, yyyy")}
           </p>
           <p className="text-sm text-muted-foreground">
-            Expected End: {format(data.actualEndDate, "MMM dd, yyyy")}
+            Total Duration: {data.totalDuration / (24 * 60 * 60 * 1000)} days
           </p>
           <p className="text-sm text-muted-foreground">
-            Duration: {data.duration / (24 * 60 * 60 * 1000)} days
+            Progress: {data.progressDuration / (24 * 60 * 60 * 1000)} days
           </p>
         </Card>
       );
@@ -137,7 +126,6 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
     return null;
   };
 
-  // Custom Bar for Gantt simulation
   const CustomBar = (props: any) => {
     const { x, y, width, height, fill } = props;
     return (
@@ -147,20 +135,19 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
         width={width}
         height={height}
         fill={fill}
-        rx={4} // Slightly larger rounded corners
+        rx={4}
         ry={4}
       />
     );
   };
 
-  // Dynamic X-Axis Tick Formatter
   const getXAxisTickFormatter = (minDate: number, maxDate: number) => {
     const diffDays = differenceInDays(new Date(maxDate), new Date(minDate));
-    if (diffDays <= 30) { // If range is 30 days or less, show day and month
+    if (diffDays <= 30) {
       return (tick: number) => format(new Date(tick), "MMM dd");
-    } else if (diffDays <= 365) { // If range is up to a year, show month and year
+    } else if (diffDays <= 365) {
       return (tick: number) => format(new Date(tick), "MMM yy");
-    } else { // For longer ranges, just show year
+    } else {
       return (tick: number) => format(new Date(tick), "yyyy");
     }
   };
@@ -173,11 +160,11 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
       <CardContent className="h-96">
         {chartData.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            No active deals to display in the timeline from today onwards.
+            No active deals to display in the timeline.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart // Changed to ComposedChart
+            <ComposedChart
               data={chartData}
               layout="vertical"
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -185,17 +172,16 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
               <CartesianGrid strokeDasharray="1 1" stroke="hsl(var(--border))" horizontal={false} />
               <XAxis
                 type="number"
-                dataKey="startDate" // This will be the start of the bar
-                domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]} // Extend domain slightly to ensure last date is visible
-                tickFormatter={getXAxisTickFormatter(minChartDate, maxChartDate)} // Use dynamic formatter
+                dataKey="startDate"
+                domain={[minChartDate, maxChartDate + (24 * 60 * 60 * 1000)]}
+                tickFormatter={getXAxisTickFormatter(minChartDate, maxChartDate)}
                 stroke="hsl(var(--muted-foreground))"
-                // Removed tickCount to let Recharts optimize
               />
               <YAxis
                 type="category"
                 dataKey="name"
                 stroke="hsl(var(--muted-foreground))"
-                width={150} // Increased width for deal names
+                width={150}
                 tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
               />
               <Tooltip content={<CustomTooltip />} />
@@ -209,19 +195,24 @@ export function DealLifecycleChart({ deals, profiles }: DealLifecycleChartProps)
                 label={{ value: "Today", position: "top", fill: "hsl(var(--primary))", fontSize: 12 }}
               />
 
+              {/* Background bar for total duration */}
               <Bar
-                dataKey="duration" // This will be the length of the bar
-                fill="hsl(var(--primary))"
-                barSize={25} // Increased bar size
+                dataKey="totalDuration"
+                fill="hsl(var(--muted))" // Muted background color
+                barSize={25}
+                shape={<CustomBar />}
+              />
+
+              {/* Progress bar overlaid on top */}
+              <Bar
+                dataKey="progressDuration"
+                barSize={25}
                 shape={<CustomBar />}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-progress-${index}`} fill={entry.color} /> // Use stage color for progress
                 ))}
               </Bar>
-
-              {/* Scatter for creation date marker */}
-              <Scatter dataKey="creationDate" fill="hsl(var(--secondary))" shape="circle" radius={5} />
             </ComposedChart>
           </ResponsiveContainer>
         )}
