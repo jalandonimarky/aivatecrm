@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, MoreHorizontal, Edit, Trash2, CalendarIcon } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Edit, Trash2, CalendarIcon, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +58,12 @@ export function Tasks() {
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false); // New state for calendar popover
 
+  // Filter states
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedPriority, setSelectedPriority] = useState<string>("all");
+  const [selectedAssignedTo, setSelectedAssignedTo] = useState<string>("all");
+  const [selectedRelatedDeal, setSelectedRelatedDeal] = useState<string>("all");
+
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
     { value: "in_progress", label: "In Progress" },
@@ -72,13 +78,21 @@ export function Tasks() {
     { value: "urgent", label: "Urgent" },
   ];
 
-  const filteredTasks = tasks.filter(task =>
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (task.assigned_user && getFullName(task.assigned_user).toLowerCase().includes(searchTerm.toLowerCase())) ||
-    task.related_contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.related_deal?.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch =
+      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (task.assigned_user && getFullName(task.assigned_user).toLowerCase().includes(searchTerm.toLowerCase())) ||
+      task.related_contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.related_deal?.title?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = selectedStatus === "all" || task.status === selectedStatus;
+    const matchesPriority = selectedPriority === "all" || task.priority === selectedPriority;
+    const matchesAssignedTo = selectedAssignedTo === "all" || task.assigned_to === selectedAssignedTo;
+    const matchesRelatedDeal = selectedRelatedDeal === "all" || task.related_deal_id === selectedRelatedDeal;
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesAssignedTo && matchesRelatedDeal;
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +150,14 @@ export function Tasks() {
     if (confirm("Are you sure you want to delete this task?")) {
       await deleteTask(id);
     }
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedStatus("all");
+    setSelectedPriority("all");
+    setSelectedAssignedTo("all");
+    setSelectedRelatedDeal("all");
   };
 
   return (
@@ -337,9 +359,9 @@ export function Tasks() {
         </Dialog>
       </div>
 
-      {/* Search */}
-      <div className="flex items-center space-x-4">
-        <div className="relative flex-1 max-w-md">
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search tasks..."
@@ -348,6 +370,68 @@ export function Tasks() {
             className="pl-10"
           />
         </div>
+
+        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            {taskStatuses.map(status => (
+              <SelectItem key={status.value} value={status.value}>
+                {status.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Priority" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Priorities</SelectItem>
+            {taskPriorities.map(priority => (
+              <SelectItem key={priority.value} value={priority.value}>
+                {priority.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedAssignedTo} onValueChange={setSelectedAssignedTo}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Assigned To" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Users</SelectItem>
+            {profiles.map(profile => (
+              <SelectItem key={profile.id} value={profile.id}>
+                {getFullName(profile)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedRelatedDeal} onValueChange={setSelectedRelatedDeal}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Related Deal" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Deals</SelectItem>
+            {deals.map(deal => (
+              <SelectItem key={deal.id} value={deal.id}>
+                {deal.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {(searchTerm !== "" || selectedStatus !== "all" || selectedPriority !== "all" || selectedAssignedTo !== "all" || selectedRelatedDeal !== "all") && (
+          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+            <Filter className="w-4 h-4 mr-2" /> Clear Filters
+          </Button>
+        )}
       </div>
 
       {/* Tasks Table */}
@@ -415,7 +499,9 @@ export function Tasks() {
           {filteredTasks.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchTerm ? "No tasks found matching your search." : "No tasks yet. Create your first task!"}
+                {searchTerm || selectedStatus !== "all" || selectedPriority !== "all" || selectedAssignedTo !== "all" || selectedRelatedDeal !== "all"
+                  ? "No tasks found matching your filters."
+                  : "No tasks yet. Create your first task!"}
               </p>
             </div>
           )}
