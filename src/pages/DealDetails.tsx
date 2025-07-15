@@ -276,11 +276,11 @@ export function DealDetails() {
 
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
-          <div className="flex items-center justify-between"> {/* New flex container */}
-            <CardTitle className="text-2xl font-bold">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold min-w-0 mr-2"> {/* Added min-w-0 and mr-2 */}
               {deal.title}
             </CardTitle>
-            <div className="flex items-center space-x-2"> {/* Group badge and dropdown */}
+            <div className="flex items-center space-x-2 flex-shrink-0"> {/* Added flex-shrink-0 */}
               <Badge className={getStageBadgeClass(deal.stage)}>
                 {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </Badge>
