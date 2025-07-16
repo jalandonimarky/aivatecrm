@@ -1,4 +1,3 @@
-// @ts-nocheck
 /// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
@@ -70,7 +69,17 @@ serve(async (req) => {
       suggestions.push("Categorize the deal with a tier (e.g., 1-OFF, System Development).");
     }
 
-    // New: Check for receipt on 'paid' deals
+    // New: Check for contract on 'in_development' or 'demo' deals
+    if (deal.stage === 'in_development' || deal.stage === 'demo') {
+      const hasContract = deal.attachments?.some((att: any) => att.attachment_type === 'contract');
+      if (!hasContract) {
+        missingFields.push("Contract Attachment");
+        suggestions.push("Upload the signed contract for this deal.");
+        dealBreakerWarning = true; // Consider missing contract for active deal as a deal breaker risk
+      }
+    }
+
+    // Check for receipt on 'paid' deals
     if (deal.stage === 'paid') {
       const hasReceipt = deal.attachments?.some((att: any) => att.attachment_type === 'receipt');
       if (!hasReceipt) {
