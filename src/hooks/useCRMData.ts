@@ -836,8 +836,8 @@ export function useCRMData() {
 
       const fileExtension = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
-      // Updated filePath to use userId instead of profileData.id
-      const filePath = `${dealId}/${userId}/${fileName}`; // Structure: deal_id/user_id/filename
+      // Updated filePath to use userId as the first segment
+      const filePath = `${userId}/${dealId}/${fileName}`; // New structure: user_id/deal_id/filename
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('deal-attachments')
@@ -850,7 +850,7 @@ export function useCRMData() {
 
       // Get public URL (for display/download)
       const { data: publicUrlData } = supabase.storage.from('deal-attachments').getPublicUrl(filePath);
-      const downloadUrl = publicUrlData.publicUrl;
+      const downloadUrl = publicUrlData.publicUrl; // Corrected from publicUrl.publicUrl
 
       // Save attachment metadata to database
       const { data: attachmentData, error: dbError } = await supabase
@@ -923,10 +923,10 @@ export function useCRMData() {
       console.log("Attempting to delete attachment:", { attachmentId, dealId, filePath });
       console.log("Current authenticated user ID (auth.uid()):", currentUserId);
       console.log("File path being sent to storage.remove:", filePath);
-      // Extract the user ID from the filePath for comparison
+      // Extract the user ID from the filePath for comparison (now at index 0)
       const pathSegments = filePath.split('/');
-      const userIdInPath = pathSegments.length > 1 ? pathSegments[1] : 'N/A';
-      console.log("User ID extracted from file path:", userIdInPath);
+      const userIdInPath = pathSegments.length > 0 ? pathSegments[0] : 'N/A'; // Changed index to 0
+      console.log("User ID extracted from file path (index 0):", userIdInPath);
       console.log("Does auth.uid() match user ID in path?", currentUserId === userIdInPath);
 
 
