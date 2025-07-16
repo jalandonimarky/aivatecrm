@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon, Flag } from "lucide-react"; // Import Flag icon
+import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon, Flag } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,12 +35,13 @@ import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
-import { RallyDialog } from "@/components/deals/RallyDialog"; // Import RallyDialog
-import { DataHygieneCard } from "@/components/deals/DataHygieneCard"; // Import DataHygieneCard
-import { DealAttachments } from "@/components/deals/DealAttachments"; // Import DealAttachments
-import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { useToast } from "@/hooks/use-toast"; // Import useToast
-import type { DealNote, Task } from "@/types/crm";
+import { RallyDialog } from "@/components/deals/RallyDialog";
+import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
+import { DealAttachments } from "@/components/deals/DealAttachments";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query"; // Added import
+import type { DealNote, Task, Deal } from "@/types/crm"; // Ensure Deal is imported
 
 interface TaskFormData {
   title: string;
@@ -56,9 +57,42 @@ interface TaskFormData {
 export function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal } = useCRMData();
-  const { toast } = useToast(); // Initialize useToast
-  const [deal, setDeal] = useState<any>(null);
+  // Destructure only the functions needed for mutations and shared data
+  const { contacts, profiles, getFullName, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, updateDeal, uploadDealAttachment, deleteDealAttachment } = useCRMData();
+  const { toast } = useToast();
+
+  // Use useQuery to fetch the specific deal
+  const { data: deal, isLoading: dealLoading, error: dealError } = useQuery<Deal, Error>({
+    queryKey: ['deal', id],
+    queryFn: async () => {
+      if (!id) throw new Error("Deal ID is missing.");
+      const { data, error } = await supabase
+        .from("deals")
+        .select(`
+          *,
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_path, file_size, mime_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      
+      // Generate download URLs for attachments
+      if (data && data.attachments) {
+        data.attachments = data.attachments.map(attachment => ({
+          ...attachment,
+          download_url: supabase.storage.from('deal-attachments').getPublicUrl(attachment.file_path).data.publicUrl
+        }));
+      }
+      return data as Deal;
+    },
+    enabled: !!id, // Only run query if id is available
+  });
+
   const [businessNoteContent, setBusinessNoteContent] = useState("");
   const [developmentNoteContent, setDevelopmentNoteContent] = useState("");
   const [isAddingBusinessNote, setIsAddingBusinessNote] = useState(false);
@@ -84,7 +118,7 @@ export function DealDetails() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
-  const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false); // New state for Rally dialog
+  const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -100,13 +134,12 @@ export function DealDetails() {
     { value: "urgent", label: "Urgent" },
   ];
 
+  // Set related_deal_id for new tasks when ID is available
   useEffect(() => {
-    if (deals.length > 0 && id) {
-      const foundDeal = deals.find(d => d.id === id);
-      setDeal(foundDeal);
+    if (id) {
       setTaskFormData(prev => ({ ...prev, related_deal_id: id }));
     }
-  }, [deals, id]);
+  }, [id]);
 
   const handleAddNote = async (noteType: 'business' | 'development', content: string) => {
     if (!id || !content.trim()) return;
@@ -280,7 +313,7 @@ export function DealDetails() {
     }
   };
 
-  if (loading || !deal) {
+  if (dealLoading) { // Use dealLoading from useQuery
     return (
       <div className="space-y-6">
         <Button variant="outline" onClick={() => navigate("/deals")} className="mb-4">
@@ -291,6 +324,48 @@ export function DealDetails() {
           <Skeleton className="h-96 lg:col-span-2" />
           <Skeleton className="h-96" />
         </div>
+      </div>
+    );
+  }
+
+  if (dealError) {
+    toast({
+      title: "Error loading deal",
+      description: dealError.message,
+      variant: "destructive",
+    });
+    return (
+      <div className="space-y-6">
+        <Button variant="outline" onClick={() => navigate("/deals")} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Deals
+        </Button>
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-destructive">Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-destructive">Failed to load deal details: {dealError.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!deal) {
+    // This case should ideally be covered by dealLoading, but as a fallback
+    return (
+      <div className="space-y-6">
+        <Button variant="outline" onClick={() => navigate("/deals")} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Deals
+        </Button>
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Deal Not Found</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">The deal you are looking for does not exist.</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -365,8 +440,8 @@ export function DealDetails() {
               <p className="text-lg font-semibold">${deal.value.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Stage</p> {/* Moved here */}
-              <Badge className={getStageBadgeClass(deal.stage)}> {/* Moved here */}
+              <p className="text-sm text-muted-foreground">Stage</p>
+              <Badge className={getStageBadgeClass(deal.stage)}>
                 {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </Badge>
             </div>
@@ -807,11 +882,14 @@ export function DealDetails() {
                     <SelectValue placeholder="Select a deal" />
                   </SelectTrigger>
                   <SelectContent>
-                    {deals.map(d => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.title} (${d.value.toLocaleString()})
+                    {/* Ensure 'deal' is not null before mapping */}
+                    {deal ? (
+                      <SelectItem key={deal.id} value={deal.id}>
+                        {deal.title} (${deal.value.toLocaleString()})
                       </SelectItem>
-                    ))}
+                    ) : (
+                      <SelectItem value="unassigned">None</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
