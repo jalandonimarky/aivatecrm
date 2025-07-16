@@ -27,8 +27,9 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCRMData } from "@/hooks/useCRMData";
 import type { Task } from "@/types/crm";
-import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge"; // Import new badge component
-import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge"; // Import new badge component
+import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
+import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
+import { NavLink } from "react-router-dom"; // Import NavLink
 
 interface TaskFormData {
   title: string;
@@ -51,12 +52,12 @@ export function Tasks() {
     description: "",
     status: "pending",
     priority: "medium",
-    assigned_to: "unassigned", // Initialize with "unassigned"
-    related_contact_id: "unassigned", // Initialize with "unassigned"
-    related_deal_id: "unassigned", // Initialize with "unassigned"
+    assigned_to: "unassigned",
+    related_contact_id: "unassigned",
+    related_deal_id: "unassigned",
     due_date: undefined,
   });
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // New state for calendar popover
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   // Filter states
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -100,9 +101,9 @@ export function Tasks() {
       const dataToSubmit = {
         ...formData,
         due_date: formData.due_date ? format(formData.due_date, "yyyy-MM-dd") : null,
-        assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to, // Convert "unassigned" to null
-        related_contact_id: formData.related_contact_id === "unassigned" ? null : formData.related_contact_id, // Convert "unassigned" to null
-        related_deal_id: formData.related_deal_id === "unassigned" ? null : formData.related_deal_id, // Convert "unassigned" to null
+        assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to,
+        related_contact_id: formData.related_contact_id === "unassigned" ? null : formData.related_contact_id,
+        related_deal_id: formData.related_deal_id === "unassigned" ? null : formData.related_deal_id,
       };
 
       if (editingTask) {
@@ -123,9 +124,9 @@ export function Tasks() {
       description: "",
       status: "pending",
       priority: "medium",
-      assigned_to: "unassigned", // Reset to "unassigned"
-      related_contact_id: "unassigned", // Reset to "unassigned"
-      related_deal_id: "unassigned", // Reset to "unassigned"
+      assigned_to: "unassigned",
+      related_contact_id: "unassigned",
+      related_deal_id: "unassigned",
       due_date: undefined,
     });
     setEditingTask(null);
@@ -138,9 +139,9 @@ export function Tasks() {
       description: task.description || "",
       status: task.status,
       priority: task.priority,
-      assigned_to: task.assigned_to || "unassigned", // Set to "unassigned" if null
-      related_contact_id: task.related_contact_id || "unassigned", // Set to "unassigned" if null
-      related_deal_id: task.related_deal_id || "unassigned", // Set to "unassigned" if null
+      assigned_to: task.assigned_to || "unassigned",
+      related_contact_id: task.related_contact_id || "unassigned",
+      related_deal_id: task.related_deal_id || "unassigned",
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setDialogOpen(true);
@@ -210,7 +211,7 @@ export function Tasks() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="status">Status *</Label>
                   <Select
@@ -251,7 +252,7 @@ export function Tasks() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="assigned_to">Assigned To</Label>
                   <Select
@@ -273,7 +274,7 @@ export function Tasks() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="due_date">Due Date</Label>
-                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}> {/* Control popover with new state */}
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
@@ -292,7 +293,7 @@ export function Tasks() {
                         selected={formData.due_date}
                         onSelect={(date) => {
                           setFormData(prev => ({ ...prev, due_date: date || undefined }));
-                          setIsCalendarOpen(false); // Close calendar on date selection
+                          setIsCalendarOpen(false);
                         }}
                         initialFocus
                       />
@@ -301,7 +302,7 @@ export function Tasks() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="related_contact_id">Related Contact</Label>
                   <Select
@@ -440,7 +441,7 @@ export function Tasks() {
           <CardTitle>All Tasks ({filteredTasks.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto"> {/* Added overflow-x-auto */}
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -457,7 +458,11 @@ export function Tasks() {
               <TableBody>
                 {filteredTasks.map((task) => (
                   <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                    <TableCell className="font-medium">{task.title}</TableCell>
+                    <TableCell className="font-medium">
+                      <NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">
+                        {task.title}
+                      </NavLink>
+                    </TableCell>
                     <TableCell>
                       <TaskStatusBadge status={task.status} />
                     </TableCell>
