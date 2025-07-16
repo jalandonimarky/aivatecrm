@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, DealAttachment } from "@/types/crm";
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]); // Corrected: Removed extra parenthesis
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     paidDealsValue: 0,
-    completedDealsValue: 0, // Renamed from doneCompletedDealsValue
+    completedDealsValue: 0,
     cancelledDealsValue: 0,
     pipelineValue: 0,
     totalContacts: 0,
@@ -63,20 +63,29 @@ export function useCRMData() {
       if (contactsError) throw contactsError;
       setContacts(contactsData || []);
 
-      // Fetch deals with related data and notes
+      // Fetch deals with related data, notes, and attachments
       const { data: dealsData, error: dealsError } = await supabase
         .from("deals")
         .select(`
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title))
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_path, file_size, mime_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
 
       if (dealsError) throw dealsError;
-      setDeals((dealsData || []) as Deal[]);
+      // Generate download URLs for attachments
+      const dealsWithUrls = (dealsData || []).map(deal => ({
+        ...deal,
+        attachments: (deal.attachments || []).map(attachment => ({
+          ...attachment,
+          download_url: supabase.storage.from('deal-attachments').getPublicUrl(attachment.file_path).data.publicUrl
+        }))
+      }));
+      setDeals(dealsWithUrls as Deal[]);
 
       // Fetch tasks with related data
       const { data: tasksData, error: tasksError } = await supabase
@@ -148,9 +157,9 @@ export function useCRMData() {
 
     // Current month calculations
     const paidDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'paid');
-    const completedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'completed'); // Changed from done_completed
+    const completedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'completed');
     const cancelledDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'cancelled');
-    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
+    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage));
     const completedTasksCurrent = currentMonthTasks.filter(task => task.status === 'completed');
     const overdueTasksCurrent = currentMonthTasks.filter(task => 
       task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
@@ -162,7 +171,7 @@ export function useCRMData() {
 
     // Previous month calculations
     const paidDealsPrev = prevMonthDeals.filter(deal => deal.stage === 'paid');
-    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
+    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage));
     const completedTasksPrev = prevMonthTasks.filter(task => task.status === 'completed');
     const pendingTasksPrevCount = prevMonthTasks.length - completedTasksPrev.length;
 
@@ -179,11 +188,11 @@ export function useCRMData() {
     setStats({
       totalRevenue: paidDealsValueCurrent,
       paidDealsValue: paidDealsValueCurrent,
-      completedDealsValue: completedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0), // Changed from doneCompletedDealsValue
+      completedDealsValue: completedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
       cancelledDealsValue: cancelledDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
       pipelineValue: pipelineValueCurrent,
-      totalContacts: contactsData.length, // Total contacts overall, not just current month
-      totalTasks: tasksData.length, // Total tasks overall
+      totalContacts: contactsData.length,
+      totalTasks: tasksData.length,
       completedTasks: completedTasksCurrent.length,
       overdueTasks: overdueTasksCurrent.length,
       totalOneOffProjects: oneOffProjectsCurrent.length,
@@ -210,7 +219,7 @@ export function useCRMData() {
       
       setContacts(prev => {
         const updatedContacts = [data as Contact, ...prev];
-        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        calculateStats(deals, tasks, updatedContacts);
         return updatedContacts;
       });
       toast({
@@ -253,7 +262,7 @@ export function useCRMData() {
         const updatedContacts = prev.map(contact => 
           contact.id === id ? (data as Contact) : contact
         );
-        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        calculateStats(deals, tasks, updatedContacts);
         return updatedContacts;
       });
       toast({
@@ -292,7 +301,7 @@ export function useCRMData() {
 
       setContacts(prev => {
         const updatedContacts = prev.filter(contact => contact.id !== id);
-        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        calculateStats(deals, tasks, updatedContacts);
         return updatedContacts;
       });
       toast({
@@ -320,7 +329,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for deals
-  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes' | 'tasks'>) => {
+  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes' | 'tasks' | 'attachments'>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -329,15 +338,24 @@ export function useCRMData() {
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title))
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_path, file_size, mime_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
       if (error) throw error;
 
+      const newDealWithUrls = {
+        ...data as Deal,
+        attachments: (data.attachments || []).map(attachment => ({
+          ...attachment,
+          download_url: supabase.storage.from('deal-attachments').getPublicUrl(attachment.file_path).data.publicUrl
+        }))
+      };
+
       setDeals(prev => {
-        const updatedDeals = [data as Deal, ...prev];
+        const updatedDeals = [newDealWithUrls, ...prev];
         calculateStats(updatedDeals, tasks, contacts);
         return updatedDeals;
       });
@@ -345,7 +363,7 @@ export function useCRMData() {
         title: "Deal created",
         description: "New deal has been added successfully.",
       });
-      return data as Deal;
+      return newDealWithUrls;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -366,7 +384,7 @@ export function useCRMData() {
     }
   };
 
-  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes' | 'tasks'>>) => {
+  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes' | 'tasks' | 'attachments'>>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -376,16 +394,25 @@ export function useCRMData() {
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title))
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_path, file_size, mime_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
       if (error) throw error;
 
+      const updatedDealWithUrls = {
+        ...data as Deal,
+        attachments: (data.attachments || []).map(attachment => ({
+          ...attachment,
+          download_url: supabase.storage.from('deal-attachments').getPublicUrl(attachment.file_path).data.publicUrl
+        }))
+      };
+
       setDeals(prev => {
         const updatedDeals = prev.map(deal =>
-          deal.id === id ? (data as Deal) : deal
+          deal.id === id ? updatedDealWithUrls : deal
         );
         calculateStats(updatedDeals, tasks, contacts);
         return updatedDeals;
@@ -394,7 +421,7 @@ export function useCRMData() {
         title: "Deal updated",
         description: "Deal has been updated successfully.",
       });
-      return data as Deal;
+      return updatedDealWithUrls;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -417,6 +444,27 @@ export function useCRMData() {
 
   const deleteDeal = async (id: string) => {
     try {
+      // First, get all attachments for the deal to delete them from storage
+      const { data: attachmentsToDelete, error: fetchAttachmentsError } = await supabase
+        .from('deal_attachments')
+        .select('file_path')
+        .eq('deal_id', id);
+
+      if (fetchAttachmentsError) throw fetchAttachmentsError;
+
+      if (attachmentsToDelete && attachmentsToDelete.length > 0) {
+        const filePaths = attachmentsToDelete.map(att => att.file_path);
+        const { error: storageError } = await supabase.storage
+          .from('deal-attachments')
+          .remove(filePaths);
+        
+        if (storageError) {
+          console.warn("Failed to delete some files from storage:", storageError.message);
+          // Don't throw, proceed with database deletion as metadata will be removed anyway
+        }
+      }
+
+      // Then delete the deal (which will cascade delete deal_attachments and deal_notes)
       const { error } = await supabase
         .from("deals")
         .delete()
@@ -491,7 +539,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'object' && error !== null) {
         errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
@@ -626,7 +674,7 @@ export function useCRMData() {
         .insert([{ deal_id: dealId, note_type: noteType, content, created_by: user.id }])
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email)
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -672,7 +720,7 @@ export function useCRMData() {
         .eq("id", noteId)
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email)
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -756,6 +804,141 @@ export function useCRMData() {
     }
   };
 
+  // File attachment operations
+  const uploadDealAttachment = async (dealId: string, file: File) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated.");
+
+      const fileExtension = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
+      const filePath = `${dealId}/${user.id}/${fileName}`; // Structure: deal_id/user_id/filename
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('deal-attachments')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL (for display/download)
+      const { data: publicUrlData } = supabase.storage.from('deal-attachments').getPublicUrl(filePath);
+      const downloadUrl = publicUrlData.publicUrl;
+
+      // Save attachment metadata to database
+      const { data: attachmentData, error: dbError } = await supabase
+        .from('deal_attachments')
+        .insert({
+          deal_id: dealId,
+          file_name: file.name,
+          file_path: filePath,
+          file_size: file.size,
+          mime_type: file.type,
+          uploaded_by: user.id,
+        })
+        .select(`
+          *,
+          uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (dbError) {
+        // If DB insert fails, try to remove the uploaded file from storage
+        await supabase.storage.from('deal-attachments').remove([filePath]);
+        throw dbError;
+      }
+
+      const newAttachment: DealAttachment = {
+        ...(attachmentData as DealAttachment),
+        download_url: downloadUrl,
+      };
+
+      // Update the specific deal in the deals state with the new attachment
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { ...deal, attachments: [...(deal.attachments || []), newAttachment] }
+          : deal
+      ));
+
+      toast({
+        title: "File uploaded",
+        description: `${file.name} has been attached successfully.`,
+      });
+      return newAttachment;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error uploading file",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteDealAttachment = async (attachmentId: string, dealId: string, filePath: string) => {
+    try {
+      // Delete from Supabase Storage
+      const { error: storageError } = await supabase.storage
+        .from('deal-attachments')
+        .remove([filePath]);
+
+      if (storageError) throw storageError;
+
+      // Delete metadata from database
+      const { error: dbError } = await supabase
+        .from('deal_attachments')
+        .delete()
+        .eq('id', attachmentId);
+
+      if (dbError) throw dbError;
+
+      // Update the specific deal in the deals state by removing the attachment
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { 
+              ...deal, 
+              attachments: (deal.attachments || []).filter(att => att.id !== attachmentId)
+            }
+          : deal
+      ));
+
+      toast({
+        title: "File deleted",
+        description: "Attachment has been removed successfully.",
+      });
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting file",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -780,6 +963,8 @@ export function useCRMData() {
     createDealNote,
     updateDealNote,
     deleteDealNote,
-    getFullName, // Export getFullName
+    uploadDealAttachment,
+    deleteDealAttachment,
+    getFullName,
   };
 }
