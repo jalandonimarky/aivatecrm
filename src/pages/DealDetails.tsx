@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon, Flag } from "lucide-react"; // Import Flag icon
+import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon, Flag } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,11 +35,11 @@ import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
-import { RallyDialog } from "@/components/deals/RallyDialog"; // Import RallyDialog
-import { DataHygieneCard } from "@/components/deals/DataHygieneCard"; // Import DataHygieneCard
-import { DealAttachmentsSection } from "@/components/deals/DealAttachmentsSection"; // Import DealAttachmentsSection
-import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { RallyDialog } from "@/components/deals/RallyDialog";
+import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
+import { DealAttachmentsSection } from "@/components/deals/DealAttachmentsSection";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { DealNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -56,8 +56,8 @@ interface TaskFormData {
 export function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal } = useCRMData();
-  const { toast } = useToast(); // Initialize useToast
+  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData();
+  const { toast } = useToast();
   const [deal, setDeal] = useState<any>(null);
   const [businessNoteContent, setBusinessNoteContent] = useState("");
   const [developmentNoteContent, setDevelopmentNoteContent] = useState("");
@@ -84,7 +84,7 @@ export function DealDetails() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
-  const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false); // New state for Rally dialog
+  const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -105,8 +105,11 @@ export function DealDetails() {
       const foundDeal = deals.find(d => d.id === id);
       setDeal(foundDeal);
       setTaskFormData(prev => ({ ...prev, related_deal_id: id }));
+    } else if (!loading && !deals.find(d => d.id === id)) {
+      // If not loading and deal is not found (e.g., deleted), navigate back
+      navigate("/deals");
     }
-  }, [deals, id]);
+  }, [deals, id, loading, navigate]);
 
   const handleAddNote = async (noteType: 'business' | 'development', content: string) => {
     if (!id || !content.trim()) return;
@@ -237,6 +240,19 @@ export function DealDetails() {
     }
   };
 
+  const handleDeleteDeal = async () => {
+    if (confirm("Are you sure you want to delete this deal? This action cannot be undone.")) {
+      try {
+        if (id) {
+          await deleteDeal(id);
+          // The useEffect will handle navigation after data re-fetch
+        }
+      } catch (error) {
+        // Error handled in useCRMData hook
+      }
+    }
+  };
+
   // New handler for Rally submission
   const handleRallySubmit = async (date: Date, time: string, note: string) => {
     if (!deal) return;
@@ -350,6 +366,13 @@ export function DealDetails() {
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Deal
                   </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleDeleteDeal}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Deal
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -365,8 +388,8 @@ export function DealDetails() {
               <p className="text-lg font-semibold">${deal.value.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Stage</p> {/* Moved here */}
-              <Badge className={getStageBadgeClass(deal.stage)}> {/* Moved here */}
+              <p className="text-sm text-muted-foreground">Stage</p>
+              <Badge className={getStageBadgeClass(deal.stage)}>
                 {deal.stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </Badge>
             </div>

@@ -8,11 +8,11 @@ export function useCRMData() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]); // Corrected: Removed extra parenthesis
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     paidDealsValue: 0,
-    completedDealsValue: 0, // Renamed from doneCompletedDealsValue
+    completedDealsValue: 0,
     cancelledDealsValue: 0,
     pipelineValue: 0,
     totalContacts: 0,
@@ -149,9 +149,9 @@ export function useCRMData() {
 
     // Current month calculations
     const paidDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'paid');
-    const completedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'completed'); // Changed from done_completed
+    const completedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'completed');
     const cancelledDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'cancelled');
-    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
+    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage));
     const completedTasksCurrent = currentMonthTasks.filter(task => task.status === 'completed');
     const overdueTasksCurrent = currentMonthTasks.filter(task => 
       task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
@@ -163,7 +163,7 @@ export function useCRMData() {
 
     // Previous month calculations
     const paidDealsPrev = prevMonthDeals.filter(deal => deal.stage === 'paid');
-    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
+    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage));
     const completedTasksPrev = prevMonthTasks.filter(task => task.status === 'completed');
     const pendingTasksPrevCount = prevMonthTasks.length - completedTasksPrev.length;
 
@@ -180,11 +180,11 @@ export function useCRMData() {
     setStats({
       totalRevenue: paidDealsValueCurrent,
       paidDealsValue: paidDealsValueCurrent,
-      completedDealsValue: completedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0), // Changed from doneCompletedDealsValue
+      completedDealsValue: completedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
       cancelledDealsValue: cancelledDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
       pipelineValue: pipelineValueCurrent,
-      totalContacts: contactsData.length, // Total contacts overall, not just current month
-      totalTasks: tasksData.length, // Total tasks overall
+      totalContacts: contactsData.length,
+      totalTasks: tasksData.length,
       completedTasks: completedTasksCurrent.length,
       overdueTasks: overdueTasksCurrent.length,
       totalOneOffProjects: oneOffProjectsCurrent.length,
@@ -209,15 +209,11 @@ export function useCRMData() {
 
       if (error) throw error;
       
-      setContacts(prev => {
-        const updatedContacts = [data as Contact, ...prev];
-        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
-        return updatedContacts;
-      });
       toast({
         title: "Contact created",
         description: "New contact has been added successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as Contact;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -250,17 +246,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setContacts(prev => {
-        const updatedContacts = prev.map(contact => 
-          contact.id === id ? (data as Contact) : contact
-        );
-        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
-        return updatedContacts;
-      });
       toast({
         title: "Contact updated",
         description: "Contact has been updated successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as Contact;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -291,15 +281,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setContacts(prev => {
-        const updatedContacts = prev.filter(contact => contact.id !== id);
-        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
-        return updatedContacts;
-      });
       toast({
         title: "Contact deleted",
         description: "Contact has been removed successfully.",
       });
+      await fetchData(); // Re-fetch all data
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -338,15 +324,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setDeals(prev => {
-        const updatedDeals = [data as Deal, ...prev];
-        calculateStats(updatedDeals, tasks, contacts);
-        return updatedDeals;
-      });
       toast({
         title: "Deal created",
         description: "New deal has been added successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as Deal;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -386,17 +368,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setDeals(prev => {
-        const updatedDeals = prev.map(deal =>
-          deal.id === id ? (data as Deal) : deal
-        );
-        calculateStats(updatedDeals, tasks, contacts);
-        return updatedDeals;
-      });
       toast({
         title: "Deal updated",
         description: "Deal has been updated successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as Deal;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -427,15 +403,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setDeals(prev => {
-        const updatedDeals = prev.filter(deal => deal.id !== id);
-        calculateStats(updatedDeals, tasks, contacts);
-        return updatedDeals;
-      });
       toast({
         title: "Deal deleted",
         description: "Deal has been removed successfully.",
       });
+      await fetchData(); // Re-fetch all data
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -472,22 +444,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setTasks(prev => {
-        const updatedTasks = [data as Task, ...prev];
-        calculateStats(deals, updatedTasks, contacts);
-        return updatedTasks;
-      });
-      // Also update the specific deal in the deals state with the new task if it's related
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.id === data.related_deal_id 
-          ? { ...deal, tasks: [...(deal.tasks || []), data as Task] }
-          : deal
-      ));
-
       toast({
         title: "Task created",
         description: "New task has been added successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as Task;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -525,29 +486,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setTasks(prev => {
-        const updatedTasks = prev.map(task =>
-          task.id === id ? (data as Task) : task
-        );
-        calculateStats(deals, updatedTasks, contacts);
-        return updatedTasks;
-      });
-      // Also update the specific deal in the deals state with the updated task if it's related
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.id === data.related_deal_id 
-          ? { 
-              ...deal, 
-              tasks: (deal.tasks || []).map(task => 
-                task.id === id ? (data as Task) : task
-              )
-            }
-          : deal
-      ));
-
       toast({
         title: "Task updated",
         description: "Task has been updated successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as Task;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -578,25 +521,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setTasks(prev => {
-        const updatedTasks = prev.filter(task => task.id !== id);
-        calculateStats(deals, updatedTasks, contacts);
-        return updatedTasks;
-      });
-      // Also remove the task from the specific deal in the deals state if it was related
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.tasks?.some(task => task.id === id)
-          ? { 
-              ...deal, 
-              tasks: (deal.tasks || []).filter(task => task.id !== id)
-            }
-          : deal
-      ));
-
       toast({
         title: "Task deleted",
         description: "Task has been removed successfully.",
       });
+      await fetchData(); // Re-fetch all data
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -635,17 +564,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      // Update the specific deal in the deals state with the new note
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.id === dealId 
-          ? { ...deal, notes: [...(deal.notes || []), data as DealNote] }
-          : deal
-      ));
-
       toast({
         title: "Note added",
         description: "Your note has been added successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as DealNote;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -681,21 +604,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.id === dealId 
-          ? { 
-              ...deal, 
-              notes: (deal.notes || []).map(note => 
-                note.id === noteId ? (data as DealNote) : note
-              )
-            }
-          : deal
-      ));
-
       toast({
         title: "Note updated",
         description: "Your note has been updated successfully.",
       });
+      await fetchData(); // Re-fetch all data
       return data as DealNote;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -726,19 +639,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.id === dealId 
-          ? { 
-              ...deal, 
-              notes: (deal.notes || []).filter(note => note.id !== noteId)
-            }
-          : deal
-      ));
-
       toast({
         title: "Note deleted",
         description: "Your note has been deleted successfully.",
       });
+      await fetchData(); // Re-fetch all data
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -803,7 +708,7 @@ export function useCRMData() {
           file_name: file.name, 
           file_url: publicUrlData.publicUrl, 
           attachment_type: attachmentType, 
-          uploaded_by: uploaderProfileId // Use the fetched profile ID here
+          uploaded_by: uploaderProfileId
         }])
         .select(`
           *,
@@ -813,16 +718,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.id === dealId 
-          ? { ...deal, attachments: [...(deal.attachments || []), data as DealAttachment] }
-          : deal
-      ));
-
       toast({
         title: "Attachment uploaded",
         description: "File has been successfully attached to the deal.",
       });
+      await fetchData(); // Re-fetch all data
       return data as DealAttachment;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -869,19 +769,11 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.id === dealId 
-          ? { 
-              ...deal, 
-              attachments: (deal.attachments || []).filter(attachment => attachment.id !== attachmentId)
-            }
-          : deal
-      ));
-
       toast({
         title: "Attachment deleted",
         description: "File has been removed successfully.",
       });
+      await fetchData(); // Re-fetch all data
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -926,8 +818,8 @@ export function useCRMData() {
     createDealNote,
     updateDealNote,
     deleteDealNote,
-    uploadDealAttachment, // Export new attachment functions
-    deleteDealAttachment, // Export new attachment functions
-    getFullName, // Export getFullName
+    uploadDealAttachment,
+    deleteDealAttachment,
+    getFullName,
   };
 }
