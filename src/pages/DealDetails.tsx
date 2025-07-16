@@ -445,7 +445,7 @@ export function DealDetails() {
       <DealTimeline deal={deal} />
 
       {/* Deal Attachments Section */}
-      {deal && <DealAttachmentsSection deal={deal} />}
+      {deal && <DealAttachmentsSection key={deal.attachments?.length || 0} deal={deal} />}
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
