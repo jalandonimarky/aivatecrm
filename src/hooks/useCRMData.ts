@@ -722,7 +722,7 @@ export function useCRMData() {
         title: "Attachment uploaded",
         description: "File has been successfully attached to the deal.",
       });
-      await fetchData(); // Re-fetch all data
+      window.location.reload(); // Force full page refresh
       return data as DealAttachment;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
@@ -773,7 +773,7 @@ export function useCRMData() {
         title: "Attachment deleted",
         description: "File has been removed successfully.",
       });
-      await fetchData(); // Re-fetch all data
+      window.location.reload(); // Force full page refresh
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
