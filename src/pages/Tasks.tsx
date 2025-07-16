@@ -43,7 +43,7 @@ interface TaskFormData {
 }
 
 export function Tasks() {
-  const { tasks, contacts, deals, profiles, loading, createTask, updateTask, deleteTask, getFullName } = useCRMData();
+  const { tasks, contacts, deals, profiles, loading, createTask, updateTask, deleteTask, getFullName } = useCRMData(); // Destructure all needed properties
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);

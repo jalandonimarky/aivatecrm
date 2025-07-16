@@ -21,7 +21,7 @@ interface DealAttachmentsSectionProps {
 }
 
 export function DealAttachmentsSection({ deal }: DealAttachmentsSectionProps) {
-  const { uploadDealAttachment, deleteDealAttachment, getFullName } = useCRMData();
+  const { uploadDealAttachment, deleteDealAttachment, getFullName } = useCRMData(); // Destructure all needed properties
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [attachmentType, setAttachmentType] = useState<DealAttachment['attachment_type']>('other');

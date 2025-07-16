@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client"; // Import supabase
 import { NotificationBell } from "./NotificationBell"; // Import NotificationBell
 
 export function Layout() {
-  const { profiles } = useCRMData();
+  const { profiles } = useCRMData(); // Destructure profiles
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
 
   useEffect(() => {

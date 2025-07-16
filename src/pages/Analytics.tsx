@@ -10,7 +10,7 @@ import { format, parseISO, startOfMonth } from "date-fns";
 import type { Deal, Task } from "@/types/crm";
 
 export function Analytics() {
-  const { deals, contacts, tasks, loading } = useCRMData();
+  const { deals, contacts, tasks, loading } = useCRMData(); // Destructure all needed properties
 
   // Helper functions for colors (consistent with existing design)
   const getStageColor = (stage: Deal['stage']) => {

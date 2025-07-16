@@ -22,9 +22,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCRMData } from "@/hooks/useCRMData";
 import type { Contact } from "@/types/crm";
+import { NavLink } from "react-router-dom"; // Import NavLink
 
 export function Contacts() {
-  const { contacts, loading, createContact, updateContact, deleteContact } = useCRMData();
+  const { contacts, loading, createContact, updateContact, deleteContact } = useCRMData(); // Destructure all needed properties
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -229,7 +230,11 @@ export function Contacts() {
               <TableBody>
                 {filteredContacts.map((contact) => (
                   <TableRow key={contact.id} className="hover:bg-muted/50 transition-smooth">
-                    <TableCell className="font-medium">{contact.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <NavLink to={`/contacts/${contact.id}`} className="text-primary hover:underline">
+                        {contact.name}
+                      </NavLink>
+                    </TableCell>
                     <TableCell>{contact.email || "-"}</TableCell>
                     <TableCell>{contact.company || "-"}</TableCell>
                     <TableCell>{contact.position || "-"}</TableCell>

@@ -7,10 +7,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Contacts } from "./pages/Contacts";
+import { ContactDetails } from "./pages/ContactDetails"; // Import ContactDetails
 import { Deals } from "./pages/Deals";
 import { DealDetails } from "./pages/DealDetails";
 import { Tasks } from "./pages/Tasks";
-import { TaskDetails } from "./pages/TaskDetails"; // Import TaskDetails
+import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
 import { AuthPage } from "./pages/AuthPage";
@@ -62,10 +63,11 @@ const App = () => {
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/contacts" element={<Contacts />} />
+                <Route path="/contacts/:id" element={<ContactDetails />} /> {/* New route for ContactDetails */}
                 <Route path="/deals" element={<Deals />} />
                 <Route path="/deals/:id" element={<DealDetails />} />
                 <Route path="/tasks" element={<Tasks />} />
-                <Route path="/tasks/:id" element={<TaskDetails />} /> {/* New route for TaskDetails */}
+                <Route path="/tasks/:id" element={<TaskDetails />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/settings" element={<Settings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

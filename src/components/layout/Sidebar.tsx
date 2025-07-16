@@ -41,7 +41,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { toast } = useToast();
-  const { profiles } = useCRMData();
+  const { profiles } = useCRMData(); // Destructure profiles
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 

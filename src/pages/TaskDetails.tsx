@@ -39,9 +39,9 @@ interface TaskFormData {
 }
 
 export function TaskDetails() {
+  const { tasks, contacts, deals, profiles, loading, updateTask, deleteTask, createTaskNote, updateTaskNote, deleteTaskNote, getFullName } = useCRMData(); // Destructure all needed properties
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { tasks, contacts, deals, profiles, loading, updateTask, deleteTask, createTaskNote, updateTaskNote, deleteTaskNote, getFullName } = useCRMData();
 
   const task = tasks.find(t => t.id === id);
 

@@ -54,14 +54,18 @@ export function useCRMData() {
       if (profilesError) throw profilesError;
       setProfiles((profilesData || []) as Profile[]);
 
-      // Fetch contacts
+      // Fetch contacts with related deals and tasks
       const { data: contactsData, error: contactsError } = await supabase
         .from("contacts")
-        .select("id, name, email, phone, company, position, notes, created_by, created_at, updated_at")
+        .select(`
+          *,
+          deals:deals(id, title, value, stage, expected_close_date, created_at, updated_at),
+          tasks:tasks(id, title, status, priority, due_date, created_at, updated_at)
+        `)
         .order("created_at", { ascending: false });
 
       if (contactsError) throw contactsError;
-      setContacts(contactsData || []);
+      setContacts((contactsData || []) as Contact[]);
 
       // Fetch deals with related data, notes, and attachments
       const { data: dealsData, error: dealsError } = await supabase
@@ -200,12 +204,16 @@ export function useCRMData() {
   };
 
   // CRUD operations for contacts
-  const createContact = async (contactData: Omit<Contact, 'id' | 'created_at' | 'updated_at'>) => {
+  const createContact = async (contactData: Omit<Contact, 'id' | 'created_at' | 'updated_at' | 'deals' | 'tasks'>) => {
     try {
       const { data, error } = await supabase
         .from("contacts")
         .insert([contactData])
-        .select()
+        .select(`
+          *,
+          deals:deals(id, title, value, stage, expected_close_date, created_at, updated_at),
+          tasks:tasks(id, title, status, priority, due_date, created_at, updated_at)
+        `)
         .single();
 
       if (error) throw error;
@@ -236,13 +244,17 @@ export function useCRMData() {
     }
   };
 
-  const updateContact = async (id: string, updates: Partial<Contact>) => {
+  const updateContact = async (id: string, updates: Partial<Omit<Contact, 'deals' | 'tasks'>>) => {
     try {
       const { data, error } = await supabase
         .from("contacts")
         .update(updates)
         .eq("id", id)
-        .select()
+        .select(`
+          *,
+          deals:deals(id, title, value, stage, expected_close_date, created_at, updated_at),
+          tasks:tasks(id, title, status, priority, due_date, created_at, updated_at)
+        `)
         .single();
 
       if (error) throw error;
@@ -529,7 +541,7 @@ export function useCRMData() {
         description: "Task has been removed successfully.",
       });
       await fetchData(); // Re-fetch all data
-    } catch (error: any) {
+    } catch (error: any) { // Corrected syntax here
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -795,6 +807,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -923,6 +937,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }

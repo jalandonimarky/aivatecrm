@@ -54,9 +54,9 @@ interface TaskFormData {
 }
 
 export function DealDetails() {
+  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData(); // Destructure all needed properties
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData();
   const { toast } = useToast();
   
   // Directly derive the deal from the deals array

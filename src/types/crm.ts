@@ -21,6 +21,8 @@ export interface Contact {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  deals?: Deal[]; // Added related deals
+  tasks?: Task[]; // Added related tasks
 }
 
 export interface DealNote {

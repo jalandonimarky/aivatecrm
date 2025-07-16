@@ -6,7 +6,7 @@ import { useCRMData } from "@/hooks/useCRMData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function Dashboard() {
-  const { stats, loading } = useCRMData();
+  const { stats, loading } = useCRMData(); // Destructure stats and loading
 
   if (loading) {
     return (

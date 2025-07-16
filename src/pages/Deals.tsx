@@ -25,7 +25,7 @@ import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function Deals() {
-  const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData();
+  const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData(); // Destructure all needed properties
   const [searchTerm, setSearchTerm] = useState("");
   const [isDealFormDialogOpen, setIsDealFormDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
@@ -100,6 +100,7 @@ export function Deals() {
     setSelectedStage("all");
     setSelectedTier("all");
     setSelectedAssignedTo("all");
+    handleClearFilters();
   };
 
   return (
