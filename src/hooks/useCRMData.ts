@@ -669,9 +669,18 @@ export function useCRMData() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profileData) throw new Error("User profile not found.");
+
       const { data, error } = await supabase
         .from("deal_notes")
-        .insert([{ deal_id: dealId, note_type: noteType, content, created_by: user.id }])
+        .insert([{ deal_id: dealId, note_type: noteType, content, created_by: profileData.id }])
         .select(`
           *,
           creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
@@ -811,9 +820,19 @@ export function useCRMData() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
+      // Fetch the profile ID for the current user
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profileData) throw new Error("User profile not found.");
+
       const fileExtension = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
-      const filePath = `${dealId}/${user.id}/${fileName}`; // Structure: deal_id/user_id/filename
+      const filePath = `${dealId}/${profileData.id}/${fileName}`; // Structure: deal_id/profile_id/filename
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('deal-attachments')
@@ -837,7 +856,7 @@ export function useCRMData() {
           file_path: filePath,
           file_size: file.size,
           mime_type: file.type,
-          uploaded_by: user.id,
+          uploaded_by: profileData.id, // Use the fetched profile ID here
         })
         .select(`
           *,
