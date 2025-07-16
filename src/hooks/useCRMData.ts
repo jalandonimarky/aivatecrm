@@ -920,20 +920,32 @@ export function useCRMData() {
 
   const deleteDealAttachment = async (attachmentId: string, dealId: string, filePath: string) => {
     try {
+      console.log("Attempting to delete attachment:", { attachmentId, dealId, filePath });
+
       // Delete from Supabase Storage
+      console.log("Deleting from storage:", filePath);
       const { error: storageError } = await supabase.storage
         .from('deal-attachments')
         .remove([filePath]);
 
-      if (storageError) throw storageError;
+      if (storageError) {
+        console.error("Storage deletion error:", storageError);
+        throw storageError;
+      }
+      console.log("Storage deletion successful.");
 
       // Delete metadata from database
+      console.log("Deleting from database:", attachmentId);
       const { error: dbError } = await supabase
         .from('deal_attachments')
         .delete()
         .eq('id', attachmentId);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("Database deletion error:", dbError);
+        throw dbError;
+      }
+      console.log("Database deletion successful.");
 
       // Update the specific deal in the deals state by removing the attachment
       setDeals(prevDeals => prevDeals.map(deal => 
@@ -950,6 +962,7 @@ export function useCRMData() {
         description: "Attachment has been removed successfully.",
       });
     } catch (error: any) {
+      console.error("Caught error in deleteDealAttachment:", error);
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
