@@ -33,6 +33,15 @@ export interface DealNote {
   creator?: Profile; // To store the profile of the note creator
 }
 
+export interface TaskNote { // New interface for task notes
+  id: string;
+  task_id: string;
+  content: string;
+  created_at: string;
+  created_by?: string;
+  creator?: Profile; // To store the profile of the note creator
+}
+
 export interface DealAttachment { // New interface for deal attachments
   id: string;
   deal_id: string;
@@ -80,6 +89,7 @@ export interface Task {
   assigned_user?: Profile;
   related_contact?: Contact;
   related_deal?: Deal;
+  notes?: TaskNote[]; // Added notes array for tasks
 }
 
 export interface Notification {

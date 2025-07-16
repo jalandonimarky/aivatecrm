@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MoreHorizontal, Edit, Trash2, CalendarIcon } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Edit, Trash2, CalendarIcon, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import type { Task } from "@/types/crm";
+import type { Task, TaskNote } from "@/types/crm"; // Import TaskNote
 
 interface TaskFormData {
   title: string;
@@ -41,7 +41,7 @@ interface TaskFormData {
 export function TaskDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { tasks, contacts, deals, profiles, loading, updateTask, deleteTask, getFullName } = useCRMData();
+  const { tasks, contacts, deals, profiles, loading, updateTask, deleteTask, createTaskNote, updateTaskNote, deleteTaskNote, getFullName } = useCRMData();
 
   const task = tasks.find(t => t.id === id);
 
@@ -57,6 +57,12 @@ export function TaskDetails() {
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteContent, setNewNoteContent] = useState("");
+  const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<TaskNote | null>(null);
+  const [editNoteContent, setEditNoteContent] = useState("");
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -126,6 +132,47 @@ export function TaskDetails() {
     }
   };
 
+  const handleAddNote = async () => {
+    if (!id || !newNoteContent.trim()) return;
+
+    try {
+      await createTaskNote(id, newNoteContent);
+      setNewNoteContent("");
+      setIsAddingNote(false);
+    } catch (error) {
+      // Error handled in useCRMData hook
+    }
+  };
+
+  const handleEditNoteClick = (note: TaskNote) => {
+    setEditingNote(note);
+    setEditNoteContent(note.content);
+    setIsEditNoteDialogOpen(true);
+  };
+
+  const handleUpdateNoteSubmit = async () => {
+    if (!editingNote || !editNoteContent.trim()) return;
+
+    try {
+      await updateTaskNote(editingNote.id, editingNote.task_id, { content: editNoteContent });
+      setIsEditNoteDialogOpen(false);
+      setEditingNote(null);
+      setEditNoteContent("");
+    } catch (error) {
+      // Error handled in useCRMData hook
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string, taskId: string) => {
+    if (confirm("Are you sure you want to delete this note?")) {
+      try {
+        await deleteTaskNote(noteId, taskId);
+      } catch (error) {
+        // Error handled in useCRMData hook
+      }
+    }
+  };
+
   if (loading || !task) {
     return (
       <div className="space-y-6">
@@ -140,6 +187,10 @@ export function TaskDetails() {
       </div>
     );
   }
+
+  const sortedNotes = (task.notes || []).sort((a: TaskNote, b: TaskNote) => 
+    parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime()
+  );
 
   return (
     <div className="space-y-6">
@@ -236,7 +287,93 @@ export function TaskDetails() {
         </CardContent>
       </Card>
 
-      {/* Edit Task Dialog */}
+      {/* Task Notes/Activity Section */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Task Activity ({sortedNotes.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {sortedNotes.length === 0 && <p className="text-muted-foreground text-sm">No activity notes yet for this task.</p>}
+          {sortedNotes.map((note: TaskNote) => (
+            <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
+              <div>
+                <p className="text-sm text-foreground">{note.content}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
+                </p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handleDeleteNote(note.id, note.task_id)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ))}
+          <div className="mt-4">
+            {isAddingNote ? (
+              <div className="space-y-2">
+                <Label htmlFor="new-note-content">Add New Activity Note</Label>
+                <Textarea
+                  id="new-note-content"
+                  value={newNoteContent}
+                  onChange={(e) => setNewNoteContent(e.target.value)}
+                  placeholder="Type your activity note here..."
+                  rows={3}
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
+                  <Button onClick={handleAddNote}>Add Note</Button>
+                </div>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={() => setIsAddingNote(true)} className="w-full">
+                <Plus className="w-4 h-4 mr-2" /> Add Activity Note
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Edit Note Dialog */}
+      <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Task Note</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-note-content">Note Content</Label>
+              <Textarea
+                id="edit-note-content"
+                value={editNoteContent}
+                onChange={(e) => setEditNoteContent(e.target.value)}
+                rows={5}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditNoteDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateNoteSubmit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Task Dialog (existing) */}
       <Dialog open={isTaskFormDialogOpen} onOpenChange={setIsTaskFormDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>

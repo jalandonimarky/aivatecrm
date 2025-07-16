@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, DealAttachment } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, DealAttachment, TaskNote } from "@/types/crm";
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -71,7 +71,7 @@ export function useCRMData() {
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
           attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
@@ -79,14 +79,15 @@ export function useCRMData() {
       if (dealsError) throw dealsError;
       setDeals((dealsData || []) as Deal[]);
 
-      // Fetch tasks with related data
+      // Fetch tasks with related data and notes
       const { data: tasksData, error: tasksError } = await supabase
         .from("tasks")
         .select(`
           *,
           assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
-          related_deal:deals(id, title, value)
+          related_deal:deals(id, title, value, stage, created_at, updated_at),
+          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
 
@@ -317,7 +318,7 @@ export function useCRMData() {
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
           attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
@@ -361,7 +362,7 @@ export function useCRMData() {
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
           attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
@@ -429,7 +430,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for tasks
-  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal'>) => {
+  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -438,7 +439,8 @@ export function useCRMData() {
           *,
           assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
-          related_deal:deals(id, title, value)
+          related_deal:deals(id, title, value, stage, created_at, updated_at),
+          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -470,7 +472,7 @@ export function useCRMData() {
     }
   };
 
-  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal'>>) => {
+  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -480,7 +482,8 @@ export function useCRMData() {
           *,
           assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
-          related_deal:deals(id, title, value)
+          related_deal:deals(id, title, value, stage, created_at, updated_at),
+          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -576,8 +579,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -616,8 +617,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -650,13 +649,123 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
       toast({
         title: "Error deleting note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // CRUD operations for task notes
+  const createTaskNote = async (taskId: string, content: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated.");
+
+      const { data, error } = await supabase
+        .from("task_notes")
+        .insert([{ task_id: taskId, content, created_by: user.id }])
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Task note added",
+        description: "Your task note has been added successfully.",
+      });
+      await fetchData(); // Re-fetch all data
+      return data as TaskNote;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error adding task note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const updateTaskNote = async (noteId: string, taskId: string, updates: Partial<Omit<TaskNote, 'id' | 'task_id' | 'created_at' | 'created_by' | 'creator'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("task_notes")
+        .update(updates)
+        .eq("id", noteId)
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Task note updated",
+        description: "Your task note has been updated successfully.",
+      });
+      await fetchData(); // Re-fetch all data
+      return data as TaskNote;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error updating task note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteTaskNote = async (noteId: string, taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from("task_notes")
+        .delete()
+        .eq("id", noteId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Task note deleted",
+        description: "Your task note has been deleted successfully.",
+      });
+      await fetchData(); // Re-fetch all data
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting task note",
         description: errorMessage,
         variant: "destructive",
       });
@@ -730,8 +839,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -780,8 +887,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -818,6 +923,9 @@ export function useCRMData() {
     createDealNote,
     updateDealNote,
     deleteDealNote,
+    createTaskNote, // Export new task note functions
+    updateTaskNote,
+    deleteTaskNote,
     uploadDealAttachment,
     deleteDealAttachment,
     getFullName,
