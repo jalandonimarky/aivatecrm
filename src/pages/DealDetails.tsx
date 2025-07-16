@@ -37,11 +37,10 @@ import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { RallyDialog } from "@/components/deals/RallyDialog";
 import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
-import { DealAttachments } from "@/components/deals/DealAttachments";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query"; // Added import
-import type { DealNote, Task, Deal } from "@/types/crm"; // Ensure Deal is imported
+import { useQuery } from "@tanstack/react-query";
+import type { DealNote, Task, Deal } from "@/types/crm";
 
 interface TaskFormData {
   title: string;
@@ -57,8 +56,7 @@ interface TaskFormData {
 export function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // Destructure only the functions needed for mutations and shared data
-  const { contacts, profiles, getFullName, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, updateDeal, uploadDealAttachment, deleteDealAttachment } = useCRMData();
+  const { contacts, profiles, getFullName, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, updateDeal } = useCRMData();
   const { toast } = useToast();
 
   // Use useQuery to fetch the specific deal
@@ -73,21 +71,13 @@ export function DealDetails() {
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at), related_contact:contacts(id, name), related_deal:deals(id, title)),
-          attachments:deal_attachments(id, deal_id, file_name, file_path, file_size, mime_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at), related_contact:contacts(id, name), related_deal:deals(id, title))
         `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
       
-      // Generate download URLs for attachments
-      if (data && data.attachments) {
-        data.attachments = data.attachments.map(attachment => ({
-          ...attachment,
-          download_url: supabase.storage.from('deal-attachments').getPublicUrl(attachment.file_path).data.publicUrl
-        }));
-      }
       return data as Deal;
     },
     enabled: !!id, // Only run query if id is available
@@ -488,9 +478,6 @@ export function DealDetails() {
 
       {/* Project Timeline Section */}
       <DealTimeline deal={deal} />
-
-      {/* Attachments Section */}
-      {deal && <DealAttachments deal={deal} />}
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

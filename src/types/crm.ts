@@ -1,11 +1,11 @@
 export interface Profile {
   id: string;
   user_id: string;
-  first_name: string; // Changed from full_name
-  last_name: string;  // Added
+  first_name: string;
+  last_name: string;
   email: string;
   avatar_url?: string;
-  role: string; // Changed from 'admin' | 'editor' | 'viewer' to string
+  role: string;
   created_at: string;
   updated_at: string;
 }
@@ -26,24 +26,11 @@ export interface Contact {
 export interface DealNote {
   id: string;
   deal_id: string;
-  note_type: 'business' | 'development'; // Changed 'tech' to 'development'
+  note_type: 'business' | 'development';
   content: string;
   created_at: string;
   created_by?: string;
-  creator?: Profile; // To store the profile of the note creator
-}
-
-export interface DealAttachment {
-  id: string;
-  deal_id: string;
-  file_name: string;
-  file_path: string; // Path in Supabase Storage bucket
-  file_size: number; // Size in bytes
-  mime_type: string;
-  uploaded_by?: string;
-  uploader?: Profile; // To store the profile of the uploader
-  created_at: string;
-  download_url?: string; // Will be generated on the fly
+  creator?: Profile;
 }
 
 export interface Deal {
@@ -51,8 +38,8 @@ export interface Deal {
   title: string;
   description?: string;
   value: number;
-  stage: 'lead' | 'in_development' | 'demo' | 'discovery_call' | 'paid' | 'completed' | 'cancelled'; // Updated 'proposal' to 'demo' and 'done_completed' to 'completed'
-  tier?: string; // Added tier
+  stage: 'lead' | 'in_development' | 'demo' | 'discovery_call' | 'paid' | 'completed' | 'cancelled';
+  tier?: string;
   contact_id?: string;
   assigned_to?: string;
   expected_close_date?: string;
@@ -61,9 +48,8 @@ export interface Deal {
   updated_at: string;
   contact?: Contact;
   assigned_user?: Profile;
-  notes?: DealNote[]; // Added notes array
-  tasks?: Task[]; // Added tasks array
-  attachments?: DealAttachment[]; // Added attachments array
+  notes?: DealNote[];
+  tasks?: Task[];
 }
 
 export interface Task {
@@ -101,7 +87,7 @@ interface ChangeMetric {
 export interface DashboardStats {
   totalRevenue: number;
   paidDealsValue: number;
-  completedDealsValue: number; // Renamed from doneCompletedDealsValue
+  completedDealsValue: number;
   cancelledDealsValue: number;
   pipelineValue: number;
   totalContacts: number;
@@ -111,14 +97,12 @@ export interface DashboardStats {
   totalOneOffProjects: number;
   totalSystemDevelopment: number;
   
-  // New fields for month-over-month changes
   paidDealsValueChange?: ChangeMetric;
   pipelineValueChange?: ChangeMetric;
   totalContactsChange?: ChangeMetric;
   pendingTasksChange?: ChangeMetric;
 }
 
-// New types for Data Hygiene Checker
 export interface DataHygieneInsights {
   missingFields: string[];
   suggestions: string[];

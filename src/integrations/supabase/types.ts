@@ -61,54 +61,6 @@ export type Database = {
           },
         ]
       }
-      deal_attachments: {
-        Row: {
-          id: string
-          deal_id: string
-          file_name: string
-          file_path: string
-          file_size: number
-          mime_type: string
-          uploaded_by: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          deal_id: string
-          file_name: string
-          file_path: string
-          file_size: number
-          mime_type: string
-          uploaded_by?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          deal_id?: string
-          file_name?: string
-          file_path?: string
-          file_size?: number
-          mime_type?: string
-          uploaded_by?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "deal_attachments_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "deals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "deal_attachments_uploaded_by_fkey"
-            columns: ["uploaded_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       deal_notes: {
         Row: {
           id: string
@@ -164,7 +116,7 @@ export type Database = {
           title: string
           updated_at: string
           value: number
-          tier: string | null // Added tier
+          tier: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -178,7 +130,7 @@ export type Database = {
           title: string
           updated_at?: string
           value?: number
-          tier?: string | null // Added tier
+          tier?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -192,7 +144,7 @@ export type Database = {
           title?: string
           updated_at?: string
           value?: number
-          tier?: string | null // Added tier
+          tier?: string | null
         }
         Relationships: [
           {
@@ -265,8 +217,8 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
-          first_name: string // Added this line
-          last_name: string // Added this line
+          first_name: string
+          last_name: string
           id: string
           role: string
           updated_at: string
@@ -276,8 +228,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email: string
-          first_name?: string // Added this line
-          last_name?: string // Added this line
+          first_name?: string
+          last_name?: string
           id?: string
           role?: string
           updated_at?: string
@@ -287,8 +239,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
-          first_name?: string // Added this line
-          last_name?: string // Added this line
+          first_name?: string
+          last_name?: string
           id?: string
           role?: string
           updated_at?: string
@@ -296,9 +248,9 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_user_id_fkey" // Ensure this foreign key is present
+            foreignKeyName: "profiles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true // Assuming a one-to-one relationship with auth.users
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
