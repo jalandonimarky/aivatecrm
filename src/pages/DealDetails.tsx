@@ -58,7 +58,10 @@ export function DealDetails() {
   const navigate = useNavigate();
   const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData();
   const { toast } = useToast();
-  const [deal, setDeal] = useState<any>(null);
+  
+  // Directly derive the deal from the deals array
+  const deal = deals.find(d => d.id === id);
+
   const [businessNoteContent, setBusinessNoteContent] = useState("");
   const [developmentNoteContent, setDevelopmentNoteContent] = useState("");
   const [isAddingBusinessNote, setIsAddingBusinessNote] = useState(false);
@@ -100,16 +103,20 @@ export function DealDetails() {
     { value: "urgent", label: "Urgent" },
   ];
 
+  // Effect to handle navigation if deal is not found (e.g., after deletion)
   useEffect(() => {
-    if (deals.length > 0 && id) {
-      const foundDeal = deals.find(d => d.id === id);
-      setDeal(foundDeal);
-      setTaskFormData(prev => ({ ...prev, related_deal_id: id }));
-    } else if (!loading && !deals.find(d => d.id === id)) {
-      // If not loading and deal is not found (e.g., deleted), navigate back
+    if (!loading && id && !deals.find(d => d.id === id)) {
       navigate("/deals");
     }
   }, [deals, id, loading, navigate]);
+
+  // Effect to update task form data when deal changes (e.g., on initial load or refresh)
+  useEffect(() => {
+    if (deal) {
+      setTaskFormData(prev => ({ ...prev, related_deal_id: deal.id }));
+    }
+  }, [deal]);
+
 
   const handleAddNote = async (noteType: 'business' | 'development', content: string) => {
     if (!id || !content.trim()) return;
