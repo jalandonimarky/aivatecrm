@@ -34,34 +34,42 @@ export const useCRMData = () => {
   });
 
   const { data: deals = [], isLoading: dealsLoading } = useQuery<any[]>({
-    queryKey: ["deals", profiles, contacts],
+    queryKey: ["deals"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("deals").select("*").order('created_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      
-      return (data || []).map(deal => ({
-        ...deal,
-        contact: contacts.find(c => c.id === deal.contact_id),
-        assigned_user: profiles.find(p => p.id === deal.assigned_to),
-      }));
+      const { data, error } = await supabase
+        .from("deals")
+        .select(`
+          *,
+          contact:contacts(*),
+          assigned_user:profiles!deals_assigned_to_fkey(*)
+        `)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error("Error fetching deals:", error);
+        throw new Error(error.message);
+      }
+      return data || [];
     },
-    enabled: !profilesLoading && !contactsLoading,
   });
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<any[]>({
-    queryKey: ["tasks", profiles, contacts, deals],
+    queryKey: ["tasks"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("tasks").select("*").order('created_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      
-      return (data || []).map(task => ({
-        ...task,
-        assigned_user: profiles.find(p => p.id === task.assigned_to),
-        related_contact: contacts.find(c => c.id === task.related_contact_id),
-        related_deal: deals.find(d => d.id === task.related_deal_id),
-      }));
+      const { data, error } = await supabase
+        .from("tasks")
+        .select(`
+          *,
+          assigned_user:profiles!tasks_assigned_to_fkey(*),
+          related_contact:contacts(*),
+          related_deal:deals(*)
+        `)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error("Error fetching tasks:", error);
+        throw new Error(error.message);
+      }
+      return data || [];
     },
-    enabled: !profilesLoading && !contactsLoading && !dealsLoading,
   });
 
   const loading = profilesLoading || contactsLoading || dealsLoading || tasksLoading;
@@ -74,7 +82,9 @@ export const useCRMData = () => {
         if (error) throw error;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [tableName] });
+        queryClient.invalidateQueries({ queryKey: ["deals"] });
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        queryClient.invalidateQueries({ queryKey: ["contacts"] });
         toast({ title: "Success", description: successMessage });
       },
       onError: (error: any) => {
@@ -90,7 +100,9 @@ export const useCRMData = () => {
         if (error) throw error;
       },
       onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: [tableName] });
+        queryClient.invalidateQueries({ queryKey: ["deals"] });
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        queryClient.invalidateQueries({ queryKey: ["contacts"] });
         queryClient.invalidateQueries({ queryKey: [tableName.slice(0, -1), variables.id] });
         toast({ title: "Success", description: successMessage });
       },
@@ -107,7 +119,9 @@ export const useCRMData = () => {
         if (error) throw error;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [tableName] });
+        queryClient.invalidateQueries({ queryKey: ["deals"] });
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        queryClient.invalidateQueries({ queryKey: ["contacts"] });
         toast({ title: "Success", description: successMessage });
       },
       onError: (error: any) => {
