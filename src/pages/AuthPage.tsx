@@ -10,8 +10,8 @@ export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState(""); // New state for first name
+  const [lastName, setLastName] = useState("");   // New state for last name
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -27,44 +27,32 @@ export function AuthPage() {
           description: "Welcome back!",
         });
       } else {
-        // Call the Edge Function for signup
-        const { data, error: invokeError } = await supabase.functions.invoke('signup-validation', {
-          body: { email, password, first_name: firstName, last_name: lastName },
+        // For sign-up, pass first_name and last_name in user_metadata
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+            }
+          }
         });
+        if (error) throw error;
 
-        if (invokeError) {
-          // Attempt to get the specific error message from the Edge Function's response
-          const errorMessage = (invokeError as any).data?.error || invokeError.message;
-          throw new Error(errorMessage);
-        }
-
-        if (data.error) {
-          throw new Error(data.error);
-        }
+        // Profile creation is now handled by a Supabase database trigger (handle_new_user function)
+        // No need to manually insert into profiles table here.
 
         toast({
           title: "Signed up successfully",
-          description: data.message || "Please check your email to confirm your account.",
+          description: "Please check your email to confirm your account.",
         });
-        setIsLogin(true); // Switch to login view after successful signup
+        setIsLogin(true); // <--- Added this line to switch to login view
       }
     } catch (error: any) {
-      let errorMessage = "An unexpected error occurred.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        // For objects that have a 'message' property but are not Error instances
-        errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        // For generic objects, stringify them
-        errorMessage = JSON.stringify(error);
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-
       toast({
         title: "Authentication Error",
-        description: errorMessage,
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -86,7 +74,7 @@ export function AuthPage() {
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4"> {/* Use grid for first/last name */}
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input

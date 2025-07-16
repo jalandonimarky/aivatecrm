@@ -23,7 +23,6 @@ import type { Deal } from "@/types/crm";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export function Deals() {
   const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData();
@@ -82,7 +81,7 @@ export function Deals() {
 
   const handleDealFormSubmit = async (data: any) => {
     if (editingDeal) {
-      await updateDeal({ id: editingDeal.id, ...data });
+      await updateDeal(editingDeal.id, data);
     } else {
       await createDeal(data);
     }
@@ -102,51 +101,6 @@ export function Deals() {
     setSelectedTier("all");
     setSelectedAssignedTo("all");
   };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-32 mb-2" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <Skeleton className="h-10 w-28" />
-        </div>
-        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <Skeleton className="h-10 flex-1 w-full sm:max-w-md" />
-          <Skeleton className="h-10 w-full sm:w-[180px]" />
-          <Skeleton className="h-10 w-full sm:w-[180px]" />
-          <Skeleton className="h-10 w-full sm:w-[180px]" />
-        </div>
-        <Card className="bg-gradient-card border-border/50">
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {[...Array(8)].map((_, i) => (
-                    <TableHead key={i}><Skeleton className="h-5 w-20" /></TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[...Array(5)].map((_, i) => (
-                  <TableRow key={i}>
-                    {[...Array(8)].map((_, j) => (
-                      <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -293,7 +247,7 @@ export function Deals() {
             </Table>
           </div>
 
-          {filteredDeals.length === 0 && !loading && (
+          {filteredDeals.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 {searchTerm || selectedStage !== "all" || selectedTier !== "all" || selectedAssignedTo !== "all"

@@ -1,172 +1,907 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import type { Profile, Contact, Deal, Task } from "@/types/crm";
-import type { Database } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, DealAttachment } from "@/types/crm";
+import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
-// Helper to get full name
-const getFullName = (profile: Profile) => {
-  if (!profile) return "Unassigned";
-  return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-};
-
-export const useCRMData = () => {
-  const queryClient = useQueryClient();
+export function useCRMData() {
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]); // Corrected: Removed extra parenthesis
+  const [stats, setStats] = useState<DashboardStats>({
+    totalRevenue: 0,
+    paidDealsValue: 0,
+    completedDealsValue: 0, // Renamed from doneCompletedDealsValue
+    cancelledDealsValue: 0,
+    pipelineValue: 0,
+    totalContacts: 0,
+    completedTasks: 0,
+    overdueTasks: 0,
+    totalTasks: 0,
+    totalOneOffProjects: 0,
+    totalSystemDevelopment: 0,
+  });
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Fetching data
-  const { data: profiles = [], isLoading: profilesLoading } = useQuery<Profile[]>({
-    queryKey: ["profiles"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("*");
-      if (error) throw new Error(error.message);
-      return data || [];
-    },
-  });
+  // Helper to combine first and last name for display
+  const getFullName = (profile: Profile) => `${profile.first_name} ${profile.last_name}`;
 
-  const { data: contacts = [], isLoading: contactsLoading } = useQuery<Contact[]>({
-    queryKey: ["contacts"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("contacts").select("*").order('created_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data || [];
-    },
-  });
+  // Helper to calculate percentage change
+  const calculatePercentageChange = (current: number, previous: number): { value: number; trend: "up" | "down" } => {
+    if (previous === 0) {
+      return { value: current > 0 ? 100 : 0, trend: current > 0 ? "up" : "down" };
+    }
+    const change = ((current - previous) / previous) * 100;
+    return {
+      value: Math.abs(parseFloat(change.toFixed(1))),
+      trend: change >= 0 ? "up" : "down",
+    };
+  };
 
-  const { data: deals = [], isLoading: dealsLoading } = useQuery<any[]>({
-    queryKey: ["deals"],
-    queryFn: async () => {
-      const { data, error } = await supabase
+  // Fetch all data
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
+        .order("created_at", { ascending: false });
+
+      if (profilesError) throw profilesError;
+      setProfiles((profilesData || []) as Profile[]);
+
+      // Fetch contacts
+      const { data: contactsData, error: contactsError } = await supabase
+        .from("contacts")
+        .select("id, name, email, phone, company, position, notes, created_by, created_at, updated_at")
+        .order("created_at", { ascending: false });
+
+      if (contactsError) throw contactsError;
+      setContacts(contactsData || []);
+
+      // Fetch deals with related data, notes, and attachments
+      const { data: dealsData, error: dealsError } = await supabase
         .from("deals")
         .select(`
           *,
-          contact:contacts(*),
-          assigned_user:profiles!deals_assigned_to_fkey(*)
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
-        .order('created_at', { ascending: false });
-      if (error) {
-        console.error("Error fetching deals:", error);
-        throw new Error(error.message);
-      }
-      return data || [];
-    },
-  });
+        .order("created_at", { ascending: false });
 
-  const { data: tasks = [], isLoading: tasksLoading } = useQuery<any[]>({
-    queryKey: ["tasks"],
-    queryFn: async () => {
-      const { data, error } = await supabase
+      if (dealsError) throw dealsError;
+      setDeals((dealsData || []) as Deal[]);
+
+      // Fetch tasks with related data
+      const { data: tasksData, error: tasksError } = await supabase
         .from("tasks")
         .select(`
           *,
-          assigned_user:profiles!tasks_assigned_to_fkey(*),
-          related_contact:contacts(*),
-          related_deal:deals(*)
+          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          related_contact:contacts(id, name, email, company, created_at, updated_at),
+          related_deal:deals(id, title, value)
         `)
-        .order('created_at', { ascending: false });
-      if (error) {
-        console.error("Error fetching tasks:", error);
-        throw new Error(error.message);
+        .order("created_at", { ascending: false });
+
+      if (tasksError) throw tasksError;
+      setTasks((tasksData || []) as Task[]);
+
+      // Calculate stats
+      calculateStats((dealsData || []) as Deal[], (tasksData || []) as Task[], contactsData || []);
+      
+    } catch (error: any) {
+      console.error("Error fetching CRM data:", error);
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
       }
-      return data || [];
-    },
-  });
+      toast({
+        title: "Error loading data",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const loading = profilesLoading || contactsLoading || dealsLoading || tasksLoading;
+  const calculateStats = (dealsData: Deal[], tasksData: Task[], contactsData: Contact[]) => {
+    const now = new Date();
+    const currentMonthStart = startOfMonth(now);
+    const currentMonthEnd = endOfMonth(now);
+    const prevMonthStart = startOfMonth(subMonths(now, 1));
+    const prevMonthEnd = endOfMonth(subMonths(now, 1));
 
-  // Mutations
-  const useCreateMutation = (tableName: keyof Database['public']['Tables'], successMessage: string) => {
-    return useMutation({
-      mutationFn: async (newData: any) => {
-        const { error } = await supabase.from(tableName).insert(newData);
-        if (error) throw error;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["deals"] });
-        queryClient.invalidateQueries({ queryKey: ["tasks"] });
-        queryClient.invalidateQueries({ queryKey: ["contacts"] });
-        toast({ title: "Success", description: successMessage });
-      },
-      onError: (error: any) => {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      },
+    // Filter data for current and previous month
+    const currentMonthDeals = dealsData.filter(deal => 
+      deal.created_at && isWithinInterval(parseISO(deal.created_at), { start: currentMonthStart, end: currentMonthEnd })
+    );
+    const prevMonthDeals = dealsData.filter(deal => 
+      deal.created_at && isWithinInterval(parseISO(deal.created_at), { start: prevMonthStart, end: prevMonthEnd })
+    );
+
+    const currentMonthContacts = contactsData.filter(contact =>
+      contact.created_at && isWithinInterval(parseISO(contact.created_at), { start: currentMonthStart, end: currentMonthEnd })
+    );
+    const prevMonthContacts = contactsData.filter(contact =>
+      contact.created_at && isWithinInterval(parseISO(contact.created_at), { start: prevMonthStart, end: prevMonthEnd })
+    );
+
+    const currentMonthTasks = tasksData.filter(task =>
+      task.created_at && isWithinInterval(parseISO(task.created_at), { start: currentMonthStart, end: currentMonthEnd })
+    );
+    const prevMonthTasks = tasksData.filter(task =>
+      task.created_at && isWithinInterval(parseISO(task.created_at), { start: prevMonthStart, end: prevMonthEnd })
+    );
+
+    // Current month calculations
+    const paidDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'paid');
+    const completedDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'completed'); // Changed from done_completed
+    const cancelledDealsCurrent = currentMonthDeals.filter(deal => deal.stage === 'cancelled');
+    const pipelineDealsCurrent = currentMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
+    const completedTasksCurrent = currentMonthTasks.filter(task => task.status === 'completed');
+    const overdueTasksCurrent = currentMonthTasks.filter(task => 
+      task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
+    );
+    const pendingTasksCurrentCount = currentMonthTasks.length - completedTasksCurrent.length;
+
+    const oneOffProjectsCurrent = currentMonthDeals.filter(deal => deal.tier?.startsWith('1-OFF Projects'));
+    const systemDevelopmentCurrent = currentMonthDeals.filter(deal => deal.tier?.startsWith('System Development'));
+
+    // Previous month calculations
+    const paidDealsPrev = prevMonthDeals.filter(deal => deal.stage === 'paid');
+    const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed from done_completed
+    const completedTasksPrev = prevMonthTasks.filter(task => task.status === 'completed');
+    const pendingTasksPrevCount = prevMonthTasks.length - completedTasksPrev.length;
+
+
+    const paidDealsValueCurrent = paidDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0);
+    const paidDealsValuePrev = paidDealsPrev.reduce((sum, deal) => sum + (deal.value || 0), 0);
+
+    const pipelineValueCurrent = pipelineDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0);
+    const pipelineValuePrev = pipelineDealsPrev.reduce((sum, deal) => sum + (deal.value || 0), 0);
+
+    const totalContactsCurrent = currentMonthContacts.length;
+    const totalContactsPrev = prevMonthContacts.length;
+
+    setStats({
+      totalRevenue: paidDealsValueCurrent,
+      paidDealsValue: paidDealsValueCurrent,
+      completedDealsValue: completedDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0), // Changed from doneCompletedDealsValue
+      cancelledDealsValue: cancelledDealsCurrent.reduce((sum, deal) => sum + (deal.value || 0), 0),
+      pipelineValue: pipelineValueCurrent,
+      totalContacts: contactsData.length, // Total contacts overall, not just current month
+      totalTasks: tasksData.length, // Total tasks overall
+      completedTasks: completedTasksCurrent.length,
+      overdueTasks: overdueTasksCurrent.length,
+      totalOneOffProjects: oneOffProjectsCurrent.length,
+      totalSystemDevelopment: systemDevelopmentCurrent.length,
+
+      // Calculate and set change metrics
+      paidDealsValueChange: calculatePercentageChange(paidDealsValueCurrent, paidDealsValuePrev),
+      pipelineValueChange: calculatePercentageChange(pipelineValueCurrent, pipelineValuePrev),
+      totalContactsChange: calculatePercentageChange(totalContactsCurrent, totalContactsPrev),
+      pendingTasksChange: calculatePercentageChange(pendingTasksCurrentCount, pendingTasksPrevCount),
     });
   };
 
-  const useUpdateMutation = (tableName: keyof Database['public']['Tables'], successMessage: string) => {
-    return useMutation({
-      mutationFn: async ({ id, ...updateData }: { id: string, [key: string]: any }) => {
-        const { error } = await supabase.from(tableName).update(updateData).eq("id", id);
-        if (error) throw error;
-      },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["deals"] });
-        queryClient.invalidateQueries({ queryKey: ["tasks"] });
-        queryClient.invalidateQueries({ queryKey: ["contacts"] });
-        queryClient.invalidateQueries({ queryKey: [tableName.slice(0, -1), variables.id] });
-        toast({ title: "Success", description: successMessage });
-      },
-      onError: (error: any) => {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      },
-    });
+  // CRUD operations for contacts
+  const createContact = async (contactData: Omit<Contact, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const { data, error } = await supabase
+        .from("contacts")
+        .insert([contactData])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setContacts(prev => {
+        const updatedContacts = [data as Contact, ...prev];
+        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        return updatedContacts;
+      });
+      toast({
+        title: "Contact created",
+        description: "New contact has been added successfully.",
+      });
+      return data as Contact;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error creating contact",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
-  const useDeleteMutation = (tableName: keyof Database['public']['Tables'], successMessage: string) => {
-    return useMutation({
-      mutationFn: async (id: string) => {
-        const { error } = await supabase.from(tableName).delete().eq("id", id);
-        if (error) throw error;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["deals"] });
-        queryClient.invalidateQueries({ queryKey: ["tasks"] });
-        queryClient.invalidateQueries({ queryKey: ["contacts"] });
-        toast({ title: "Success", description: successMessage });
-      },
-      onError: (error: any) => {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      },
-    });
+  const updateContact = async (id: string, updates: Partial<Contact>) => {
+    try {
+      const { data, error } = await supabase
+        .from("contacts")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setContacts(prev => {
+        const updatedContacts = prev.map(contact => 
+          contact.id === id ? (data as Contact) : contact
+        );
+        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        return updatedContacts;
+      });
+      toast({
+        title: "Contact updated",
+        description: "Contact has been updated successfully.",
+      });
+      return data as Contact;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error updating contact",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
-  const createContact = useCreateMutation("contacts", "Contact created successfully.").mutateAsync;
-  const updateContact = useUpdateMutation("contacts", "Contact updated successfully.").mutateAsync;
-  const deleteContact = useDeleteMutation("contacts", "Contact deleted successfully.").mutateAsync;
+  const deleteContact = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("contacts")
+        .delete()
+        .eq("id", id);
 
-  const createDeal = useCreateMutation("deals", "Deal created successfully.").mutateAsync;
-  const updateDeal = useUpdateMutation("deals", "Deal updated successfully.").mutateAsync;
-  const deleteDeal = useDeleteMutation("deals", "Deal deleted successfully.").mutateAsync;
+      if (error) throw error;
 
-  const createTask = useCreateMutation("tasks", "Task created successfully.").mutateAsync;
-  const updateTask = useUpdateMutation("tasks", "Task updated successfully.").mutateAsync;
-  const deleteTask = useDeleteMutation("tasks", "Task deleted successfully.").mutateAsync;
-
-  // Stats calculation
-  const stats = {
-    paidDealsValue: deals.filter(d => d.stage === 'paid').reduce((sum, d) => sum + d.value, 0),
-    pipelineValue: deals.filter(d => !['paid', 'completed', 'cancelled'].includes(d.stage)).reduce((sum, d) => sum + d.value, 0),
-    totalContacts: contacts.length,
-    totalTasks: tasks.length,
-    completedTasks: tasks.filter(t => t.status === 'completed').length,
-    overdueTasks: tasks.filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed').length,
-    completedDealsValue: deals.filter(d => d.stage === 'completed').reduce((sum, d) => sum + d.value, 0),
-    cancelledDealsValue: deals.filter(d => d.stage === 'cancelled').reduce((sum, d) => sum + d.value, 0),
-    totalOneOffProjects: deals.filter(d => d.tier?.startsWith('1-OFF')).length,
-    totalSystemDevelopment: deals.filter(d => d.tier?.startsWith('System Development')).length,
-    paidDealsValueChange: { value: 12, trend: 'up' as const },
-    pipelineValueChange: { value: 5, trend: 'down' as const },
-    totalContactsChange: { value: 8, trend: 'up' as const },
-    pendingTasksChange: { value: 3, trend: 'down' as const },
+      setContacts(prev => {
+        const updatedContacts = prev.filter(contact => contact.id !== id);
+        calculateStats(deals, tasks, updatedContacts); // Recalculate stats
+        return updatedContacts;
+      });
+      toast({
+        title: "Contact deleted",
+        description: "Contact has been removed successfully.",
+      });
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting contact",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
+
+  // CRUD operations for deals
+  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes' | 'tasks' | 'attachments'>) => {
+    try {
+      const { data, error } = await supabase
+        .from("deals")
+        .insert([dealData])
+        .select(`
+          *,
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setDeals(prev => {
+        const updatedDeals = [data as Deal, ...prev];
+        calculateStats(updatedDeals, tasks, contacts);
+        return updatedDeals;
+      });
+      toast({
+        title: "Deal created",
+        description: "New deal has been added successfully.",
+      });
+      return data as Deal;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error creating deal",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes' | 'tasks' | 'attachments'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("deals")
+        .update(updates)
+        .eq("id", id)
+        .select(`
+          *,
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setDeals(prev => {
+        const updatedDeals = prev.map(deal =>
+          deal.id === id ? (data as Deal) : deal
+        );
+        calculateStats(updatedDeals, tasks, contacts);
+        return updatedDeals;
+      });
+      toast({
+        title: "Deal updated",
+        description: "Deal has been updated successfully.",
+      });
+      return data as Deal;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error updating deal",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteDeal = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("deals")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setDeals(prev => {
+        const updatedDeals = prev.filter(deal => deal.id !== id);
+        calculateStats(updatedDeals, tasks, contacts);
+        return updatedDeals;
+      });
+      toast({
+        title: "Deal deleted",
+        description: "Deal has been removed successfully.",
+      });
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting deal",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // CRUD operations for tasks
+  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal'>) => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert([taskData])
+        .select(`
+          *,
+          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          related_contact:contacts(id, name, email, company, created_at, updated_at),
+          related_deal:deals(id, title, value)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setTasks(prev => {
+        const updatedTasks = [data as Task, ...prev];
+        calculateStats(deals, updatedTasks, contacts);
+        return updatedTasks;
+      });
+      // Also update the specific deal in the deals state with the new task if it's related
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === data.related_deal_id 
+          ? { ...deal, tasks: [...(deal.tasks || []), data as Task] }
+          : deal
+      ));
+
+      toast({
+        title: "Task created",
+        description: "New task has been added successfully.",
+      });
+      return data as Task;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error creating task",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(updates)
+        .eq("id", id)
+        .select(`
+          *,
+          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          related_contact:contacts(id, name, email, company, created_at, updated_at),
+          related_deal:deals(id, title, value)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setTasks(prev => {
+        const updatedTasks = prev.map(task =>
+          task.id === id ? (data as Task) : task
+        );
+        calculateStats(deals, updatedTasks, contacts);
+        return updatedTasks;
+      });
+      // Also update the specific deal in the deals state with the updated task if it's related
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === data.related_deal_id 
+          ? { 
+              ...deal, 
+              tasks: (deal.tasks || []).map(task => 
+                task.id === id ? (data as Task) : task
+              )
+            }
+          : deal
+      ));
+
+      toast({
+        title: "Task updated",
+        description: "Task has been updated successfully.",
+      });
+      return data as Task;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error updating task",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setTasks(prev => {
+        const updatedTasks = prev.filter(task => task.id !== id);
+        calculateStats(deals, updatedTasks, contacts);
+        return updatedTasks;
+      });
+      // Also remove the task from the specific deal in the deals state if it was related
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.tasks?.some(task => task.id === id)
+          ? { 
+              ...deal, 
+              tasks: (deal.tasks || []).filter(task => task.id !== id)
+            }
+          : deal
+      ));
+
+      toast({
+        title: "Task deleted",
+        description: "Task has been removed successfully.",
+      });
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting task",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // CRUD operations for deal notes
+  const createDealNote = async (dealId: string, noteType: 'business' | 'development', content: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated.");
+
+      const { data, error } = await supabase
+        .from("deal_notes")
+        .insert([{ deal_id: dealId, note_type: noteType, content, created_by: user.id }])
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      // Update the specific deal in the deals state with the new note
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { ...deal, notes: [...(deal.notes || []), data as DealNote] }
+          : deal
+      ));
+
+      toast({
+        title: "Note added",
+        description: "Your note has been added successfully.",
+      });
+      return data as DealNote;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error adding note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const updateDealNote = async (noteId: string, dealId: string, updates: Partial<Omit<DealNote, 'id' | 'deal_id' | 'created_at' | 'created_by' | 'creator'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("deal_notes")
+        .update(updates)
+        .eq("id", noteId)
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { 
+              ...deal, 
+              notes: (deal.notes || []).map(note => 
+                note.id === noteId ? (data as DealNote) : note
+              )
+            }
+          : deal
+      ));
+
+      toast({
+        title: "Note updated",
+        description: "Your note has been updated successfully.",
+      });
+      return data as DealNote;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error updating note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteDealNote = async (noteId: string, dealId: string) => {
+    try {
+      const { error } = await supabase
+        .from("deal_notes")
+        .delete()
+        .eq("id", noteId);
+
+      if (error) throw error;
+
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { 
+              ...deal, 
+              notes: (deal.notes || []).filter(note => note.id !== noteId)
+            }
+          : deal
+      ));
+
+      toast({
+        title: "Note deleted",
+        description: "Your note has been deleted successfully.",
+      });
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // CRUD operations for deal attachments
+  const uploadDealAttachment = async (dealId: string, file: File, attachmentType: DealAttachment['attachment_type']) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated.");
+
+      const fileExtension = file.name.split('.').pop();
+      const fileName = `${dealId}/${crypto.randomUUID()}.${fileExtension}`; // Store in deal-specific folder
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('deal-attachments')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('deal-attachments')
+        .getPublicUrl(fileName);
+
+      if (!publicUrlData || !publicUrlData.publicUrl) throw new Error("Failed to get public URL for uploaded file.");
+
+      const { data, error } = await supabase
+        .from("deal_attachments")
+        .insert([{ 
+          deal_id: dealId, 
+          file_name: file.name, 
+          file_url: publicUrlData.publicUrl, 
+          attachment_type: attachmentType, 
+          uploaded_by: user.id 
+        }])
+        .select(`
+          *,
+          uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { ...deal, attachments: [...(deal.attachments || []), data as DealAttachment] }
+          : deal
+      ));
+
+      toast({
+        title: "Attachment uploaded",
+        description: "File has been successfully attached to the deal.",
+      });
+      return data as DealAttachment;
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error uploading attachment",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteDealAttachment = async (attachmentId: string, dealId: string, filePath: string) => {
+    try {
+      // Extract the path within the bucket from the full URL
+      const urlParts = filePath.split('/public/deal-attachments/');
+      const pathInBucket = urlParts.length > 1 ? urlParts[1] : null;
+
+      if (!pathInBucket) {
+        throw new Error("Invalid file path for deletion.");
+      }
+
+      // Delete from Supabase Storage
+      const { error: storageError } = await supabase.storage
+        .from('deal-attachments')
+        .remove([pathInBucket]);
+
+      if (storageError) throw storageError;
+
+      // Delete from database
+      const { error } = await supabase
+        .from("deal_attachments")
+        .delete()
+        .eq("id", attachmentId);
+
+      if (error) throw error;
+
+      setDeals(prevDeals => prevDeals.map(deal => 
+        deal.id === dealId 
+          ? { 
+              ...deal, 
+              attachments: (deal.attachments || []).filter(attachment => attachment.id !== attachmentId)
+            }
+          : deal
+      ));
+
+      toast({
+        title: "Attachment deleted",
+        description: "File has been removed successfully.",
+      });
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting attachment",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return {
-    profiles,
     contacts,
     deals,
     tasks,
-    loading,
+    profiles,
     stats,
+    loading,
+    refetch: fetchData,
     createContact,
     updateContact,
     deleteContact,
@@ -176,6 +911,11 @@ export const useCRMData = () => {
     createTask,
     updateTask,
     deleteTask,
-    getFullName,
+    createDealNote,
+    updateDealNote,
+    deleteDealNote,
+    uploadDealAttachment, // Export new attachment functions
+    deleteDealAttachment, // Export new attachment functions
+    getFullName, // Export getFullName
   };
-};
+}

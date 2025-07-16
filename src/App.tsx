@@ -1,26 +1,25 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/sonner";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Layout } from "./components/layout/Layout";
+import { Dashboard } from "./pages/Dashboard";
+import { Contacts } from "./pages/Contacts";
+import { Deals } from "./pages/Deals";
+import { DealDetails } from "./pages/DealDetails"; // Import DealDetails
+import { Tasks } from "./pages/Tasks";
+import { Analytics } from "./pages/Analytics";
+import { Settings } from "./pages/Settings";
+import { AuthPage } from "./pages/AuthPage";
+import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
-import type { Session } from "@supabase/supabase-js";
-
-import { Layout } from "@/components/layout/Layout";
-import { Dashboard } from "@/pages/Dashboard";
-import { Contacts } from "@/pages/Contacts";
-import { Deals } from "@/pages/Deals";
-import DealDetails from "@/pages/DealDetails";
-import { Tasks } from "@/pages/Tasks";
-import { Analytics } from "@/pages/Analytics";
-import { Settings } from "@/pages/Settings";
-import { AuthPage } from "@/pages/AuthPage";
-import NotFound from "@/pages/NotFound";
-import { Skeleton } from "./components/ui/skeleton";
 
 const queryClient = new QueryClient();
 
-function App() {
-  const [session, setSession] = useState<Session | null>(null);
+const App = () => {
+  const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,51 +31,53 @@ function App() {
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <div className="space-y-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading application...</p>
       </div>
     );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          {session ? (
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="contacts" element={<Contacts />} />
-              <Route path="deals" element={<Deals />} />
-              <Route path="deals/:id" element={<DealDetails />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          ) : (
-            <>
-              <Route path="/login" element={<AuthPage />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </>
-          )}
-        </Routes>
-      </BrowserRouter>
-      <Toaster richColors position="top-right" />
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {session ? (
+              // Authenticated routes
+              <Route element={<Layout />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/contacts" element={<Contacts />} />
+                <Route path="/deals" element={<Deals />} />
+                <Route path="/deals/:id" element={<DealDetails />} /> {/* New route for DealDetails */}
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/settings" element={<Settings />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            ) : (
+              // Unauthenticated route
+              <Route path="*" element={<AuthPage />} />
+            )}
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;

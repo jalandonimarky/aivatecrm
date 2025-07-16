@@ -70,6 +70,16 @@ serve(async (req) => {
       suggestions.push("Categorize the deal with a tier (e.g., 1-OFF, System Development).");
     }
 
+    // New: Check for receipt on 'paid' deals
+    if (deal.stage === 'paid') {
+      const hasReceipt = deal.attachments?.some((att: any) => att.attachment_type === 'receipt');
+      if (!hasReceipt) {
+        missingFields.push("Receipt Attachment");
+        suggestions.push("Upload the payment receipt for this paid deal.");
+        dealBreakerWarning = true; // Consider missing receipt for paid deal as a deal breaker risk for hygiene
+      }
+    }
+
     // --- Next Best Action based on Stage ---
     switch (deal.stage) {
       case 'lead':
