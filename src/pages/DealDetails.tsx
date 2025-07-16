@@ -28,9 +28,9 @@ export default function DealDetails() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("deals")
-        .select(`*, contact:contacts(*), assigned_user:profiles(*)`)
+        .select(`*, contact:contacts(*), assigned_user:profiles!deals_assigned_to_fkey(*)`)
         .eq("id", id)
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle()
       if (error) throw new Error(error.message);
       return data;
     },
@@ -139,7 +139,20 @@ export default function DealDetails() {
   }
 
   if (!deal) {
-    return <div>Deal not found.</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Deal Not Found</h1>
+          <p className="text-xl text-muted-foreground mb-4">
+            The deal you are looking for does not exist or you do not have permission to view it.
+          </p>
+          <Button onClick={() => navigate("/deals")}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Deals
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
