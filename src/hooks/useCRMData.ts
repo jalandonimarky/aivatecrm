@@ -556,9 +556,21 @@ export function useCRMData() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
+      // Fetch the profile ID for the current user
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profileData) throw new Error("User profile not found.");
+
+      const creatorProfileId = profileData.id;
+
       const { data, error } = await supabase
         .from("deal_notes")
-        .insert([{ deal_id: dealId, note_type: noteType, content, created_by: user.id }])
+        .insert([{ deal_id: dealId, note_type: noteType, content, created_by: creatorProfileId }])
         .select(`
           *,
           creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
@@ -579,6 +591,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -617,6 +631,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -649,6 +665,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -668,9 +686,21 @@ export function useCRMData() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
+      // Fetch the profile ID for the current user
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profileData) throw new Error("User profile not found.");
+
+      const creatorProfileId = profileData.id;
+
       const { data, error } = await supabase
         .from("task_notes")
-        .insert([{ task_id: taskId, content, created_by: user.id }])
+        .insert([{ task_id: taskId, content, created_by: creatorProfileId }])
         .select(`
           *,
           creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
@@ -691,6 +721,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -729,6 +761,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -839,6 +873,8 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
