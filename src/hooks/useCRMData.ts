@@ -831,19 +831,13 @@ export function useCRMData() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
-      // Fetch the profile ID for the current user
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-      if (!profileData) throw new Error("User profile not found.");
+      // Use user.id (auth.uid()) directly for uploaded_by and file path segment
+      const userId = user.id;
 
       const fileExtension = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
-      const filePath = `${dealId}/${profileData.id}/${fileName}`; // Structure: deal_id/profile_id/filename
+      // Updated filePath to use userId instead of profileData.id
+      const filePath = `${dealId}/${userId}/${fileName}`; // Structure: deal_id/user_id/filename
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('deal-attachments')
@@ -867,7 +861,7 @@ export function useCRMData() {
           file_path: filePath,
           file_size: file.size,
           mime_type: file.type,
-          uploaded_by: profileData.id, // Use the fetched profile ID here
+          uploaded_by: userId, // Use userId (auth.uid()) here
         })
         .select(`
           *,
