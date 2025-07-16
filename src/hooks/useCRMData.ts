@@ -99,7 +99,7 @@ export function useCRMData() {
       setTasks((tasksData || []) as any as Task[]);
 
       // Calculate stats
-      calculateStats((dealsData || []) as Deal[], (tasksData || []) as Task[], contactsData || []);
+      calculateStats((dealsData || []) as any as Deal[], (tasksData || []) as any as Task[], (contactsData || []) as any as Contact[]);
       
     } catch (error: any) {
       console.error("Error fetching CRM data:", error);
@@ -711,7 +711,7 @@ export function useCRMData() {
       const creatorProfileId = profileData.id;
 
       const { data, error } = await supabase
-        .from("task_notes")
+        .from("task_notes" as any)
         .insert([{ task_id: taskId, content, created_by: creatorProfileId }])
         .select(`
           *,
@@ -750,7 +750,7 @@ export function useCRMData() {
   const updateTaskNote = async (noteId: string, taskId: string, updates: Partial<Omit<TaskNote, 'id' | 'task_id' | 'created_at' | 'created_by' | 'creator'>>) => {
     try {
       const { data, error } = await supabase
-        .from("task_notes")
+        .from("task_notes" as any)
         .update(updates)
         .eq("id", noteId)
         .select(`
@@ -790,7 +790,7 @@ export function useCRMData() {
   const deleteTaskNote = async (noteId: string, taskId: string) => {
     try {
       const { error } = await supabase
-        .from("task_notes")
+        .from("task_notes" as any)
         .delete()
         .eq("id", noteId);
 
