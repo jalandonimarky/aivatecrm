@@ -914,7 +914,21 @@ export function useCRMData() {
 
   const deleteDealAttachment = async (attachmentId: string, dealId: string, filePath: string) => {
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("User not authenticated for deletion.");
+      }
+      const currentUserId = user.id; // This is auth.uid()
+
       console.log("Attempting to delete attachment:", { attachmentId, dealId, filePath });
+      console.log("Current authenticated user ID (auth.uid()):", currentUserId);
+      console.log("File path being sent to storage.remove:", filePath);
+      // Extract the user ID from the filePath for comparison
+      const pathSegments = filePath.split('/');
+      const userIdInPath = pathSegments.length > 1 ? pathSegments[1] : 'N/A';
+      console.log("User ID extracted from file path:", userIdInPath);
+      console.log("Does auth.uid() match user ID in path?", currentUserId === userIdInPath);
+
 
       // Delete from Supabase Storage
       console.log("Deleting from storage:", filePath);
