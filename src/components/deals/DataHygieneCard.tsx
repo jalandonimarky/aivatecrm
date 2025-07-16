@@ -9,8 +9,9 @@ import type { Deal, DataHygieneInsights } from "@/types/crm";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider, // Re-added TooltipProvider import
   TooltipTrigger,
-} from "@/components/ui/tooltip"; // Removed TooltipProvider import
+} from "@/components/ui/tooltip";
 
 interface DataHygieneCardProps {
   deal: Deal;
@@ -99,7 +100,8 @@ export function DataHygieneCard({ deal }: DataHygieneCardProps) {
         <CardTitle className="text-lg font-semibold flex items-center">
           Data Hygiene Check
           {insights.dealBreakerWarning && (
-            <Tooltip> {/* Removed TooltipProvider here */}
+            <TooltipProvider>
+              <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge variant="destructive" className="ml-2 cursor-help">
                     <AlertCircle className="w-3 h-3 mr-1" /> Deal Breaker Risk
@@ -109,6 +111,7 @@ export function DataHygieneCard({ deal }: DataHygieneCardProps) {
                   <p>This deal has critical missing information (e.g., value, close date, contract) or issues that could prevent it from closing successfully.</p>
                 </TooltipContent>
               </Tooltip>
+            </TooltipProvider>
           )}
           {!hasIssues && (
             <Badge className="ml-2 bg-success text-success-foreground">
