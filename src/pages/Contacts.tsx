@@ -47,7 +47,7 @@ export function Contacts() {
     e.preventDefault();
     try {
       if (editingContact) {
-        await updateContact(editingContact.id, formData);
+        await updateContact({ id: editingContact.id, ...formData });
       } else {
         await createContact(formData);
       }

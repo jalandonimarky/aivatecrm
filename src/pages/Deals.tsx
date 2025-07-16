@@ -81,7 +81,7 @@ export function Deals() {
 
   const handleDealFormSubmit = async (data: any) => {
     if (editingDeal) {
-      await updateDeal(editingDeal.id, data);
+      await updateDeal({ id: editingDeal.id, ...data });
     } else {
       await createDeal(data);
     }

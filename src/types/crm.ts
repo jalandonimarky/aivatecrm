@@ -27,7 +27,7 @@ export interface Deal {
   title: string;
   description?: string;
   value: number;
-  stage: string;
+  stage: 'lead' | 'discovery_call' | 'demo' | 'in_development' | 'paid' | 'completed' | 'cancelled';
   contact_id?: string;
   assigned_to?: string;
   expected_close_date?: string;
@@ -40,8 +40,8 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: string;
-  priority: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   assigned_to?: string;
   related_contact_id?: string;
   related_deal_id?: string;
@@ -57,6 +57,15 @@ export interface Notification {
   message: string;
   is_read: boolean;
   created_at: string;
+}
+
+export interface DealNote {
+  id: string;
+  deal_id: string;
+  note_type: string;
+  content: string;
+  created_at: string;
+  created_by: string | null;
 }
 
 export interface DataHygieneInsights {

@@ -106,7 +106,7 @@ export function Tasks() {
       };
 
       if (editingTask) {
-        await updateTask(editingTask.id, dataToSubmit);
+        await updateTask({ id: editingTask.id, ...dataToSubmit });
       } else {
         await createTask(dataToSubmit);
       }
