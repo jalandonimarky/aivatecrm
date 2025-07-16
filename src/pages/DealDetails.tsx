@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, NavLink } from "react-router-dom"; // Import NavLink
 import { useCRMData } from "@/hooks/useCRMData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,12 +54,11 @@ interface TaskFormData {
 }
 
 export function DealDetails() {
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData(); // Destructure all needed properties
+  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Directly derive the deal from the deals array
   const deal = deals.find(d => d.id === id);
 
   const [businessNoteContent, setBusinessNoteContent] = useState("");
@@ -103,14 +102,12 @@ export function DealDetails() {
     { value: "urgent", label: "Urgent" },
   ];
 
-  // Effect to handle navigation if deal is not found (e.g., after deletion)
   useEffect(() => {
     if (!loading && id && !deals.find(d => d.id === id)) {
       navigate("/deals");
     }
   }, [deals, id, loading, navigate]);
 
-  // Effect to update task form data when deal changes (e.g., on initial load or refresh)
   useEffect(() => {
     if (deal) {
       setTaskFormData(prev => ({ ...prev, related_deal_id: deal.id }));
@@ -235,7 +232,6 @@ export function DealDetails() {
     }
   };
 
-  // New handlers for deal editing
   const handleEditDealClick = () => {
     setIsEditDealDialogOpen(true);
   };
@@ -252,7 +248,6 @@ export function DealDetails() {
       try {
         if (id) {
           await deleteDeal(id);
-          // The useEffect will handle navigation after data re-fetch
         }
       } catch (error) {
         // Error handled in useCRMData hook
@@ -260,7 +255,6 @@ export function DealDetails() {
     }
   };
 
-  // New handler for Rally submission
   const handleRallySubmit = async (date: Date, time: string, note: string) => {
     if (!deal) return;
 
@@ -279,7 +273,6 @@ export function DealDetails() {
     };
 
     try {
-      // Invoke the Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('rally-trigger', {
         body: payload,
       });
@@ -610,7 +603,11 @@ export function DealDetails() {
                 ) : (
                   relatedTasks.map((task) => (
                     <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                      <TableCell className="font-medium">{task.title}</TableCell>
+                      <TableCell className="font-medium">
+                        <NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">
+                          {task.title}
+                        </NavLink>
+                      </TableCell>
                       <TableCell>
                         <TaskStatusBadge status={task.status} />
                       </TableCell>

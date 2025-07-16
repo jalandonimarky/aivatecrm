@@ -65,7 +65,7 @@ export function useCRMData() {
         .order("created_at", { ascending: false });
 
       if (contactsError) throw contactsError;
-      setContacts((contactsData || []) as Contact[]);
+      setContacts((contactsData || []) as any as Contact[]);
 
       // Fetch deals with related data, notes, and attachments
       const { data: dealsData, error: dealsError } = await supabase
@@ -81,7 +81,7 @@ export function useCRMData() {
         .order("created_at", { ascending: false });
 
       if (dealsError) throw dealsError;
-      setDeals((dealsData || []) as Deal[]);
+      setDeals((dealsData || []) as any as Deal[]);
 
       // Fetch tasks with related data and notes
       const { data: tasksData, error: tasksError } = await supabase
@@ -96,7 +96,7 @@ export function useCRMData() {
         .order("created_at", { ascending: false });
 
       if (tasksError) throw tasksError;
-      setTasks((tasksData || []) as Task[]);
+      setTasks((tasksData || []) as any as Task[]);
 
       // Calculate stats
       calculateStats((dealsData || []) as Deal[], (tasksData || []) as Task[], contactsData || []);
@@ -223,7 +223,7 @@ export function useCRMData() {
         description: "New contact has been added successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as Contact;
+      return data as any as Contact;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -264,7 +264,7 @@ export function useCRMData() {
         description: "Contact has been updated successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as Contact;
+      return data as any as Contact;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -342,7 +342,7 @@ export function useCRMData() {
         description: "New deal has been added successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as Deal;
+      return data as any as Deal;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -386,7 +386,7 @@ export function useCRMData() {
         description: "Deal has been updated successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as Deal;
+      return data as any as Deal;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -463,7 +463,7 @@ export function useCRMData() {
         description: "New task has been added successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as Task;
+      return data as any as Task;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -506,7 +506,7 @@ export function useCRMData() {
         description: "Task has been updated successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as Task;
+      return data as any as Task;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -541,7 +541,7 @@ export function useCRMData() {
         description: "Task has been removed successfully.",
       });
       await fetchData(); // Re-fetch all data
-    } catch (error: any) { // Corrected syntax here
+    } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -596,7 +596,7 @@ export function useCRMData() {
         description: "Your note has been added successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as DealNote;
+      return data as any as DealNote;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -636,7 +636,7 @@ export function useCRMData() {
         description: "Your note has been updated successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as DealNote;
+      return data as any as DealNote;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -726,7 +726,7 @@ export function useCRMData() {
         description: "Your task note has been added successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as TaskNote;
+      return data as any as TaskNote;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -766,7 +766,7 @@ export function useCRMData() {
         description: "Your task note has been updated successfully.",
       });
       await fetchData(); // Re-fetch all data
-      return data as TaskNote;
+      return data as any as TaskNote;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -880,7 +880,7 @@ export function useCRMData() {
         description: "File has been successfully attached to the deal.",
       });
       window.location.reload(); // Force full page refresh
-      return data as DealAttachment;
+      return data as any as DealAttachment;
     } catch (error: any) {
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
