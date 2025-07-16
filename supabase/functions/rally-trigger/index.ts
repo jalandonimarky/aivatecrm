@@ -17,10 +17,11 @@ serve(async (req) => {
     console.log("Rally Trigger received payload:", payload);
 
     const zapierWebhookUrl = Deno.env.get('ZAPIER_WEBHOOK_URL');
+    console.log("ZAPIER_WEBHOOK_URL:", zapierWebhookUrl ? "Set" : "Not Set"); // Log if URL is set
 
     if (!zapierWebhookUrl) {
       console.error('ZAPIER_WEBHOOK_URL environment variable is not set.');
-      return new Response(JSON.stringify({ error: 'Server configuration error: Zapier webhook URL missing.' }), {
+      return new Response(JSON.stringify({ error: 'Server configuration error: Zapier webhook URL missing. Please set ZAPIER_WEBHOOK_URL in Supabase secrets.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
@@ -38,7 +39,7 @@ serve(async (req) => {
     if (!zapierResponse.ok) {
       const errorText = await zapierResponse.text();
       console.error('Error sending data to Zapier:', zapierResponse.status, errorText);
-      return new Response(JSON.stringify({ error: `Failed to send data to Zapier: ${zapierResponse.statusText}` }), {
+      return new Response(JSON.stringify({ error: `Failed to send data to Zapier. Status: ${zapierResponse.status}, Message: ${zapierResponse.statusText}. Details: ${errorText}` }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
