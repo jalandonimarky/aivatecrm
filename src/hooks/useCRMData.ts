@@ -766,6 +766,18 @@ export function useCRMData() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
+      // Fetch the profile ID for the current user
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profileData) throw new Error("User profile not found.");
+
+      const uploaderProfileId = profileData.id;
+
       const fileExtension = file.name.split('.').pop();
       const fileName = `${dealId}/${crypto.randomUUID()}.${fileExtension}`; // Store in deal-specific folder
 
@@ -791,7 +803,7 @@ export function useCRMData() {
           file_name: file.name, 
           file_url: publicUrlData.publicUrl, 
           attachment_type: attachmentType, 
-          uploaded_by: user.id 
+          uploaded_by: uploaderProfileId // Use the fetched profile ID here
         }])
         .select(`
           *,
