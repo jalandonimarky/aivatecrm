@@ -40,7 +40,7 @@ import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { DealAttachments } from "@/components/deals/DealAttachments";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-// Removed useQuery import
+import { useQuery } from "@tanstack/react-query"; // Added import
 import type { DealNote, Task, Deal } from "@/types/crm"; // Ensure Deal is imported
 
 interface TaskFormData {
@@ -57,12 +57,41 @@ interface TaskFormData {
 export function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // Destructure all data and functions from useCRMData
-  const { deals, contacts, profiles, loading, getFullName, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, updateDeal, uploadDealAttachment, deleteDealAttachment } = useCRMData();
+  // Destructure only the functions needed for mutations and shared data
+  const { contacts, profiles, getFullName, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, updateDeal, uploadDealAttachment, deleteDealAttachment } = useCRMData();
   const { toast } = useToast();
 
-  // Find the specific deal from the deals array
-  const deal = deals.find(d => d.id === id);
+  // Use useQuery to fetch the specific deal
+  const { data: deal, isLoading: dealLoading, error: dealError } = useQuery<Deal, Error>({
+    queryKey: ['deal', id],
+    queryFn: async () => {
+      if (!id) throw new Error("Deal ID is missing.");
+      const { data, error } = await supabase
+        .from("deals")
+        .select(`
+          *,
+          contact:contacts(id, name, email, company, created_at, updated_at),
+          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at), related_contact:contacts(id, name), related_deal:deals(id, title)),
+          attachments:deal_attachments(id, deal_id, file_name, file_path, file_size, mime_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      
+      // Generate download URLs for attachments
+      if (data && data.attachments) {
+        data.attachments = data.attachments.map(attachment => ({
+          ...attachment,
+          download_url: supabase.storage.from('deal-attachments').getPublicUrl(attachment.file_path).data.publicUrl
+        }));
+      }
+      return data as Deal;
+    },
+    enabled: !!id, // Only run query if id is available
+  });
 
   const [businessNoteContent, setBusinessNoteContent] = useState("");
   const [developmentNoteContent, setDevelopmentNoteContent] = useState("");
@@ -284,7 +313,7 @@ export function DealDetails() {
     }
   };
 
-  if (loading) { // Use loading from useCRMData
+  if (dealLoading) { // Use dealLoading from useQuery
     return (
       <div className="space-y-6">
         <Button variant="outline" onClick={() => navigate("/deals")} className="mb-4">
@@ -299,7 +328,31 @@ export function DealDetails() {
     );
   }
 
+  if (dealError) {
+    toast({
+      title: "Error loading deal",
+      description: dealError.message,
+      variant: "destructive",
+    });
+    return (
+      <div className="space-y-6">
+        <Button variant="outline" onClick={() => navigate("/deals")} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Deals
+        </Button>
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-destructive">Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-destructive">Failed to load deal details: {dealError.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!deal) {
+    // This case should ideally be covered by dealLoading, but as a fallback
     return (
       <div className="space-y-6">
         <Button variant="outline" onClick={() => navigate("/deals")} className="mb-4">

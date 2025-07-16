@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, DealAttachment } from "@/types/crm";
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
-// Removed useQueryClient import
+import { useQueryClient } from "@tanstack/react-query"; // Added import
 
 export function useCRMData() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -25,7 +25,7 @@ export function useCRMData() {
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  // Removed useQueryClient initialization
+  const queryClient = useQueryClient(); // Initialized useQueryClient
 
   // Helper to combine first and last name for display
   const getFullName = (profile: Profile) => `${profile.first_name} ${profile.last_name}`;
@@ -419,7 +419,7 @@ export function useCRMData() {
         calculateStats(updatedDeals, tasks, contacts);
         return updatedDeals;
       });
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', id] });
+      queryClient.invalidateQueries({ queryKey: ['deal', id] }); // Invalidate the specific deal query
       toast({
         title: "Deal updated",
         description: "Deal has been updated successfully.",
@@ -480,8 +480,8 @@ export function useCRMData() {
         calculateStats(updatedDeals, tasks, contacts);
         return updatedDeals;
       });
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', id] });
-      // Removed queryClient.invalidateQueries({ queryKey: ['deals'] });
+      queryClient.invalidateQueries({ queryKey: ['deal', id] }); // Invalidate the specific deal query
+      queryClient.invalidateQueries({ queryKey: ['deals'] }); // Invalidate the main deals list
       toast({
         title: "Deal deleted",
         description: "Deal has been removed successfully.",
@@ -533,7 +533,7 @@ export function useCRMData() {
           ? { ...deal, tasks: [...(deal.tasks || []), data as Task] }
           : deal
       ));
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', data.related_deal_id] });
+      queryClient.invalidateQueries({ queryKey: ['deal', data.related_deal_id] }); // Invalidate the specific deal query
       toast({
         title: "Task created",
         description: "New task has been added successfully.",
@@ -593,7 +593,7 @@ export function useCRMData() {
             }
           : deal
       ));
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', data.related_deal_id] });
+      queryClient.invalidateQueries({ queryKey: ['deal', data.related_deal_id] }); // Invalidate the specific deal query
       toast({
         title: "Task updated",
         description: "Task has been updated successfully.",
@@ -646,7 +646,9 @@ export function useCRMData() {
             }
           : deal
       ));
-      // Removed if (relatedDealId) { queryClient.invalidateQueries({ queryKey: ['deal', relatedDealId] }); }
+      if (relatedDealId) {
+        queryClient.invalidateQueries({ queryKey: ['deal', relatedDealId] }); // Invalidate the specific deal query
+      }
       toast({
         title: "Task deleted",
         description: "Task has been removed successfully.",
@@ -704,7 +706,7 @@ export function useCRMData() {
           ? { ...deal, notes: [...(deal.notes || []), data as DealNote] }
           : deal
       ));
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', dealId] });
+      queryClient.invalidateQueries({ queryKey: ['deal', dealId] }); // Invalidate the specific deal query
       toast({
         title: "Note added",
         description: "Your note has been added successfully.",
@@ -754,7 +756,7 @@ export function useCRMData() {
             }
           : deal
       ));
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', dealId] });
+      queryClient.invalidateQueries({ queryKey: ['deal', dealId] }); // Invalidate the specific deal query
       toast({
         title: "Note updated",
         description: "Your note has been updated successfully.",
@@ -797,7 +799,7 @@ export function useCRMData() {
             }
           : deal
       ));
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', dealId] });
+      queryClient.invalidateQueries({ queryKey: ['deal', dealId] }); // Invalidate the specific deal query
       toast({
         title: "Note deleted",
         description: "Your note has been deleted successfully.",
@@ -890,7 +892,7 @@ export function useCRMData() {
           ? { ...deal, attachments: [...(deal.attachments || []), newAttachment] }
           : deal
       ));
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', dealId] });
+      queryClient.invalidateQueries({ queryKey: ['deal', dealId] }); // Invalidate the specific deal query
       toast({
         title: "File uploaded",
         description: `${file.name} has been attached successfully.`,
@@ -942,7 +944,7 @@ export function useCRMData() {
             }
           : deal
       ));
-      // Removed queryClient.invalidateQueries({ queryKey: ['deal', dealId] });
+      queryClient.invalidateQueries({ queryKey: ['deal', dealId] }); // Invalidate the specific deal query
       toast({
         title: "File deleted",
         description: "Attachment has been removed successfully.",
