@@ -115,3 +115,12 @@ export interface DashboardStats {
   totalContactsChange?: ChangeMetric;
   pendingTasksChange?: ChangeMetric;
 }
+
+export interface DataHygieneInsights {
+  dealsMissingContact: number;
+  dealsMissingAssignedUser: number;
+  dealsMissingCloseDate: number;
+  tasksMissingDueDate: number;
+  tasksMissingAssignedUser: number;
+  totalIssues: number;
+}

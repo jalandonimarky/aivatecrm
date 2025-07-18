@@ -36,6 +36,7 @@ import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { RallyDialog } from "@/components/deals/RallyDialog";
+import { DataHygieneCard } from "@/components/deals/DataHygieneCard"; // Re-import DataHygieneCard
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { DealNote, Task } from "@/types/crm";
@@ -52,7 +53,7 @@ interface TaskFormData {
 }
 
 export function DealDetails() {
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData();
+  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, dataHygieneInsights } = useCRMData(); // Destructure dataHygieneInsights
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -431,6 +432,9 @@ export function DealDetails() {
 
       {/* Project Timeline Section */}
       <DealTimeline deal={deal} />
+
+      {/* Data Hygiene Card */}
+      {dataHygieneInsights && <DataHygieneCard insights={dataHygieneInsights} />}
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
