@@ -18,7 +18,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar"; // Corrected import statement
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -430,11 +430,11 @@ export function DealDetails() {
         </CardContent>
       </Card>
 
-      {/* Project Timeline Section */}
-      <DealTimeline deal={deal} />
-
       {/* Data Hygiene Card */}
       {dataHygieneInsights && <DataHygieneCard insights={dataHygieneInsights} />}
+
+      {/* Project Timeline Section */}
+      <DealTimeline deal={deal} />
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
