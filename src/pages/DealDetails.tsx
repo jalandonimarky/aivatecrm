@@ -406,13 +406,13 @@ export function DealDetails() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsRallyDialogOpen(true)}
-                className="bg-gradient-accent hover:bg-accent/90 text-accent-foreground shadow-glow transition-smooth"
+                className="bg-gradient-accent hover:bg-accent/90 text-accent-foreground shadow-glow transition-smooth active:scale-95"
               >
                 <Flag className="w-4 h-4 mr-2" /> Rally
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -500,7 +500,7 @@ export function DealDetails() {
             variant="outline" 
             size="sm" 
             onClick={() => setIsUploadAttachmentDialogOpen(true)}
-            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth"
+            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
           >
             <Upload className="w-4 h-4 mr-2" /> Upload Attachment
           </Button>
@@ -548,7 +548,7 @@ export function DealDetails() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -597,7 +597,7 @@ export function DealDetails() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
+                    <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -630,11 +630,11 @@ export function DealDetails() {
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingBusinessNote(false)}>Cancel</Button>
-                    <Button onClick={() => handleAddNote('business', businessNoteContent)}>Add Note</Button>
+                    <Button onClick={() => handleAddNote('business', businessNoteContent)} className="active:scale-95">Add Note</Button>
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingBusinessNote(true)} className="w-full">
+                <Button variant="outline" onClick={() => setIsAddingBusinessNote(true)} className="w-full active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Add Business Note
                 </Button>
               )}
@@ -659,7 +659,7 @@ export function DealDetails() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
+                    <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -692,11 +692,11 @@ export function DealDetails() {
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(false)}>Cancel</Button>
-                    <Button onClick={() => handleAddNote('development', developmentNoteContent)}>Add Note</Button>
+                    <Button onClick={() => handleAddNote('development', developmentNoteContent)} className="active:scale-95">Add Note</Button>
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full">
+                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Add Development Note
                 </Button>
               )}
@@ -713,7 +713,7 @@ export function DealDetails() {
             variant="outline" 
             size="sm" 
             onClick={handleAddTaskClick}
-            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth"
+            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
           >
             <Plus className="w-4 h-4 mr-2" /> Add Task
           </Button>
@@ -757,7 +757,7 @@ export function DealDetails() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -816,7 +816,7 @@ export function DealDetails() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditNoteDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleUpdateNoteSubmit}>Save Changes</Button>
+            <Button onClick={handleUpdateNoteSubmit} className="active:scale-95">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -990,7 +990,7 @@ export function DealDetails() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-gradient-primary">
+              <Button type="submit" className="bg-gradient-primary active:scale-95">
                 {editingTask ? "Update" : "Create"} Task
               </Button>
             </DialogFooter>
@@ -1052,7 +1052,7 @@ export function DealDetails() {
               <Button variant="outline" onClick={() => setIsUploadAttachmentDialogOpen(false)} type="button">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-gradient-primary" disabled={uploadingAttachment}>
+              <Button type="submit" className="bg-gradient-primary active:scale-95" disabled={uploadingAttachment}>
                 {uploadingAttachment ? "Uploading..." : "Upload"}
               </Button>
             </DialogFooter>
