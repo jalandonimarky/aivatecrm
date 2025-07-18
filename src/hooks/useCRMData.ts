@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment } from "@/types/crm";
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -106,7 +106,7 @@ export function useCRMData() {
       if (contactsError) throw contactsError;
       setContacts((contactsData || []) as any as Contact[]);
 
-      // Fetch deals with related data, notes
+      // Fetch deals with related data, notes, and attachments
       const { data: dealsData, error: dealsError } = await supabase
         .from("deals")
         .select(`
@@ -114,7 +114,8 @@ export function useCRMData() {
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
 
@@ -359,7 +360,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for deals
-  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes' | 'tasks'>) => {
+  const createDeal = async (dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assigned_user' | 'notes' | 'tasks' | 'attachments'>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -369,7 +370,8 @@ export function useCRMData() {
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -400,7 +402,7 @@ export function useCRMData() {
     }
   };
 
-  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes' | 'tasks'>>) => {
+  const updateDeal = async (id: string, updates: Partial<Omit<Deal, 'contact' | 'assigned_user' | 'notes' | 'tasks' | 'attachments'>>) => {
     try {
       const { data, error } = await supabase
         .from("deals")
@@ -411,7 +413,8 @@ export function useCRMData() {
           contact:contacts(id, name, email, company, created_at, updated_at),
           assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -818,6 +821,96 @@ export function useCRMData() {
     }
   };
 
+  // CRUD operations for deal attachments
+  const createDealAttachment = async (dealId: string, file: File, attachmentType: 'contract' | 'receipt' | 'other') => {
+    try {
+      const uploaderProfileId = await getOrCreateUserProfileId();
+      const fileExtension = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
+      const filePath = `${dealId}/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('deal-attachments')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('deal-attachments')
+        .getPublicUrl(filePath);
+
+      if (!publicUrlData || !publicUrlData.publicUrl) throw new Error("Could not get public URL for uploaded file.");
+
+      const { data, error: insertError } = await supabase
+        .from('deal_attachments')
+        .insert({
+          deal_id: dealId,
+          file_name: file.name,
+          file_url: publicUrlData.publicUrl,
+          attachment_type: attachmentType,
+          uploaded_by: uploaderProfileId,
+        })
+        .select(`
+          *,
+          uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Attachment uploaded",
+        description: "File has been successfully attached to the deal.",
+      });
+      await fetchData();
+      return data as any as DealAttachment;
+    } catch (error: any) {
+      console.error("Error uploading attachment:", error);
+      toast({
+        title: "Error uploading attachment",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteDealAttachment = async (attachmentId: string, dealId: string, filePath: string) => {
+    try {
+      // First, delete the record from the database
+      const { error: dbError } = await supabase
+        .from('deal_attachments')
+        .delete()
+        .eq('id', attachmentId);
+
+      if (dbError) throw dbError;
+
+      // Then, delete the file from storage
+      const { error: storageError } = await supabase.storage
+        .from('deal-attachments')
+        .remove([filePath.split('deal-attachments/')[1]]); // Extract path relative to bucket root
+
+      if (storageError) throw storageError;
+
+      toast({
+        title: "Attachment deleted",
+        description: "File and its record have been removed successfully.",
+      });
+      await fetchData();
+    } catch (error: any) {
+      console.error("Error deleting attachment:", error);
+      toast({
+        title: "Error deleting attachment",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -845,6 +938,8 @@ export function useCRMData() {
     createTaskNote, // Export new task note functions
     updateTaskNote,
     deleteTaskNote,
+    createDealAttachment, // Export new deal attachment functions
+    deleteDealAttachment,
     getFullName,
   };
 }

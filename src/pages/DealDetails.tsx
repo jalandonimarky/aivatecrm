@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon, Flag } from "lucide-react";
+import { ArrowLeft, Plus, MoreHorizontal, Edit, Trash2, CalendarIcon, Flag, FileText, Upload, Download, Paperclip } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,7 @@ import { RallyDialog } from "@/components/deals/RallyDialog";
 import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { DealNote, Task } from "@/types/crm";
+import type { DealNote, Task, DealAttachment } from "@/types/crm";
 
 interface TaskFormData {
   title: string;
@@ -53,7 +53,7 @@ interface TaskFormData {
 }
 
 export function DealDetails() {
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData(); // Removed dataHygieneInsights
+  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, createDealAttachment, deleteDealAttachment } = useCRMData(); // Removed dataHygieneInsights
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -86,6 +86,12 @@ export function DealDetails() {
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
+
+  const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -295,6 +301,52 @@ export function DealDetails() {
     }
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleUploadAttachment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !selectedFile) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a file to upload.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setUploadingAttachment(true);
+    try {
+      await createDealAttachment(id, selectedFile, attachmentType);
+      setSelectedFile(null);
+      setAttachmentType('other');
+      setIsUploadAttachmentDialogOpen(false);
+    } catch (error) {
+      // Error handled in useCRMData hook
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachment: DealAttachment) => {
+    if (confirm("Are you sure you want to delete this attachment? This action cannot be undone.")) {
+      try {
+        // The file_url contains the full path, we need to extract the path relative to the bucket
+        // Assuming file_url format is like: https://<project_id>.supabase.co/storage/v1/object/public/deal-attachments/<deal_id>/<file_name>
+        const pathSegments = attachment.file_url.split('/');
+        const filePathInBucket = pathSegments.slice(pathSegments.indexOf('deal-attachments') + 1).join('/');
+        
+        await deleteDealAttachment(attachment.id, attachment.deal_id, filePathInBucket);
+      } catch (error) {
+        // Error handled in useCRMData hook
+      }
+    }
+  };
+
   if (loading || !deal) {
     return (
       <div className="space-y-6">
@@ -331,6 +383,10 @@ export function DealDetails() {
 
   const relatedTasks = (deal.tasks || []).sort((a: Task, b: Task) => 
     (a.due_date ? parseISO(a.due_date).getTime() : Infinity) - (b.due_date ? parseISO(b.due_date).getTime() : Infinity)
+  );
+
+  const sortedAttachments = (deal.attachments || []).sort((a: DealAttachment, b: DealAttachment) =>
+    parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime()
   );
 
   return (
@@ -435,6 +491,92 @@ export function DealDetails() {
 
       {/* Project Timeline Section */}
       <DealTimeline deal={deal} />
+
+      {/* Attachments Section */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-lg font-semibold">Attachments ({sortedAttachments.length})</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setIsUploadAttachmentDialogOpen(true)}
+            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth"
+          >
+            <Upload className="w-4 h-4 mr-2" /> Upload Attachment
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>File Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Uploaded By</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedAttachments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      No attachments yet for this deal.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  sortedAttachments.map((attachment) => (
+                    <TableRow key={attachment.id} className="hover:bg-muted/50 transition-smooth">
+                      <TableCell className="font-medium flex items-center space-x-2">
+                        <Paperclip className="w-4 h-4 text-muted-foreground" />
+                        <a 
+                          href={attachment.file_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-primary hover:underline"
+                        >
+                          {attachment.file_name}
+                        </a>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {attachment.attachment_type.charAt(0).toUpperCase() + attachment.attachment_type.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{attachment.uploader ? getFullName(attachment.uploader) : "Unknown"}</TableCell>
+                      <TableCell>{format(parseISO(attachment.created_at), "MMM dd, yyyy")}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem asChild>
+                              <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                <Download className="mr-2 h-4 w-4" />
+                                Download
+                              </a>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteAttachment(attachment)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -840,7 +982,7 @@ export function DealDetails() {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-2">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -851,7 +993,7 @@ export function DealDetails() {
               <Button type="submit" className="bg-gradient-primary">
                 {editingTask ? "Update" : "Create"} Task
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
@@ -876,6 +1018,47 @@ export function DealDetails() {
           deal={deal}
         />
       )}
+
+      {/* Upload Attachment Dialog */}
+      <Dialog open={isUploadAttachmentDialogOpen} onOpenChange={setIsUploadAttachmentDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Upload Attachment</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUploadAttachment} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="file-input">File</Label>
+              <Input
+                id="file-input"
+                type="file"
+                onChange={handleFileChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="attachment-type">Attachment Type</Label>
+              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value as 'contract' | 'receipt' | 'other')} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contract">Contract</SelectItem>
+                  <SelectItem value="receipt">Receipt</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsUploadAttachmentDialogOpen(false)} type="button">
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-primary" disabled={uploadingAttachment}>
+                {uploadingAttachment ? "Uploading..." : "Upload"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
