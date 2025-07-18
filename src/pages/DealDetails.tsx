@@ -36,7 +36,7 @@ import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { RallyDialog } from "@/components/deals/RallyDialog";
-import { DataHygieneCard } from "@/components/deals/DataHygieneCard"; // Re-import DataHygieneCard
+import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { DealNote, Task } from "@/types/crm";
@@ -53,7 +53,7 @@ interface TaskFormData {
 }
 
 export function DealDetails() {
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, dataHygieneInsights } = useCRMData(); // Destructure dataHygieneInsights
+  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal } = useCRMData(); // Removed dataHygieneInsights
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -431,7 +431,7 @@ export function DealDetails() {
       </Card>
 
       {/* Data Hygiene Card */}
-      {dataHygieneInsights && <DataHygieneCard insights={dataHygieneInsights} />}
+      {deal && <DataHygieneCard deal={deal} />}
 
       {/* Project Timeline Section */}
       <DealTimeline deal={deal} />

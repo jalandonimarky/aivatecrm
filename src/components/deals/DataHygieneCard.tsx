@@ -1,141 +1,142 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, XCircle, Users, Briefcase, Calendar, ListTodo } from "lucide-react";
+import { AlertCircle, Lightbulb, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import type { DataHygieneInsights } from "@/types/crm";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import type { Deal, DataHygieneInsights } from "@/types/crm";
 
 interface DataHygieneCardProps {
-  insights: DataHygieneInsights;
+  deal: Deal;
 }
 
-export function DataHygieneCard({ insights }: DataHygieneCardProps) {
-  const {
-    dealsMissingContact,
-    dealsMissingAssignedUser,
-    dealsMissingCloseDate,
-    tasksMissingDueDate,
-    tasksMissingAssignedUser,
-    totalIssues,
-  } = insights;
+export function DataHygieneCard({ deal }: DataHygieneCardProps) {
+  const [insights, setInsights] = useState<DataHygieneInsights | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const issues = [
-    {
-      label: "Deals Missing Contact",
-      count: dealsMissingContact,
-      icon: Users, // Icon for contacts
-      color: "destructive",
-      actionText: "Add contacts to deals",
-      actionLink: "/deals", // Link to deals page to edit
-    },
-    {
-      label: "Deals Missing Assigned User",
-      count: dealsMissingAssignedUser,
-      icon: Briefcase, // Icon for assigned user (deals)
-      color: "destructive",
-      actionText: "Assign users to deals",
-      actionLink: "/deals",
-    },
-    {
-      label: "Deals Missing Close Date",
-      count: dealsMissingCloseDate,
-      icon: Calendar, // Icon for calendar/date
-      color: "destructive",
-      actionText: "Set close dates for deals",
-      actionLink: "/deals",
-    },
-    {
-      label: "Tasks Missing Due Date",
-      count: tasksMissingDueDate,
-      icon: Calendar, // Icon for calendar/date
-      color: "destructive",
-      actionText: "Add due dates to tasks",
-      actionLink: "/tasks", // Link to tasks page to edit
-    },
-    {
-      label: "Tasks Missing Assigned User",
-      count: tasksMissingAssignedUser,
-      icon: ListTodo, // Icon for assigned user (tasks)
-      color: "destructive",
-      actionText: "Assign users to tasks",
-      actionLink: "/tasks",
-    },
-  ];
+  useEffect(() => {
+    const fetchDataHygiene = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: invokeError } = await supabase.functions.invoke('data-hygiene-checker', {
+          body: { deal },
+        });
 
-  const nextBestActions = issues.filter(issue => issue.count > 0);
+        if (invokeError) {
+          throw new Error(invokeError.message);
+        }
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        setInsights(data as DataHygieneInsights);
+      } catch (err: any) {
+        console.error("Error fetching data hygiene insights:", err);
+        setError(err.message || "Failed to load data hygiene insights.");
+        toast({
+          title: "Error",
+          description: err.message || "Failed to load data hygiene insights.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (deal) {
+      fetchDataHygiene();
+    }
+  }, [deal, toast]);
+
+  if (loading) {
+    return (
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Data Hygiene Check</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-2/3" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-destructive">Data Hygiene Check Error</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-destructive">{error}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!insights) {
+    return null; // Should not happen if loading and error are handled
+  }
+
+  const hasIssues = insights.missingFields.length > 0 || insights.suggestions.length > 0 || insights.dealBreakerWarning;
 
   return (
-    <Card className="bg-gradient-card border-border/50 shadow-medium">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center space-x-2">
-          <AlertCircle className="w-5 h-5 text-warning" />
-          <span>Data Hygiene Insights</span>
+    <Card className="bg-gradient-card border-border/50">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold flex items-center">
+          Data Hygiene Check
+          {insights.dealBreakerWarning && (
+            <Badge variant="destructive" className="ml-2">
+              <AlertCircle className="w-3 h-3 mr-1" /> Deal Breaker Risk
+            </Badge>
+          )}
+          {!hasIssues && (
+            <Badge className="ml-2 bg-success text-success-foreground">
+              <CheckCircle className="w-3 h-3 mr-1" /> All Good!
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between pb-2">
-          <p className="text-sm font-medium text-muted-foreground">Total Issues Found</p>
-          <Badge
-            className={`text-sm px-3 py-1 rounded-full ${
-              totalIssues === 0
-                ? "bg-success text-success-foreground"
-                : "bg-destructive text-destructive-foreground"
-            }`}
-          >
-            {totalIssues}
-          </Badge>
-        </div>
-        
-        <Separator />
-
-        <div className="space-y-3">
-          {issues.map((issue, index) => (
-            <div key={index} className="flex items-center justify-between text-sm">
-              <div className="flex items-center space-x-2">
-                {issue.count > 0 ? (
-                  <issue.icon className={`w-4 h-4 text-${issue.color}`} />
-                ) : (
-                  <CheckCircle className="w-4 h-4 text-success" />
-                )}
-                <span className={`${issue.count > 0 ? `text-${issue.color} font-medium` : "text-muted-foreground"}`}>
-                  {issue.label}
-                </span>
-              </div>
-              <span className={`font-semibold ${issue.count > 0 ? `text-${issue.color}` : "text-muted-foreground"}`}>
-                {issue.count}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <Separator />
-
-        <div className="pt-2">
-          <h3 className="text-base font-semibold mb-3">Next Best Actions</h3>
-          {totalIssues === 0 ? (
-            <div className="flex items-center space-x-2 text-success text-sm font-medium">
-              <CheckCircle className="w-5 h-5" />
-              <span>Your CRM data is looking clean! Keep up the great work.</span>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {nextBestActions.map((action, index) => (
-                <Button 
-                  key={index} 
-                  variant="outline" 
-                  className="w-full justify-start text-left h-auto py-2 px-3 bg-muted/30 hover:bg-muted/50 transition-smooth"
-                  asChild
-                >
-                  <a href={action.actionLink}>
-                    <XCircle className="w-4 h-4 text-destructive mr-2 flex-shrink-0" />
-                    <span className="flex-1">{action.actionText} ({action.count} issues)</span>
-                  </a>
-                </Button>
+        {insights.missingFields.length > 0 && (
+          <div>
+            <h3 className="font-medium text-warning flex items-center mb-2">
+              <AlertCircle className="w-4 h-4 mr-2" /> Missing Information:
+            </h3>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+              {insights.missingFields.map((field, index) => (
+                <li key={index}>{field}</li>
               ))}
-            </div>
-          )}
-        </div>
+            </ul>
+          </div>
+        )}
+
+        {insights.suggestions.length > 0 && (
+          <div>
+            <h3 className="font-medium text-primary flex items-center mb-2">
+              <Lightbulb className="w-4 h-4 mr-2" /> Next Best Actions:
+            </h3>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+              {insights.suggestions.map((suggestion, index) => (
+                <li key={index}>{suggestion}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {!hasIssues && (
+          <p className="text-sm text-muted-foreground">
+            Great job! All essential information for this deal is complete, and there are no immediate suggestions.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

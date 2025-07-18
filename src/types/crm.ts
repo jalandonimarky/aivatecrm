@@ -117,10 +117,7 @@ export interface DashboardStats {
 }
 
 export interface DataHygieneInsights {
-  dealsMissingContact: number;
-  dealsMissingAssignedUser: number;
-  dealsMissingCloseDate: number;
-  tasksMissingDueDate: number;
-  tasksMissingAssignedUser: number;
-  totalIssues: number;
+  missingFields: string[];
+  suggestions: string[];
+  dealBreakerWarning: boolean;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DataHygieneInsights } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote } from "@/types/crm";
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -22,7 +22,6 @@ export function useCRMData() {
     totalOneOffProjects: 0,
     totalSystemDevelopment: 0,
   });
-  const [dataHygieneInsights, setDataHygieneInsights] = useState<DataHygieneInsights | null>(null); // Re-add state for data hygiene
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -75,26 +74,6 @@ export function useCRMData() {
       value: Math.abs(parseFloat(change.toFixed(1))),
       trend: change >= 0 ? "up" : "down",
     };
-  };
-
-  // Function to fetch data hygiene insights from Edge Function
-  const fetchDataHygieneInsights = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('data-hygiene-checker');
-      if (error) throw error;
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      setDataHygieneInsights(data as DataHygieneInsights);
-    } catch (error: any) {
-      console.error("Error fetching data hygiene insights:", error);
-      toast({
-        title: "Error",
-        description: `Failed to load data hygiene insights: ${error.message}`,
-        variant: "destructive",
-      });
-      setDataHygieneInsights(null); // Clear insights on error
-    }
   };
 
   // Fetch all data
@@ -157,9 +136,6 @@ export function useCRMData() {
       // Calculate stats
       calculateStats((dealsData || []) as any as Deal[], (tasksData || []) as any as Task[], (contactsData || []) as any as Contact[]);
       
-      // Fetch data hygiene insights
-      await fetchDataHygieneInsights();
-
     } catch (error: any) {
       console.error("Error fetching CRM data:", error);
       let errorMessage = "An unexpected error occurred.";
@@ -364,8 +340,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -836,7 +810,6 @@ export function useCRMData() {
     tasks,
     profiles,
     stats,
-    dataHygieneInsights, // Export data hygiene insights
     loading,
     refetch: fetchData,
     createContact,

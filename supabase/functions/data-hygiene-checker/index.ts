@@ -12,69 +12,51 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
+    const { deal } = await req.json();
 
-    // Fetch deals data
-    const { data: deals, error: dealsError } = await supabaseClient
-      .from('deals')
-      .select('contact_id, assigned_to, expected_close_date');
-
-    if (dealsError) {
-      console.error('Error fetching deals:', dealsError);
-      throw new Error('Failed to fetch deals data.');
+    if (!deal || !deal.id) {
+      return new Response(JSON.stringify({ error: 'Missing deal data in request body.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
 
-    // Fetch tasks data
-    const { data: tasks, error: tasksError } = await supabaseClient
-      .from('tasks')
-      .select('due_date, assigned_to, status');
+    const missingFields: string[] = [];
+    const suggestions: string[] = [];
+    let dealBreakerWarning = false;
 
-    if (tasksError) {
-      console.error('Error fetching tasks:', tasksError);
-      throw new Error('Failed to fetch tasks data.');
+    // Check for missing fields
+    if (!deal.contact_id) {
+      missingFields.push("Related Contact");
+      suggestions.push("Assign a contact to this deal.");
+    }
+    if (!deal.assigned_to) {
+      missingFields.push("Assigned User");
+      suggestions.push("Assign a user to this deal.");
+    }
+    if (!deal.expected_close_date) {
+      missingFields.push("Expected Close Date");
+      suggestions.push("Set an expected close date for better forecasting.");
+    }
+    if (!deal.description || deal.description.trim() === "") {
+      missingFields.push("Description");
+      suggestions.push("Add a detailed description to the deal.");
+    }
+    if (!deal.tier) {
+      missingFields.push("Tier");
+      suggestions.push("Assign a tier to the deal for better categorization.");
     }
 
-    // Calculate hygiene insights
-    let dealsMissingContact = 0;
-    let dealsMissingAssignedUser = 0;
-    let dealsMissingCloseDate = 0;
-
-    deals.forEach(deal => {
-      if (!deal.contact_id) dealsMissingContact++;
-      if (!deal.assigned_to) dealsMissingAssignedUser++;
-      if (!deal.expected_close_date) dealsMissingCloseDate++;
-    });
-
-    let tasksMissingDueDate = 0;
-    let tasksMissingAssignedUser = 0;
-
-    tasks.forEach(task => {
-      if (!task.due_date) tasksMissingDueDate++;
-      if (!task.assigned_to) tasksMissingAssignedUser++;
-    });
-
-    const totalIssues =
-      dealsMissingContact +
-      dealsMissingAssignedUser +
-      dealsMissingCloseDate +
-      tasksMissingDueDate +
-      tasksMissingAssignedUser;
+    // Specific deal breaker logic (example)
+    if (deal.stage === 'in_development' && (!deal.assigned_to || !deal.expected_close_date)) {
+      dealBreakerWarning = true;
+      suggestions.push("This deal is in development but missing an assigned user or close date, which could be a deal breaker.");
+    }
 
     const insights = {
-      dealsMissingContact,
-      dealsMissingAssignedUser,
-      dealsMissingCloseDate,
-      tasksMissingDueDate,
-      tasksMissingAssignedUser,
-      totalIssues,
+      missingFields,
+      suggestions,
+      dealBreakerWarning,
     };
 
     return new Response(JSON.stringify(insights), {
