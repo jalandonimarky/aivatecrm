@@ -25,6 +25,42 @@ export function useCRMData() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Helper to get or create a user profile ID, ensuring one always exists for the logged-in user.
+  const getOrCreateUserProfileId = async (): Promise<string> => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("User not authenticated.");
+
+    let { data: profileData } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    // If profile doesn't exist, create it now.
+    if (!profileData) {
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: user.id,
+          email: user.email || '',
+          first_name: user.user_metadata?.first_name || 'New',
+          last_name: user.user_metadata?.last_name || 'User',
+        })
+        .select('id')
+        .single();
+      
+      if (createError) throw createError;
+      profileData = newProfile;
+      toast({ title: "Profile created", description: "Your user profile was automatically created." });
+      await fetchData(); // Refresh data after creating profile
+    }
+
+    if (!profileData || !profileData.id) throw new Error("User profile could not be found or created.");
+    
+    return profileData.id;
+  };
+
   // Helper to combine first and last name for display
   const getFullName = (profile: Profile) => `${profile.first_name} ${profile.last_name}`;
 
@@ -554,22 +590,7 @@ export function useCRMData() {
   // CRUD operations for deal notes
   const createDealNote = async (dealId: string, noteType: 'business' | 'development', content: string) => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) throw new Error("User not authenticated.");
-
-      // Fetch the profile ID for the current user
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-      if (!profileData) throw new Error("User profile not found.");
-
-      const creatorProfileId = profileData.id;
-      console.log("Attempting to create deal note with creatorProfileId:", creatorProfileId); // Added log
+      const creatorProfileId = await getOrCreateUserProfileId();
 
       const { data, error } = await supabase
         .from("deal_notes")
@@ -679,22 +700,7 @@ export function useCRMData() {
   // CRUD operations for task notes
   const createTaskNote = async (taskId: string, content: string) => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) throw new Error("User not authenticated.");
-
-      // Fetch the profile ID for the current user
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-      if (!profileData) throw new Error("User profile not found.");
-
-      const creatorProfileId = profileData.id;
-      console.log("Attempting to create task note with creatorProfileId:", creatorProfileId); // Added log
+      const creatorProfileId = await getOrCreateUserProfileId();
 
       const { data, error } = await supabase
         .from("task_notes" as any)
@@ -804,21 +810,7 @@ export function useCRMData() {
   // CRUD operations for deal attachments
   const uploadDealAttachment = async (dealId: string, file: File, attachmentType: DealAttachment['attachment_type']) => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) throw new Error("User not authenticated.");
-
-      // Fetch the profile ID for the current user
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-      if (!profileData) throw new Error("User profile not found.");
-
-      const uploaderProfileId = profileData.id;
+      const uploaderProfileId = await getOrCreateUserProfileId();
 
       const fileExtension = file.name.split('.').pop();
       const fileName = `${dealId}/${crypto.randomUUID()}.${fileExtension}`; // Store in deal-specific folder
