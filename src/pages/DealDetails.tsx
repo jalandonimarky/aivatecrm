@@ -36,8 +36,6 @@ import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { RallyDialog } from "@/components/deals/RallyDialog";
-import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
-import { DealAttachmentsSection } from "@/components/deals/DealAttachmentsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { DealNote, Task } from "@/types/crm";
@@ -431,14 +429,8 @@ export function DealDetails() {
         </CardContent>
       </Card>
 
-      {/* Data Hygiene Card */}
-      {deal && <DataHygieneCard deal={deal} />}
-
       {/* Project Timeline Section */}
       <DealTimeline deal={deal} />
-
-      {/* Deal Attachments Section */}
-      {deal && <DealAttachmentsSection key={deal.attachments?.length || 0} deal={deal} />}
 
       {/* Notes Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

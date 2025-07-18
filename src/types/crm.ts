@@ -44,17 +44,6 @@ export interface TaskNote { // New interface for task notes
   creator?: Profile; // To store the profile of the note creator
 }
 
-export interface DealAttachment { // New interface for deal attachments
-  id: string;
-  deal_id: string;
-  file_name: string;
-  file_url: string;
-  attachment_type: 'contract' | 'receipt' | 'other';
-  uploaded_by?: string;
-  created_at: string;
-  uploader?: Profile; // To store the profile of the uploader
-}
-
 export interface Deal {
   id: string;
   title: string;
@@ -72,7 +61,6 @@ export interface Deal {
   assigned_user?: Profile;
   notes?: DealNote[]; // Added notes array
   tasks?: Task[]; // Added tasks array
-  attachments?: DealAttachment[]; // Added attachments array
 }
 
 export interface Task {
@@ -126,11 +114,4 @@ export interface DashboardStats {
   pipelineValueChange?: ChangeMetric;
   totalContactsChange?: ChangeMetric;
   pendingTasksChange?: ChangeMetric;
-}
-
-// New types for Data Hygiene Checker
-export interface DataHygieneInsights {
-  missingFields: string[];
-  suggestions: string[];
-  dealBreakerWarning: boolean;
 }
