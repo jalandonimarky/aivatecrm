@@ -33,16 +33,19 @@ export function useCRMData() {
 
     let { data: profileData } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('user_id', user.id)
+      .select('id') // Select the profiles.id (PK)
+      .eq('user_id', user.id) // Match by auth.uid()
       .maybeSingle();
 
-    // If profile doesn't exist, create it now.
+    // If profile doesn't exist, it should have been created by the trigger.
+    // If it's still not found, something is wrong with the trigger or RLS for select.
     if (!profileData) {
+      // This block should ideally not be hit if the trigger works.
+      // However, if it is, we need to ensure we insert into user_id, not id.
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert({
-          user_id: user.id,
+          user_id: user.id, // Correctly insert auth.uid() into user_id
           email: user.email || '',
           first_name: user.user_metadata?.first_name || 'New',
           last_name: user.user_metadata?.last_name || 'User',
@@ -58,7 +61,7 @@ export function useCRMData() {
 
     if (!profileData || !profileData.id) throw new Error("User profile could not be found or created.");
     
-    return profileData.id;
+    return profileData.id; // This is the profiles.id (PK), which is what created_by should reference.
   };
 
   // Helper to combine first and last name for display
@@ -260,6 +263,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as Contact;
     } catch (error: any) {
+      console.error("Error creating contact:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -301,6 +305,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as Contact;
     } catch (error: any) {
+      console.error("Error updating contact:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -335,6 +340,7 @@ export function useCRMData() {
       });
       await fetchData(); // Re-fetch all data
     } catch (error: any) {
+      console.error("Error deleting contact:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -376,6 +382,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as Deal;
     } catch (error: any) {
+      console.error("Error creating deal:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -417,6 +424,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as Deal;
     } catch (error: any) {
+      console.error("Error updating deal:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -449,6 +457,7 @@ export function useCRMData() {
       });
       await fetchData(); // Re-fetch all data
     } catch (error: any) {
+      console.error("Error deleting deal:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -490,6 +499,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as Task;
     } catch (error: any) {
+      console.error("Error creating task:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -531,6 +541,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as Task;
     } catch (error: any) {
+      console.error("Error updating task:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -563,6 +574,7 @@ export function useCRMData() {
       });
       await fetchData(); // Re-fetch all data
     } catch (error: any) {
+      console.error("Error deleting task:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -603,6 +615,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as DealNote;
     } catch (error: any) {
+      console.error("Error adding deal note:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -641,6 +654,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as DealNote;
     } catch (error: any) {
+      console.error("Error updating deal note:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -673,6 +687,7 @@ export function useCRMData() {
       });
       await fetchData(); // Re-fetch all data
     } catch (error: any) {
+      console.error("Error deleting deal note:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -713,6 +728,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as TaskNote;
     } catch (error: any) {
+      console.error("Error adding task note:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -751,6 +767,7 @@ export function useCRMData() {
       await fetchData(); // Re-fetch all data
       return data as any as TaskNote;
     } catch (error: any) {
+      console.error("Error updating task note:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -783,6 +800,7 @@ export function useCRMData() {
       });
       await fetchData(); // Re-fetch all data
     } catch (error: any) {
+      console.error("Error deleting task note:", error); // Added console.error
       let errorMessage = "An unexpected error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
