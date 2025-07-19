@@ -272,7 +272,7 @@ export function DealFormDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-gradient-primary active:scale-95">
+            <Button type="submit" className="bg-gradient-primary">
               {initialData ? "Update" : "Create"} Deal
             </Button>
           </div>

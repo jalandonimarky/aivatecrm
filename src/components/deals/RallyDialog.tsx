@@ -133,7 +133,7 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
             <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
               Cancel
             </Button>
-            <Button type="submit" className="bg-gradient-primary active:scale-95" disabled={loading}>
+            <Button type="submit" className="bg-gradient-primary" disabled={loading}>
               {loading ? "Sending..." : "Send Rally"}
             </Button>
           </DialogFooter>
