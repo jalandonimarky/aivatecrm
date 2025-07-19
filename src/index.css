@@ -8,25 +8,25 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Light Theme Colors */
-    --background: 0 0% 100%; /* White */
-    --foreground: 229 42% 9%; /* Dark Blue */
+    /* Light Theme (now leaning dark) Colors */
+    --background: 229 42% 9%; /* Dark Blue */
+    --foreground: 0 0% 100%; /* White */
 
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 229 42% 9%; /* Dark Blue */
+    --card: 229 42% 9%; /* Dark Blue */
+    --card-foreground: 0 0% 100%; /* White */
 
-    --popover: 0 0% 100%; /* White */
-    --popover-foreground: 229 42% 9%; /* Dark Blue */
+    --popover: 229 42% 9%; /* Dark Blue */
+    --popover-foreground: 0 0% 100%; /* White */
 
     --primary: 150 42% 73%; /* Mint - #88ebc5 */
     --primary-foreground: 229 42% 9%; /* Dark Blue (for text on Mint) */
     --primary-glow: 248 69% 57%; /* Purple - #5946df */
 
-    --secondary: 220 13% 91%; /* Light Grey */
-    --secondary-foreground: 229 42% 9%; /* Dark Blue */
+    --secondary: 229 30% 15%; /* Darker Blue/Grey */
+    --secondary-foreground: 0 0% 100%; /* White */
 
-    --muted: 240 4.8% 95.9%; /* Very light grey */
-    --muted-foreground: 240 3.8% 46.1%; /* Medium grey */
+    --muted: 229 30% 15%; /* Darker muted */
+    --muted-foreground: 215 20.2% 65.1%; /* Lighter grey for muted text */
 
     --accent: 248 69% 57%; /* Purple */
     --accent-foreground: 0 0% 100%; /* White */
@@ -41,8 +41,8 @@ All colors MUST be HSL.
     --warning: 38 92% 50%; /* Orange */
     --warning-foreground: 0 0% 98%; /* White */
 
-    --border: 220 13% 91%; /* Light Grey */
-    --input: 220 13% 91%; /* Light Grey */
+    --border: 229 30% 15%; /* Darker border */
+    --input: 229 30% 15%; /* Darker input */
     --ring: 248 69% 57%; /* Purple */
 
     --radius: 0.75rem;
@@ -51,47 +51,47 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow))); /* Mint to Purple */
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-glow))); /* Purple to Brighter Purple */
     --gradient-dashboard: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow))); /* Mint to Purple */
-    --gradient-card: linear-gradient(145deg, hsl(var(--background)), hsl(240 4.8% 98%)); /* White to very light grey */
+    --gradient-card: linear-gradient(145deg, hsl(229 42% 9%), hsl(229 30% 15%)); /* Dark Blue to Darker Blue/Grey */
     
-    --shadow-soft: 0 1px 3px 0 hsl(240 10% 3.9% / 0.1), 0 1px 2px -1px hsl(240 10% 3.9% / 0.1);
-    --shadow-medium: 0 4px 6px -1px hsl(240 10% 3.9% / 0.1), 0 2px 4px -2px hsl(240 10% 3.9% / 0.1);
-    --shadow-large: 0 10px 15px -3px hsl(240 10% 3.9% / 0.1), 0 4px 6px -4px hsl(240 10% 3.9% / 0.1);
+    --shadow-soft: 0 1px 3px 0 hsl(229 42% 9% / 0.3), 0 1px 2px -1px hsl(229 42% 9% / 0.3);
+    --shadow-medium: 0 4px 6px -1px hsl(229 42% 9% / 0.3), 0 2px 4px -2px hsl(229 42% 9% / 0.3);
+    --shadow-large: 0 10px 15px -3px hsl(229 42% 9% / 0.3), 0 4px 6px -4px hsl(229 42% 9% / 0.3);
     --shadow-glow: 0 0 20px hsl(var(--primary-glow) / 0.3); /* Purple glow */
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    /* Sidebar specific colors (light theme) */
-    --sidebar-background: 0 0% 100%; /* White */
-    --sidebar-foreground: 229 42% 9%; /* Dark Blue */
+    /* Sidebar specific colors (light theme, now dark) */
+    --sidebar-background: 229 42% 9%; /* Dark Blue */
+    --sidebar-foreground: 0 0% 100%; /* White */
     --sidebar-primary: 150 42% 73%; /* Mint */
     --sidebar-primary-foreground: 229 42% 9%; /* Dark Blue */
-    --sidebar-accent: 240 4.8% 95.9%; /* Muted light grey */
-    --sidebar-accent-foreground: 229 42% 9%; /* Dark Blue */
-    --sidebar-border: 220 13% 91%; /* Light Grey */
-    --sidebar-ring: 248 69% 57%; /* Purple */
+    --sidebar-accent: 229 30% 15%; /* Darker muted */
+    --sidebar-accent-foreground: 0 0% 100%; /* White */
+    --sidebar-border: 229 30% 15%; /* Darker border */
+    --sidebar-ring: 150 42% 73%; /* Mint */
   }
 
   .dark {
-    /* Dark Theme Colors */
-    --background: 229 42% 9%; /* Dark Blue */
+    /* Dark Theme (even darker) Colors */
+    --background: 229 42% 5%; /* Even Darker Blue */
     --foreground: 0 0% 100%; /* White */
 
-    --card: 229 42% 9%; /* Dark Blue */
+    --card: 229 42% 5%; /* Even Darker Blue */
     --card-foreground: 0 0% 100%; /* White */
 
-    --popover: 229 42% 9%; /* Dark Blue */
+    --popover: 229 42% 5%; /* Even Darker Blue */
     --popover-foreground: 0 0% 100%; /* White */
 
     --primary: 150 42% 73%; /* Mint */
     --primary-foreground: 229 42% 9%; /* Dark Blue (for text on Mint) */
     --primary-glow: 248 69% 57%; /* Purple */
 
-    --secondary: 229 30% 15%; /* Darker Blue/Grey */
+    --secondary: 229 30% 10%; /* Even Darker Blue/Grey */
     --secondary-foreground: 0 0% 100%; /* White */
 
-    --muted: 229 30% 15%; /* Darker muted */
-    --muted-foreground: 215 20.2% 65.1%; /* Lighter grey for muted text */
+    --muted: 229 30% 10%; /* Even Darker muted */
+    --muted-foreground: 215 20.2% 75.1%; /* Lighter grey for contrast */
 
     --accent: 248 69% 57%; /* Purple */
     --accent-foreground: 0 0% 100%; /* White */
@@ -106,18 +106,18 @@ All colors MUST be HSL.
     --warning: 38 92% 50%; /* Darker Orange */
     --warning-foreground: 0 0% 98%; /* White */
 
-    --border: 229 30% 15%; /* Darker border */
-    --input: 229 30% 15%; /* Darker input */
+    --border: 229 30% 10%; /* Even Darker border */
+    --input: 229 30% 10%; /* Even Darker input */
     --ring: 150 42% 73%; /* Mint */
 
-    /* Sidebar specific colors (dark theme) */
-    --sidebar-background: 229 42% 9%; /* Dark Blue */
+    /* Sidebar specific colors (dark theme, even darker) */
+    --sidebar-background: 229 42% 5%; /* Even Darker Blue */
     --sidebar-foreground: 0 0% 100%; /* White */
     --sidebar-primary: 150 42% 73%; /* Mint */
     --sidebar-primary-foreground: 229 42% 9%; /* Dark Blue */
-    --sidebar-accent: 229 30% 15%; /* Darker muted */
+    --sidebar-accent: 229 30% 10%; /* Even Darker muted */
     --sidebar-accent-foreground: 0 0% 100%; /* White */
-    --sidebar-border: 229 30% 15%; /* Darker border */
+    --sidebar-border: 229 30% 10%; /* Even Darker border */
     --sidebar-ring: 150 42% 73%; /* Mint */
   }
 }
