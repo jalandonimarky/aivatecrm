@@ -71,7 +71,9 @@ serve(async (req) => {
         if (!deal.description || deal.description.length < 20) {
           suggestions.push("Expand the description to capture more initial lead details and potential needs.");
         }
-        suggestions.push("Estimate an initial value range for this lead.");
+        if (deal.value === 0) { // Only suggest if value is 0
+          suggestions.push("Estimate an initial value range for this lead.");
+        }
         break;
       case 'discovery_call':
         if (!deal.expected_close_date) {
@@ -84,6 +86,7 @@ serve(async (req) => {
         break;
       case 'in_development':
       case 'demo':
+        // Assigned user is already a general missing field, no need to duplicate suggestion here.
         if (deal.expected_close_date && new Date(deal.expected_close_date) < new Date()) {
           suggestions.push("The expected close date is in the past. Review and update the date or advance the deal stage.");
         }
