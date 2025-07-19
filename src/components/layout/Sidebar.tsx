@@ -4,7 +4,7 @@ import {
   Users, 
   Briefcase, 
   CheckSquare, 
-  BarChart3,
+  BarChart3, // Keep BarChart3 if it's used elsewhere, otherwise it can be removed
   Settings,
   LogOut
 } from "lucide-react";
@@ -19,7 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"; // Removed SidebarTrigger
+} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -41,11 +41,10 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { toast } = useToast();
-  const { profiles } = useCRMData(); // Destructure profiles
+  const { profiles } = useCRMData();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 
-  // Find the current user's profile based on Supabase session
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -100,16 +99,22 @@ export function AppSidebar() {
         <div className="mb-8 px-2">
           {!collapsed ? (
             <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-4 h-4 text-primary-foreground" />
-              </div>
+              <img 
+                src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_1.png?v=1752899970" 
+                alt="AIVate CRM Logo" 
+                className="w-8 h-8 object-contain" // Adjusted styling for image
+              />
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 AIVate CRM
               </span>
             </a>
           ) : (
-            <a href="/" onClick={handleLogoClick} className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center mx-auto cursor-pointer">
-              <BarChart3 className="w-4 h-4 text-primary-foreground" />
+            <a href="/" onClick={handleLogoClick} className="w-8 h-8 flex items-center justify-center mx-auto cursor-pointer">
+              <img 
+                src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_1.png?v=1752899970" 
+                alt="AIVate CRM Logo" 
+                className="w-8 h-8 object-contain" // Adjusted styling for image
+              />
             </a>
           )}
         </div>
