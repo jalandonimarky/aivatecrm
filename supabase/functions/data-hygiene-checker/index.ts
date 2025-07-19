@@ -71,7 +71,6 @@ serve(async (req) => {
         if (!deal.description || deal.description.length < 20) {
           suggestions.push("Expand the description to capture more initial lead details and potential needs.");
         }
-        suggestions.push("Identify and add key contact persons for this lead.");
         suggestions.push("Estimate an initial value range for this lead.");
         break;
       case 'discovery_call':
@@ -85,10 +84,6 @@ serve(async (req) => {
         break;
       case 'in_development':
       case 'demo':
-        // Assigned user is already a general missing field, no need to duplicate suggestion here.
-        if (!deal.tasks || deal.tasks.length === 0) {
-          suggestions.push("Create detailed tasks to track development/demo progress and next steps.");
-        }
         if (deal.expected_close_date && new Date(deal.expected_close_date) < new Date()) {
           suggestions.push("The expected close date is in the past. Review and update the date or advance the deal stage.");
         }
