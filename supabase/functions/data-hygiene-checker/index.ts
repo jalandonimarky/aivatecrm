@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-// No need to import createClient here as we are not interacting with the database directly from this function.
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,76 +27,83 @@ serve(async (req) => {
     // --- General Checks ---
     if (!deal.contact_id) {
       missingFields.push("Related Contact");
-      suggestions.push("Assign a contact to this deal.");
+      suggestions.push("Assign a primary contact to this deal.");
     }
     if (!deal.assigned_to) {
       missingFields.push("Assigned User");
-      suggestions.push("Assign a user to this deal.");
+      suggestions.push("Assign a user responsible for this deal.");
     }
     if (!deal.expected_close_date) {
       missingFields.push("Expected Close Date");
-      suggestions.push("Set an expected close date for better forecasting.");
+      suggestions.push("Set an expected close date for better forecasting and pipeline management.");
     }
     if (!deal.description || deal.description.trim() === "") {
       missingFields.push("Description");
-      suggestions.push("Add a detailed description to the deal.");
+      suggestions.push("Add a detailed description to provide context for the deal.");
     }
     if (!deal.tier) {
       missingFields.push("Tier");
-      suggestions.push("Assign a tier to the deal for better categorization.");
+      suggestions.push("Assign a tier to the deal for better categorization and reporting.");
     }
 
-    // Check for attachments
-    if (!deal.attachments || deal.attachments.length === 0) {
-      suggestions.push("Consider uploading relevant attachments (e.g., contract, proposal).");
-    } else {
-      // Check for specific attachment types if deal is in later stages
-      const hasContractOrReceipt = deal.attachments.some((att: any) => 
-        att.attachment_type === 'contract' || att.attachment_type === 'receipt'
-      );
-      if ((deal.stage === 'paid' || deal.stage === 'completed') && !hasContractOrReceipt) {
-        suggestions.push("Upload the contract or receipt for this deal.");
+    // --- Attachment Checks ---
+    const hasContract = deal.attachments?.some((att: any) => att.attachment_type === 'contract');
+    const hasReceipt = deal.attachments?.some((att: any) => att.attachment_type === 'receipt');
+
+    const stagesRequiringContractOrReceipt = ['in_development', 'demo', 'paid', 'completed', 'cancelled'];
+
+    if (stagesRequiringContractOrReceipt.includes(deal.stage)) {
+      if (!hasContract) {
+        missingFields.push("Contract Attachment");
+        suggestions.push("Upload the signed contract for this deal.");
       }
+      if (!hasReceipt) {
+        missingFields.push("Receipt Attachment");
+        suggestions.push("Upload the payment receipt for this deal.");
+      }
+    } else if (!deal.attachments || deal.attachments.length === 0) {
+      suggestions.push("Consider uploading relevant attachments (e.g., initial proposal, brief, or meeting notes).");
     }
 
-    // --- Stage-Specific Checks ---
+    // --- Stage-Specific Checks and Suggestions ---
     switch (deal.stage) {
       case 'lead':
         if (!deal.description || deal.description.length < 20) {
-          suggestions.push("Expand the description to capture more lead details.");
+          suggestions.push("Expand the description to capture more initial lead details and potential needs.");
         }
+        suggestions.push("Identify and add key contact persons for this lead.");
+        suggestions.push("Estimate an initial value range for this lead.");
         break;
       case 'discovery_call':
         if (!deal.expected_close_date) {
-          suggestions.push("Set an expected close date after the discovery call.");
+          suggestions.push("Define a realistic expected close date after the discovery call.");
         }
         if (deal.value === 0) {
-          suggestions.push("Update deal value after the discovery call.");
+          suggestions.push("Update the deal value based on the discovery call outcome.");
         }
+        suggestions.push("Summarize key findings from the discovery call in a business note.");
         break;
       case 'in_development':
       case 'demo':
-        if (!deal.assigned_to) {
-          dealBreakerWarning = true;
-          suggestions.push("This deal is in a critical stage but has no assigned user.");
-        }
+        // Assigned user is already a general missing field, no need to duplicate suggestion here.
         if (!deal.tasks || deal.tasks.length === 0) {
-          suggestions.push("Create tasks to track progress for this development/demo stage.");
+          suggestions.push("Create detailed tasks to track development/demo progress and next steps.");
         }
         if (deal.expected_close_date && new Date(deal.expected_close_date) < new Date()) {
-          suggestions.push("The expected close date is in the past. Update it or move to the next stage.");
+          suggestions.push("The expected close date is in the past. Review and update the date or advance the deal stage.");
         }
+        suggestions.push("Add development notes to document technical progress or challenges.");
         break;
       case 'paid':
       case 'completed':
         if (deal.value === 0) {
-          dealBreakerWarning = true;
-          suggestions.push("Paid/Completed deal has a value of 0. Please verify.");
+          suggestions.push("Verify the final deal value is accurate for this paid/completed deal.");
         }
+        suggestions.push("Ensure all final documentation (e.g., project closure report, client feedback) is attached.");
         break;
       case 'cancelled':
         if (!deal.notes || deal.notes.length === 0 || !deal.notes.some((note: any) => note.content.toLowerCase().includes('cancellation reason'))) {
-          suggestions.push("Add a note explaining the reason for cancellation.");
+          suggestions.push("Document the specific reason for cancellation in a note for future analysis.");
         }
         break;
       default:
@@ -106,15 +112,19 @@ serve(async (req) => {
     }
 
     // --- Deal Breaker Logic (Refined) ---
-    if (deal.stage === 'in_development' && (!deal.assigned_to || !deal.expected_close_date)) {
+    if (deal.stage === 'in_development' && (!deal.assigned_to || !deal.expected_close_date || !hasContract)) {
       dealBreakerWarning = true;
     }
-    if (deal.stage === 'demo' && (!deal.assigned_to || deal.value === 0)) {
+    if (deal.stage === 'demo' && (!deal.assigned_to || deal.value === 0 || !hasContract)) {
       dealBreakerWarning = true;
     }
-    if (deal.stage === 'paid' && deal.value === 0) {
+    if (deal.stage === 'paid' && (deal.value === 0 || !hasContract || !hasReceipt)) {
       dealBreakerWarning = true;
     }
+    if (deal.stage === 'completed' && (deal.value === 0 || !hasContract || !hasReceipt)) {
+      dealBreakerWarning = true;
+    }
+
 
     const insights = {
       missingFields,
