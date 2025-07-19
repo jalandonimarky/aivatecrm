@@ -8,7 +8,72 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Light Theme (now leaning dark) Colors */
+    /* Light Theme Colors (previous version) */
+    --background: 0 0% 100%; /* White */
+    --foreground: 229 42% 9%; /* Dark Blue */
+
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 229 42% 9%; /* Dark Blue */
+
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 229 42% 9%; /* Dark Blue */
+
+    --primary: 150 42% 73%; /* Mint - #88ebc5 */
+    --primary-foreground: 229 42% 9%; /* Dark Blue (for text on Mint) */
+    --primary-glow: 248 69% 57%; /* Purple - #5946df */
+
+    --secondary: 220 13% 91%; /* Light Grey */
+    --secondary-foreground: 229 42% 9%; /* Dark Blue */
+
+    --muted: 240 4.8% 95.9%; /* Very light grey */
+    --muted-foreground: 240 3.8% 46.1%; /* Medium grey */
+
+    --accent: 248 69% 57%; /* Purple */
+    --accent-foreground: 0 0% 100%; /* White */
+    --accent-glow: 248 69% 65%; /* Brighter Purple */
+
+    --destructive: 0 84.2% 60.2%; /* Red */
+    --destructive-foreground: 0 0% 98%; /* White */
+
+    --success: 142 76% 36%; /* Green */
+    --success-foreground: 0 0% 98%; /* White */
+
+    --warning: 38 92% 50%; /* Orange */
+    --warning-foreground: 0 0% 98%; /* White */
+
+    --border: 220 13% 91%; /* Light Grey */
+    --input: 220 13% 91%; /* Light Grey */
+    --ring: 248 69% 57%; /* Purple */
+
+    --radius: 0.75rem;
+
+    /* CRM-specific design tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow))); /* Mint to Purple */
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-glow))); /* Purple to Brighter Purple */
+    --gradient-dashboard: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow))); /* Mint to Purple */
+    --gradient-card: linear-gradient(145deg, hsl(var(--background)), hsl(240 4.8% 98%)); /* White to very light grey */
+    
+    --shadow-soft: 0 1px 3px 0 hsl(240 10% 3.9% / 0.1), 0 1px 2px -1px hsl(240 10% 3.9% / 0.1);
+    --shadow-medium: 0 4px 6px -1px hsl(240 10% 3.9% / 0.1), 0 2px 4px -2px hsl(240 10% 3.9% / 0.1);
+    --shadow-large: 0 10px 15px -3px hsl(240 10% 3.9% / 0.1), 0 4px 6px -4px hsl(240 10% 3.9% / 0.1);
+    --shadow-glow: 0 0 20px hsl(var(--primary-glow) / 0.3); /* Purple glow */
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Sidebar specific colors (light theme) */
+    --sidebar-background: 0 0% 100%; /* White */
+    --sidebar-foreground: 229 42% 9%; /* Dark Blue */
+    --sidebar-primary: 150 42% 73%; /* Mint */
+    --sidebar-primary-foreground: 229 42% 9%; /* Dark Blue */
+    --sidebar-accent: 240 4.8% 95.9%; /* Muted light grey */
+    --sidebar-accent-foreground: 229 42% 9%; /* Dark Blue */
+    --sidebar-border: 220 13% 91%; /* Light Grey */
+    --sidebar-ring: 248 69% 57%; /* Purple */
+  }
+
+  .dark {
+    /* Dark Theme Colors (your previous "leaning dark" version) */
     --background: 229 42% 9%; /* Dark Blue */
     --foreground: 0 0% 100%; /* White */
 
@@ -61,7 +126,7 @@ All colors MUST be HSL.
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    /* Sidebar specific colors (light theme, now dark) */
+    /* Sidebar specific colors (dark theme) */
     --sidebar-background: 229 42% 9%; /* Dark Blue */
     --sidebar-foreground: 0 0% 100%; /* White */
     --sidebar-primary: 150 42% 73%; /* Mint */
@@ -69,55 +134,6 @@ All colors MUST be HSL.
     --sidebar-accent: 229 30% 15%; /* Darker muted */
     --sidebar-accent-foreground: 0 0% 100%; /* White */
     --sidebar-border: 229 30% 15%; /* Darker border */
-    --sidebar-ring: 150 42% 73%; /* Mint */
-  }
-
-  .dark {
-    /* Dark Theme (even darker) Colors */
-    --background: 229 42% 5%; /* Even Darker Blue */
-    --foreground: 0 0% 100%; /* White */
-
-    --card: 229 42% 5%; /* Even Darker Blue */
-    --card-foreground: 0 0% 100%; /* White */
-
-    --popover: 229 42% 5%; /* Even Darker Blue */
-    --popover-foreground: 0 0% 100%; /* White */
-
-    --primary: 150 42% 73%; /* Mint */
-    --primary-foreground: 229 42% 9%; /* Dark Blue (for text on Mint) */
-    --primary-glow: 248 69% 57%; /* Purple */
-
-    --secondary: 229 30% 10%; /* Even Darker Blue/Grey */
-    --secondary-foreground: 0 0% 100%; /* White */
-
-    --muted: 229 30% 10%; /* Even Darker muted */
-    --muted-foreground: 215 20.2% 75.1%; /* Lighter grey for contrast */
-
-    --accent: 248 69% 57%; /* Purple */
-    --accent-foreground: 0 0% 100%; /* White */
-    --accent-glow: 248 69% 65%; /* Brighter Purple */
-
-    --destructive: 0 62.8% 30.6%; /* Darker Red */
-    --destructive-foreground: 0 0% 98%; /* White */
-
-    --success: 142 76% 36%; /* Darker Green */
-    --success-foreground: 0 0% 98%; /* White */
-
-    --warning: 38 92% 50%; /* Darker Orange */
-    --warning-foreground: 0 0% 98%; /* White */
-
-    --border: 229 30% 10%; /* Even Darker border */
-    --input: 229 30% 10%; /* Even Darker input */
-    --ring: 150 42% 73%; /* Mint */
-
-    /* Sidebar specific colors (dark theme, even darker) */
-    --sidebar-background: 229 42% 5%; /* Even Darker Blue */
-    --sidebar-foreground: 0 0% 100%; /* White */
-    --sidebar-primary: 150 42% 73%; /* Mint */
-    --sidebar-primary-foreground: 229 42% 9%; /* Dark Blue */
-    --sidebar-accent: 229 30% 10%; /* Even Darker muted */
-    --sidebar-accent-foreground: 0 0% 100%; /* White */
-    --sidebar-border: 229 30% 10%; /* Even Darker border */
     --sidebar-ring: 150 42% 73%; /* Mint */
   }
 }

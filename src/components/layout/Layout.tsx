@@ -6,6 +6,7 @@ import { UserProfileCard } from "@/components/UserProfileCard"; // Import UserPr
 import { useCRMData } from "@/hooks/useCRMData"; // Import useCRMData
 import { supabase } from "@/integrations/supabase/client"; // Import supabase
 import { NotificationBell } from "./NotificationBell"; // Import NotificationBell
+import { ModeToggle } from "@/components/theme/ModeToggle"; // Import ModeToggle
 
 export function Layout() {
   const { profiles } = useCRMData(); // Destructure profiles
@@ -33,6 +34,7 @@ export function Layout() {
               {/* Removed h1 with "CRM Dashboard" */}
             </div>
             <div className="flex items-center space-x-4"> {/* Group notification bell and user profile */}
+              <ModeToggle /> {/* Added ModeToggle here */}
               <NotificationBell />
               {currentUserProfile && <UserProfileCard profile={currentUserProfile} />}
             </div>
