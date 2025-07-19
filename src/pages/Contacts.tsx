@@ -106,7 +106,7 @@ export function Contacts() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button 
-              className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth"
+              className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
               onClick={resetForm}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -187,7 +187,7 @@ export function Contacts() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-gradient-primary">
+                <Button type="submit" className="bg-gradient-primary active:scale-95">
                   {editingContact ? "Update" : "Create"} Contact
                 </Button>
               </div>
