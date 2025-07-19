@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ModeToggle } from "@/components/theme/ModeToggle"; // Import ModeToggle
 import type { Profile } from "@/types/crm";
 
 // Zod schema for profile updates
@@ -235,6 +236,15 @@ export function Settings() {
             <Skeleton className="h-10 w-24 ml-auto" />
           </CardContent>
         </Card>
+        {/* Skeleton for Theme Settings */}
+        <Card className="bg-gradient-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Theme Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -313,6 +323,21 @@ export function Settings() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      <Separator className="my-6" />
+
+      {/* Theme Settings Card */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Theme Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="theme-toggle" className="text-base">Dark Mode</Label>
+            <ModeToggle />
+          </div>
         </CardContent>
       </Card>
     </div>
