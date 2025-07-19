@@ -49,7 +49,7 @@ export function AppSidebar() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } = {} } = await supabase.auth.getUser(); // Destructure with default empty object
       if (user) {
         const profile = profiles.find(p => p.user_id === user.id);
         setCurrentUserProfile(profile);
@@ -101,19 +101,19 @@ export function AppSidebar() {
             <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
               <img 
                 src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
-                alt="AIVate CRM Logo" 
-                className="w-12 h-12 object-contain" // Adjusted styling for image
+                alt="AiVate CRM Logo" 
+                className="w-12 h-12 object-contain"
               />
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                AIVate CRM
+                AiVate CRM
               </span>
             </a>
           ) : (
             <a href="/" onClick={handleLogoClick} className="w-12 h-12 flex items-center justify-center mx-auto cursor-pointer">
               <img 
                 src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
-                alt="AIVate CRM Logo" 
-                className="w-12 h-12 object-contain" // Adjusted styling for image
+                alt="AiVate CRM Logo" 
+                className="w-12 h-12 object-contain"
               />
             </a>
           )}
