@@ -7,10 +7,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNowStrict } from "date-fns";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteAllNotifications } = useNotifications();
-  const unreadNotifications = notifications.filter(n => !n.is_read);
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  const handleNotificationClick = (notificationId: string, taskId?: string | null) => {
+    markAsRead(notificationId); // Mark as read first
+    if (taskId) {
+      navigate(`/tasks/${taskId}`); // Navigate to task details if task_id exists
+    }
+  };
 
   return (
     <Popover>
@@ -57,7 +65,8 @@ export function NotificationBell() {
               notifications.map((notification) => (
                 <div 
                   key={notification.id} 
-                  className={`flex items-start space-x-3 py-2 ${!notification.is_read ? 'bg-muted/20 rounded-md' : ''} px-2`}
+                  className={`flex items-start space-x-3 py-2 ${!notification.is_read ? 'bg-muted/20 rounded-md' : ''} px-2 cursor-pointer hover:bg-muted/50 transition-colors`} // Added cursor-pointer and hover effect
+                  onClick={() => handleNotificationClick(notification.id, notification.task_id)} // Added click handler
                 >
                   <div className="flex-1">
                     <p className={`text-sm ${!notification.is_read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
@@ -72,7 +81,7 @@ export function NotificationBell() {
                       variant="ghost" 
                       size="icon" 
                       className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={(e) => { e.stopPropagation(); markAsRead(notification.id); }} // Stop propagation to prevent parent div click
                       title="Mark as read"
                     >
                       <XCircle className="h-4 w-4" />
