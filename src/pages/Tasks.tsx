@@ -351,7 +351,7 @@ export function Tasks() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-gradient-primary">
+                <Button type="submit" className="bg-gradient-primary active:scale-95">
                   {editingTask ? "Update" : "Create"} Task
                 </Button>
               </div>

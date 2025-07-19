@@ -206,7 +206,7 @@ export function TaskDetails() {
             </CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -304,7 +304,7 @@ export function TaskDetails() {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -337,11 +337,11 @@ export function TaskDetails() {
                 />
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
-                  <Button onClick={handleAddNote}>Add Note</Button>
+                  <Button onClick={handleAddNote} className="active:scale-95">Add Note</Button>
                 </div>
               </div>
             ) : (
-              <Button variant="outline" onClick={() => setIsAddingNote(true)} className="w-full">
+              <Button variant="outline" onClick={() => setIsAddingNote(true)} className="w-full active:scale-95">
                 <Plus className="w-4 h-4 mr-2" /> Add Activity Note
               </Button>
             )}
@@ -368,7 +368,7 @@ export function TaskDetails() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditNoteDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleUpdateNoteSubmit}>Save Changes</Button>
+            <Button onClick={handleUpdateNoteSubmit} className="active:scale-95">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -521,7 +521,6 @@ export function TaskDetails() {
                     <SelectValue placeholder="Select a deal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">None</SelectItem>
                     {deals.map(d => (
                       <SelectItem key={d.id} value={d.id}>
                         {d.title} (${d.value.toLocaleString()})
@@ -540,7 +539,7 @@ export function TaskDetails() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-gradient-primary">
+              <Button type="submit" className="bg-gradient-primary active:scale-95">
                 Update Task
               </Button>
             </DialogFooter>
