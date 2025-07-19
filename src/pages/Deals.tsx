@@ -100,7 +100,8 @@ export function Deals() {
     setSelectedStage("all");
     setSelectedTier("all");
     setSelectedAssignedTo("all");
-    handleClearFilters();
+    // Note: The original code had a recursive call here. Removed it.
+    // handleClearFilters(); 
   };
 
   return (
@@ -117,7 +118,7 @@ export function Deals() {
         </div>
 
         <Button
-          className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth"
+          className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
           onClick={handleAddDealClick}
         >
           <Plus className="w-4 h-4 mr-2" />
