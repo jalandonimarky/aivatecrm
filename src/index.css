@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Light Theme Colors (previous version) */
+    /* Light Theme Colors */
     --background: 0 0% 100%; /* White */
     --foreground: 229 42% 9%; /* Dark Blue */
 
@@ -26,7 +26,7 @@ All colors MUST be HSL.
     --secondary-foreground: 229 42% 9%; /* Dark Blue */
 
     --muted: 240 4.8% 95.9%; /* Very light grey */
-    --muted-foreground: 240 3.8% 46.1%; /* Medium grey */
+    --muted-foreground: 240 3.8% 46.1%; /* Medium grey - Good contrast on light muted */
 
     --accent: 248 69% 57%; /* Purple */
     --accent-foreground: 0 0% 100%; /* White */
@@ -39,7 +39,7 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 98%; /* White */
 
     --warning: 38 92% 50%; /* Orange */
-    --warning-foreground: 0 0% 98%; /* White */
+    --warning-foreground: 229 42% 9%; /* Dark Blue - Better contrast on light orange */
 
     --border: 220 13% 91%; /* Light Grey */
     --input: 220 13% 91%; /* Light Grey */
@@ -73,7 +73,7 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Dark Theme Colors (your previous "leaning dark" version) */
+    /* Dark Theme Colors */
     --background: 229 42% 9%; /* Dark Blue */
     --foreground: 0 0% 100%; /* White */
 
@@ -85,13 +85,12 @@ All colors MUST be HSL.
 
     --primary: 150 42% 73%; /* Mint - #88ebc5 */
     --primary-foreground: 0 0% 100%; /* White (for text on Mint in dark mode) */
-    --primary-glow: 248 69% 57%; /* Purple - #5946df */
 
     --secondary: 229 30% 15%; /* Darker Blue/Grey */
     --secondary-foreground: 0 0% 100%; /* White */
 
     --muted: 229 30% 15%; /* Darker muted */
-    --muted-foreground: 215 20.2% 65.1%; /* Lighter grey for muted text */
+    --muted-foreground: 0 0% 100%; /* White - Better contrast on dark muted */
 
     --accent: 248 69% 57%; /* Purple */
     --accent-foreground: 0 0% 100%; /* White */
@@ -104,7 +103,7 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 98%; /* White */
 
     --warning: 38 92% 50%; /* Orange */
-    --warning-foreground: 0 0% 98%; /* White */
+    --warning-foreground: 0 0% 100%; /* White - Better contrast on orange */
 
     --border: 229 30% 15%; /* Darker border */
     --input: 229 30% 15%; /* Darker input */
