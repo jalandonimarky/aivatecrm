@@ -11,18 +11,21 @@ export function QuickActions() {
       title: "Add Contact",
       icon: Users,
       color: "hsl(var(--accent))",
+      iconTextColor: "text-white", // White text for accent background
       action: () => navigate("/contacts?new=true"),
     },
     {
       title: "Create Deal",
       icon: Briefcase,
       color: "hsl(var(--primary))",
+      iconTextColor: "text-primary-foreground", // Use primary-foreground for better contrast on primary background
       action: () => navigate("/deals?new=true"),
     },
     {
       title: "New Task",
       icon: CheckSquare,
       color: "hsl(var(--success))",
+      iconTextColor: "text-white", // White text for success background
       action: () => navigate("/tasks?new=true"),
     },
   ];
@@ -44,7 +47,7 @@ export function QuickActions() {
               className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-spring"
               style={{ backgroundColor: action.color }}
             >
-              <action.icon className="w-4 h-4 text-white" />
+              <action.icon className={`w-4 h-4 ${action.iconTextColor}`} /> {/* Apply dynamic text color */}
             </div>
             <span className="font-medium">{action.title}</span>
             <Plus className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-smooth" />
