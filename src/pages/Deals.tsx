@@ -23,6 +23,8 @@ import type { Deal } from "@/types/crm";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DealStageBadge } from "@/components/deals/DealStageBadge"; // Import new badge
+import { DealTierBadge } from "@/components/deals/DealTierBadge"; // Import new badge
 
 export function Deals() {
   const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData(); // Destructure all needed properties
@@ -216,8 +218,12 @@ export function Deals() {
                       </NavLink>
                     </TableCell>
                     <TableCell>${deal.value.toLocaleString()}</TableCell>
-                    <TableCell>{deal.stage}</TableCell>
-                    <TableCell>{deal.tier || "-"}</TableCell>
+                    <TableCell>
+                      <DealStageBadge stage={deal.stage} />
+                    </TableCell>
+                    <TableCell>
+                      <DealTierBadge tier={deal.tier} />
+                    </TableCell>
                     <TableCell>{deal.contact?.name || "-"}</TableCell>
                     <TableCell>{deal.assigned_user ? getFullName(deal.assigned_user) : "-"}</TableCell>
                     <TableCell>{deal.expected_close_date ? format(new Date(deal.expected_close_date), "PPP") : "-"}</TableCell>
