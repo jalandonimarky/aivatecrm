@@ -1,4 +1,3 @@
-/// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
@@ -30,7 +29,7 @@ serve(async (req) => {
     // Dispatch this payload to the Zapier webhook
     const zapierResponse = await fetch(zapierWebhookUrl, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload), // The payload now includes participants
       headers: {
         'Content-Type': 'application/json',
       },

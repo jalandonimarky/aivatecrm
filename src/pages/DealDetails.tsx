@@ -260,7 +260,7 @@ export function DealDetails() {
     }
   };
 
-  const handleRallySubmit = async (date: Date, time: string, note: string) => {
+  const handleRallySubmit = async (date: Date, time: string, note: string, participants: { fullName: string; email: string }[]) => {
     if (!deal) return;
 
     const payload = {
@@ -275,6 +275,7 @@ export function DealDetails() {
         relatedContact: deal.contact?.name || "N/A",
         tier: deal.tier || "N/A",
       },
+      participants: participants, // Include participants data
     };
 
     try {
@@ -991,7 +992,7 @@ export function DealDetails() {
                 Cancel
               </Button>
               <Button type="submit" className="bg-gradient-primary active:scale-95">
-                {editingTask ? "Update" : "Create"} Task
+                Update Task
               </Button>
             </DialogFooter>
           </form>
@@ -1016,6 +1017,8 @@ export function DealDetails() {
           onOpenChange={setIsRallyDialogOpen}
           onSubmit={handleRallySubmit}
           deal={deal}
+          profiles={profiles}
+          getFullName={getFullName}
         />
       )}
 

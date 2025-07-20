@@ -7,16 +7,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react"; // Added Check, ChevronsUpDown
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import type { Deal } from "@/types/crm";
+import type { Deal, Profile } from "@/types/crm"; // Import Profile
+
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface RallyDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (date: Date, time: string, note: string) => Promise<void>;
+  onSubmit: (date: Date, time: string, note: string, participants: { fullName: string; email: string }[]) => Promise<void>; // Updated onSubmit signature
   deal: Deal;
+  profiles: Profile[]; // New prop
+  getFullName: (profile: Profile) => string; // New prop
 }
 
 const generateTimeOptions = () => {
@@ -30,12 +35,13 @@ const generateTimeOptions = () => {
   return times;
 };
 
-export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialogProps) {
+export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal, profiles, getFullName }: RallyDialogProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [noteDescription, setNoteDescription] = useState("");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]); // New state for selected participants
 
   useEffect(() => {
     if (isOpen) {
@@ -43,9 +49,18 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
       setSelectedDate(undefined);
       setSelectedTime("");
       setNoteDescription("");
+      setSelectedParticipantIds([]); // Reset participants
       setLoading(false);
     }
   }, [isOpen]);
+
+  const handleParticipantToggle = (profileId: string) => {
+    setSelectedParticipantIds(prev =>
+      prev.includes(profileId)
+        ? prev.filter(id => id !== profileId)
+        : [...prev, profileId]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,9 +69,19 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
       alert("Please fill in all fields: Date, Time, and Note Description.");
       return;
     }
+
+    // Map selected participant IDs to their full names and emails
+    const participantsData = selectedParticipantIds.map(id => {
+      const profile = profiles.find(p => p.id === id);
+      return {
+        fullName: profile ? getFullName(profile) : "Unknown User",
+        email: profile ? profile.email : "unknown@example.com",
+      };
+    });
+
     setLoading(true);
     try {
-      await onSubmit(selectedDate, selectedTime, noteDescription);
+      await onSubmit(selectedDate, selectedTime, noteDescription, participantsData);
       onOpenChange(false);
     } finally {
       setLoading(false);
@@ -115,6 +140,53 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* New Participants Multi-Select Field */}
+          <div className="space-y-2">
+            <Label htmlFor="participants">Participants</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {selectedParticipantIds.length > 0
+                    ? `${selectedParticipantIds.length} selected`
+                    : "Select participants..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder="Search users..." />
+                  <CommandEmpty>No users found.</CommandEmpty>
+                  <CommandGroup>
+                    {profiles.map(profile => (
+                      <CommandItem
+                        key={profile.id}
+                        onSelect={() => handleParticipantToggle(profile.id)}
+                        className="cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={selectedParticipantIds.includes(profile.id)}
+                          onCheckedChange={() => handleParticipantToggle(profile.id)}
+                          className="mr-2"
+                        />
+                        {getFullName(profile)}
+                        <Check
+                          className={cn(
+                            "ml-auto h-4 w-4",
+                            selectedParticipantIds.includes(profile.id) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
