@@ -3,7 +3,7 @@ import { Draggable } from "react-beautiful-dnd";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from "lucide-react"; // Removed ChevronDown, ChevronUp
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -48,23 +48,19 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "mb-1 bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer", // Reduced mb-3 to mb-1
+            "mb-0.5 bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer", // Adjusted mb-1 to mb-0.5
             getCategoryColorClass(item.category), // Apply category color border
             snapshot.isDragging ? "shadow-lg ring-2 ring-primary" : ""
           )}
           onClick={toggleExpand} // Add click handler to toggle expand
         >
-          <CardContent className="p-3"> {/* Reduced padding */}
-            <div className="flex items-center justify-between mb-1"> {/* Reduced mb-2 to mb-1 */}
+          <CardContent className="p-2"> {/* Adjusted p-3 to p-2 */}
+            <div className="flex items-center justify-between mb-1">
               <h4 className="font-semibold text-foreground text-sm flex-1 min-w-0 pr-2 break-words">
                 {item.title}
               </h4>
               <div className="flex items-center space-x-1">
-                {isExpanded ? (
-                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                )}
+                {/* Removed ChevronUp and ChevronDown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
@@ -87,7 +83,7 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
             {isExpanded && ( // Conditionally render expanded content
               <>
                 {item.description && (
-                  <p className="text-muted-foreground text-xs mb-2 line-clamp-3"> {/* Adjusted line-clamp */}
+                  <p className="text-muted-foreground text-xs mb-2 line-clamp-3">
                     {item.description}
                   </p>
                 )}
