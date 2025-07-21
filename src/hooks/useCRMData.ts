@@ -145,12 +145,12 @@ export function useCRMData() {
         .from("kanban_boards")
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           columns:kanban_columns(
             *,
             items:kanban_items(
               *,
-              creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+              creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
             )
           )
         `)
@@ -959,13 +959,15 @@ export function useCRMData() {
   // CRUD operations for Kanban Boards
   const createKanbanBoard = async (boardData: Omit<KanbanBoard, 'id' | 'created_at' | 'columns' | 'creator'>) => {
     try {
-      const creatorProfileId = await getOrCreateUserProfileId();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error("User not authenticated.");
+
       const { data, error } = await supabase
         .from("kanban_boards")
-        .insert([{ ...boardData, created_by: creatorProfileId }])
+        .insert([{ ...boardData, created_by: user.id }]) // Use user.id directly
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -988,7 +990,7 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -1013,7 +1015,8 @@ export function useCRMData() {
       if (error) throw error;
       toast({ title: "Board deleted", description: "Kanban board removed." });
       await fetchData();
-    } catch (error: any) {
+    }
+    catch (error: any) {
       console.error("Error deleting Kanban board:", error);
       toast({ title: "Error deleting board", description: error.message, variant: "destructive" });
       throw error;
@@ -1030,7 +1033,7 @@ export function useCRMData() {
           *,
           items:kanban_items(
             *,
-            creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
           )
         `)
         .single();
@@ -1056,7 +1059,7 @@ export function useCRMData() {
           *,
           items:kanban_items(
             *,
-            creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
           )
         `)
         .single();
@@ -1092,13 +1095,15 @@ export function useCRMData() {
   // CRUD operations for Kanban Items
   const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator'>) => {
     try {
-      const creatorProfileId = await getOrCreateUserProfileId();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error("User not authenticated.");
+
       const { data, error } = await supabase
         .from("kanban_items")
-        .insert([{ ...itemData, created_by: creatorProfileId }])
+        .insert([{ ...itemData, created_by: user.id }]) // Use user.id directly
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -1121,7 +1126,7 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 

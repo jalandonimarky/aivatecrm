@@ -239,7 +239,7 @@ export type Database = {
             foreignKeyName: "kanban_boards_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -316,7 +316,7 @@ export type Database = {
             foreignKeyName: "kanban_items_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
