@@ -34,21 +34,21 @@ export function useCRMData() {
     if (userError) throw userError;
     if (!user) throw new Error("User not authenticated.");
 
+    // With the new schema, profiles.id is directly auth.users.id
+    // So, we just need to ensure a profile entry exists for the current user.
     let { data: profileData } = await supabase
       .from('profiles')
-      .select('id') // Select the profiles.id (PK)
-      .eq('user_id', user.id) // Match by auth.uid()
+      .select('id')
+      .eq('id', user.id) // Check by profiles.id (which is user.id)
       .maybeSingle();
 
-    // If profile doesn't exist, it should have been created by the trigger.
-    // If it's still not found, something is wrong with the trigger or RLS for select.
     if (!profileData) {
       // This block should ideally not be hit if the trigger works.
-      // However, if it is, we need to ensure we insert into user_id, not id.
+      // If it is, it means the trigger failed or the profile was manually deleted.
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert({
-          user_id: user.id, // Correctly insert auth.uid() into user_id
+          id: user.id, // Insert user.id directly into profiles.id
           email: user.email || '',
           first_name: user.user_metadata?.first_name || 'New',
           last_name: user.user_metadata?.last_name || 'User',
@@ -90,7 +90,7 @@ export function useCRMData() {
       // Fetch profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
+        .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
         .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -115,10 +115,10 @@ export function useCRMData() {
         .select(`
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
-          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
 
@@ -130,10 +130,10 @@ export function useCRMData() {
         .from("tasks")
         .select(`
           *,
-          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value, stage, created_at, updated_at),
-          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
 
@@ -145,12 +145,12 @@ export function useCRMData() {
         .from("kanban_boards")
         .select(`
           *,
-          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           columns:kanban_columns(
             *,
             items:kanban_items(
               *,
-              creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+              creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
             )
           )
         `)
@@ -413,10 +413,10 @@ export function useCRMData() {
         .select(`
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
-          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -456,10 +456,10 @@ export function useCRMData() {
         .select(`
           *,
           contact:contacts(id, name, email, company, created_at, updated_at),
-          assigned_user:profiles!deals_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -531,10 +531,10 @@ export function useCRMData() {
         .insert([taskData])
         .select(`
           *,
-          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value, stage, created_at, updated_at),
-          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -573,10 +573,10 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          assigned_user:profiles!tasks_assigned_to_fkey(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value, stage, created_at, updated_at),
-          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -650,7 +650,7 @@ export function useCRMData() {
         .insert([{ deal_id: dealId, note_type: noteType, content, created_by: creatorProfileId }])
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -689,7 +689,7 @@ export function useCRMData() {
         .eq("id", noteId)
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -763,7 +763,7 @@ export function useCRMData() {
         .insert([{ task_id: taskId, content, created_by: creatorProfileId }])
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -802,7 +802,7 @@ export function useCRMData() {
         .eq("id", noteId)
         .select(`
           *,
-          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -900,7 +900,7 @@ export function useCRMData() {
         })
         .select(`
           *,
-          uploader:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -959,15 +959,13 @@ export function useCRMData() {
   // CRUD operations for Kanban Boards
   const createKanbanBoard = async (boardData: Omit<KanbanBoard, 'id' | 'created_at' | 'columns' | 'creator'>) => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error("User not authenticated.");
-
+      const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
         .from("kanban_boards")
-        .insert([{ ...boardData, created_by: user.id }]) // Use user.id directly
+        .insert([{ ...boardData, created_by: creatorProfileId }]) // Use profiles.id (which is user.id)
         .select(`
           *,
-          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -990,7 +988,7 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -1015,8 +1013,7 @@ export function useCRMData() {
       if (error) throw error;
       toast({ title: "Board deleted", description: "Kanban board removed." });
       await fetchData();
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error("Error deleting Kanban board:", error);
       toast({ title: "Error deleting board", description: error.message, variant: "destructive" });
       throw error;
@@ -1033,7 +1030,7 @@ export function useCRMData() {
           *,
           items:kanban_items(
             *,
-            creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
           )
         `)
         .single();
@@ -1059,7 +1056,7 @@ export function useCRMData() {
           *,
           items:kanban_items(
             *,
-            creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
           )
         `)
         .single();
@@ -1095,15 +1092,13 @@ export function useCRMData() {
   // CRUD operations for Kanban Items
   const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator'>) => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error("User not authenticated.");
-
+      const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
         .from("kanban_items")
-        .insert([{ ...itemData, created_by: user.id }]) // Use user.id directly
+        .insert([{ ...itemData, created_by: creatorProfileId }]) // Use profiles.id (which is user.id)
         .select(`
           *,
-          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -1126,7 +1121,7 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          creator:profiles!user_id(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 

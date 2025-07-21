@@ -70,9 +70,9 @@ export function Settings() {
         // Use .maybeSingle() to handle cases where no profile exists or multiple exist (though the latter shouldn't happen with correct setup)
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
-          .eq("user_id", user.id)
-          .maybeSingle(); // Changed to maybeSingle()
+          .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
+          .eq("id", user.id) // Changed from user_id to id
+          .maybeSingle();
 
         if (profileError) {
           toast({
@@ -93,12 +93,12 @@ export function Settings() {
           const { data: newProfileData, error: createProfileError } = await supabase
             .from("profiles")
             .insert({ 
-              user_id: user.id, 
+              id: user.id, // Set id directly to user.id
               email: user.email || "", // Use user's email, fallback to empty string
               first_name: user.user_metadata?.first_name || "",
               last_name: user.user_metadata?.last_name || "",
             })
-            .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
+            .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
             .single(); // Use single here as we expect one new row
 
           if (createProfileError) {
@@ -150,7 +150,7 @@ export function Settings() {
       const { error: profileUpdateError } = await supabase
         .from("profiles")
         .update({ first_name: values.firstName, last_name: values.lastName, email: values.email })
-        .eq("user_id", user.id);
+        .eq("id", user.id); // Changed from user_id to id
 
       if (profileUpdateError) throw profileUpdateError;
 
@@ -161,9 +161,9 @@ export function Settings() {
       // Re-fetch user profile to update local state and forms
       const { data: profileData, error: refetchError } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, user_id, avatar_url, role, created_at, updated_at")
-        .eq("user_id", user.id)
-        .maybeSingle(); // Changed to maybeSingle() for consistency
+        .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
+        .eq("id", user.id) // Changed from user_id to id
+        .maybeSingle();
       if (refetchError) throw refetchError;
       setUserProfile(profileData as Profile);
       profileForm.reset({

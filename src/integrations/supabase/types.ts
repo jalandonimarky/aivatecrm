@@ -239,7 +239,7 @@ export type Database = {
             foreignKeyName: "kanban_boards_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -316,7 +316,7 @@ export type Database = {
             foreignKeyName: "kanban_items_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -368,39 +368,36 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
-          first_name: string
-          last_name: string
+          first_name: string | null
+          last_name: string | null
           id: string
           role: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           email: string
-          first_name?: string
-          last_name?: string
+          first_name?: string | null
+          last_name?: string | null
           id?: string
           role?: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           email?: string
-          first_name?: string
-          last_name?: string
+          first_name?: string | null
+          last_name?: string | null
           id?: string
           role?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
