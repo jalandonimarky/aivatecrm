@@ -215,6 +215,112 @@ export type Database = {
           },
         ]
       }
+      kanban_boards: {
+        Row: {
+          id: string
+          name: string
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_boards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_columns: {
+        Row: {
+          id: string
+          board_id: string
+          name: string
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          board_id: string
+          name: string
+          order_index: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          board_id?: string
+          name?: string
+          order_index?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_columns_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_items: {
+        Row: {
+          id: string
+          column_id: string
+          title: string
+          description: string | null
+          order_index: number
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          column_id: string
+          title: string
+          description?: string | null
+          order_index: number
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          column_id?: string
+          title?: string
+          description?: string | null
+          order_index?: number
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_items_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_columns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           id: string
@@ -459,7 +565,7 @@ export type TablesUpdate<
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternates
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
