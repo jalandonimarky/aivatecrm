@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -18,6 +18,8 @@ interface KanbanItemProps {
 }
 
 export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const getCategoryColorClass = (category?: KanbanItemType['category']) => {
     switch (category) {
       case 'design': return "border-l-4 border-primary"; // Mint
@@ -29,6 +31,15 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
     }
   };
 
+  const toggleExpand = (e: React.MouseEvent) => {
+    // Prevent toggling if a dropdown menu or button within the card is clicked
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[data-radix-popper-content-wrapper]')) {
+      return;
+    }
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <Draggable draggableId={item.id} index={index}>
       {(provided, snapshot) => (
@@ -37,55 +48,67 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "mb-3 bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out",
+            "mb-1 bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer", // Reduced mb-3 to mb-1
             getCategoryColorClass(item.category), // Apply category color border
             snapshot.isDragging ? "shadow-lg ring-2 ring-primary" : ""
           )}
+          onClick={toggleExpand} // Add click handler to toggle expand
         >
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold text-foreground text-sm flex-1 min-w-0 break-words pr-2">
+          <CardContent className="p-3"> {/* Reduced padding */}
+            <div className="flex items-center justify-between mb-1"> {/* Reduced mb-2 to mb-1 */}
+              <h4 className="font-semibold text-foreground text-sm flex-1 min-w-0 pr-2 break-words">
                 {item.title}
               </h4>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem onClick={() => onEdit(item)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDelete(item.id)} className="text-destructive">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center space-x-1">
+                {isExpanded ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem onClick={() => onEdit(item)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onDelete(item.id)} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
-            {item.description && (
-              <p className="text-muted-foreground text-xs mb-3 line-clamp-2">
-                {item.description}
-              </p>
-            )}
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              {item.category && (
-                <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                  {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-                </Badge>
-              )}
-              {item.assigned_user && (
-                <UserProfileCard profile={item.assigned_user} />
-              )}
-              {item.due_date && (
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <CalendarIcon className="w-3 h-3 mr-1" />
-                  {format(new Date(item.due_date), "MMM dd")}
+            {isExpanded && ( // Conditionally render expanded content
+              <>
+                {item.description && (
+                  <p className="text-muted-foreground text-xs mb-2 line-clamp-3"> {/* Adjusted line-clamp */}
+                    {item.description}
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  {item.category && (
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                    </Badge>
+                  )}
+                  {item.assigned_user && (
+                    <UserProfileCard profile={item.assigned_user} />
+                  )}
+                  {item.due_date && (
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <CalendarIcon className="w-3 h-3 mr-1" />
+                      {format(new Date(item.due_date), "MMM dd")}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
