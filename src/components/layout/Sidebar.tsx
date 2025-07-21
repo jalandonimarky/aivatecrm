@@ -53,7 +53,7 @@ export function AppSidebar() {
     const fetchUser = async () => {
       const { data: { user } = {} } = await supabase.auth.getUser(); // Destructure with default empty object
       if (user) {
-        const profile = profiles.find(p => p.user_id === user.id);
+        const profile = profiles.find(p => p.id === user.id); // Changed from p.user_id to p.id
         setCurrentUserProfile(profile);
       }
     };

@@ -4,15 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { KanbanItem } from "@/types/crm";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import type { KanbanItem, Profile } from "@/types/crm";
 
 interface KanbanItemFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
   columnId: string;
-  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number }) => Promise<void>;
+  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: KanbanItem['category'], assigned_to?: string, due_date?: string }) => Promise<void>;
   nextOrderIndex: number;
+  profiles: Profile[]; // Pass profiles for assigned_to dropdown
+  getFullName: (profile: Profile) => string; // Pass getFullName helper
 }
 
 export function KanbanItemFormDialog({
@@ -22,15 +30,32 @@ export function KanbanItemFormDialog({
   columnId,
   onSubmit,
   nextOrderIndex,
+  profiles,
+  getFullName,
 }: KanbanItemFormDialogProps) {
   const [itemTitle, setItemTitle] = useState("");
   const [itemDescription, setItemDescription] = useState("");
+  const [itemCategory, setItemCategory] = useState<KanbanItem['category'] | undefined>(undefined);
+  const [itemAssignedTo, setItemAssignedTo] = useState<string | undefined>(undefined);
+  const [itemDueDate, setItemDueDate] = useState<Date | undefined>(undefined);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const itemCategories: { value: KanbanItem['category'], label: string }[] = [
+    { value: "design", label: "Design" },
+    { value: "development", label: "Development" },
+    { value: "marketing", label: "Marketing" },
+    { value: "business", label: "Business" },
+    { value: "other", label: "Other" },
+  ];
 
   useEffect(() => {
     if (isOpen) {
       setItemTitle(initialData?.title || "");
       setItemDescription(initialData?.description || "");
+      setItemCategory(initialData?.category || undefined);
+      setItemAssignedTo(initialData?.assigned_to || "unassigned");
+      setItemDueDate(initialData?.due_date ? new Date(initialData.due_date) : undefined);
       setLoading(false);
     }
   }, [isOpen, initialData]);
@@ -45,6 +70,9 @@ export function KanbanItemFormDialog({
         description: itemDescription,
         column_id: columnId,
         order_index: initialData ? initialData.order_index : nextOrderIndex,
+        category: itemCategory,
+        assigned_to: itemAssignedTo === "unassigned" ? undefined : itemAssignedTo,
+        due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
       });
       onOpenChange(false);
     } finally {
@@ -77,6 +105,77 @@ export function KanbanItemFormDialog({
               rows={3}
             />
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="item-category">Category</Label>
+              <Select
+                value={itemCategory || "none"}
+                onValueChange={(value) => setItemCategory(value === "none" ? undefined : value as KanbanItem['category'])}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {itemCategories.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="item-assigned-to">Assigned To</Label>
+              <Select
+                value={itemAssignedTo || "unassigned"}
+                onValueChange={(value) => setItemAssignedTo(value === "unassigned" ? undefined : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a user" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">None</SelectItem>
+                  {profiles.map(profile => (
+                    <SelectItem key={profile.id} value={profile.id}>
+                      {getFullName(profile)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="item-due-date">Due Date</Label>
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !itemDueDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {itemDueDate ? format(itemDueDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={itemDueDate}
+                  onSelect={(date) => {
+                    setItemDueDate(date || undefined);
+                    setIsCalendarOpen(false);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
               Cancel

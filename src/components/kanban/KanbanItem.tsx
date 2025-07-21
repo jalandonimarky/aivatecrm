@@ -3,8 +3,11 @@ import { Draggable } from "react-beautiful-dnd";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import type { KanbanItem as KanbanItemType } from "@/types/crm";
 
 interface KanbanItemProps {
@@ -15,6 +18,17 @@ interface KanbanItemProps {
 }
 
 export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
+  const getCategoryColorClass = (category?: KanbanItemType['category']) => {
+    switch (category) {
+      case 'design': return "border-l-4 border-primary"; // Mint
+      case 'development': return "border-l-4 border-accent"; // Purple
+      case 'marketing': return "border-l-4 border-warning"; // Orange
+      case 'business': return "border-l-4 border-success"; // Green
+      case 'other': return "border-l-4 border-muted-foreground"; // Grey
+      default: return "border-l-4 border-transparent"; // No border or default
+    }
+  };
+
   return (
     <Draggable draggableId={item.id} index={index}>
       {(provided, snapshot) => (
@@ -22,9 +36,11 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`mb-3 bg-gradient-card border-border/50 shadow-sm ${
+          className={cn(
+            "mb-3 bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out",
+            getCategoryColorClass(item.category), // Apply category color border
             snapshot.isDragging ? "shadow-lg ring-2 ring-primary" : ""
-          }`}
+          )}
         >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
@@ -50,15 +66,26 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
               </DropdownMenu>
             </div>
             {item.description && (
-              <p className="text-muted-foreground text-xs mb-2 line-clamp-2">
+              <p className="text-muted-foreground text-xs mb-3 line-clamp-2">
                 {item.description}
               </p>
             )}
-            {item.creator && (
-              <div className="mt-3">
-                <UserProfileCard profile={item.creator} />
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {item.category && (
+                <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                  {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                </Badge>
+              )}
+              {item.assigned_user && (
+                <UserProfileCard profile={item.assigned_user} />
+              )}
+              {item.due_date && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <CalendarIcon className="w-3 h-3 mr-1" />
+                  {format(new Date(item.due_date), "MMM dd")}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

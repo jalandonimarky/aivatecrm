@@ -278,33 +278,49 @@ export type Database = {
       }
       kanban_items: {
         Row: {
-          id: string
+          assigned_to: string | null
+          category: string | null
           column_id: string
-          title: string
-          description: string | null
-          order_index: number
-          created_by: string | null
           created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          order_index: number
+          title: string
         }
         Insert: {
-          id?: string
+          assigned_to?: string | null
+          category?: string | null
           column_id: string
-          title: string
-          description?: string | null
-          order_index: number
-          created_by?: string | null
           created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          order_index: number
+          title: string
         }
         Update: {
-          id?: string
+          assigned_to?: string | null
+          category?: string | null
           column_id?: string
-          title?: string
-          description?: string | null
-          order_index?: number
-          created_by?: string | null
           created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          order_index?: number
+          title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "kanban_items_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "kanban_items_column_id_fkey"
             columns: ["column_id"]
@@ -588,7 +604,7 @@ export type Enums<
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
-}
+  }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]

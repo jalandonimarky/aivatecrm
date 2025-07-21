@@ -1,6 +1,5 @@
 export interface Profile {
   id: string;
-  user_id: string;
   first_name: string; // Changed from full_name
   last_name: string;  // Added
   email: string;
@@ -103,6 +102,10 @@ export interface KanbanItem {
   created_by?: string;
   created_at: string;
   creator?: Profile; // To store the profile of the item creator
+  category?: 'design' | 'development' | 'marketing' | 'business' | 'other'; // New: Category for the item
+  assigned_to?: string; // New: Assigned user ID
+  assigned_user?: Profile; // New: Assigned user profile
+  due_date?: string; // New: Due date for the item
 }
 
 export interface KanbanColumn {

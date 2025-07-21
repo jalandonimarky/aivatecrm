@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
-import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
+import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -145,12 +145,13 @@ export function useCRMData() {
         .from("kanban_boards")
         .select(`
           *,
-          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          creator:profiles!kanban_boards_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           columns:kanban_columns(
             *,
             items:kanban_items(
               *,
-              creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+              creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
             )
           )
         `)
@@ -168,6 +169,7 @@ export function useCRMData() {
           items: (column.items || []).map(item => ({
             ...item,
             creator: item.creator ? (item.creator as Profile) : null,
+            assigned_user: item.assigned_user ? (item.assigned_user as Profile) : null, // Cast assigned_user
           })),
         })),
       })) as KanbanBoard[];
@@ -1030,7 +1032,8 @@ export function useCRMData() {
           *,
           items:kanban_items(
             *,
-            creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+            assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
           )
         `)
         .single();
@@ -1056,7 +1059,8 @@ export function useCRMData() {
           *,
           items:kanban_items(
             *,
-            creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+            assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
           )
         `)
         .single();
@@ -1090,15 +1094,21 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
         .from("kanban_items")
-        .insert([{ ...itemData, created_by: creatorProfileId }]) // Use profiles.id (which is user.id)
+        .insert([{ 
+          ...itemData, 
+          created_by: creatorProfileId,
+          assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
+          due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
+        }])
         .select(`
           *,
-          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -1113,15 +1123,22 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user'>>) => {
     try {
+      const dataToUpdate = {
+        ...updates,
+        assigned_to: updates.assigned_to === "unassigned" ? null : updates.assigned_to,
+        due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
+      };
+
       const { data, error } = await supabase
         .from("kanban_items")
-        .update(updates)
+        .update(dataToUpdate)
         .eq("id", id)
         .select(`
           *,
-          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 

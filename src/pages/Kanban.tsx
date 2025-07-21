@@ -28,6 +28,8 @@ export function Kanban() {
     deleteKanbanItem,
     reorderKanbanItems,
     reorderKanbanColumns,
+    profiles, // Destructure profiles
+    getFullName, // Destructure getFullName
     refetch, // To re-fetch data after changes
   } = useCRMData();
   const navigate = useNavigate();
@@ -112,7 +114,7 @@ export function Kanban() {
     setIsItemFormDialogOpen(true);
   };
 
-  const handleCreateItem = async (data: { title: string, description?: string, column_id: string, order_index: number }) => {
+  const handleCreateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: KanbanItem['category'], assigned_to?: string, due_date?: string }) => {
     await createKanbanItem(data);
   };
 
@@ -122,7 +124,7 @@ export function Kanban() {
     setIsItemFormDialogOpen(true);
   };
 
-  const handleUpdateItem = async (data: { title: string, description?: string, column_id: string, order_index: number }) => {
+  const handleUpdateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: KanbanItem['category'], assigned_to?: string, due_date?: string }) => {
     if (editingItem) {
       await updateKanbanItem(editingItem.id, data);
     }
@@ -209,6 +211,8 @@ export function Kanban() {
             columnId={currentColumnIdForItem}
             onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
             nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
+            profiles={profiles} // Pass profiles
+            getFullName={getFullName} // Pass getFullName
           />
         )}
       </div>
