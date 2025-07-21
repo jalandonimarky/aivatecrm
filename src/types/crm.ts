@@ -130,6 +130,7 @@ export interface Notification {
   id: string;
   user_id: string;
   task_id?: string;
+  kanban_item_id?: string; // Added kanban_item_id
   message: string;
   is_read: boolean;
   created_at: string;

@@ -342,6 +342,7 @@ export type Database = {
           id: string
           user_id: string
           task_id: string | null
+          kanban_item_id: string | null
           message: string
           is_read: boolean
           created_at: string
@@ -350,6 +351,7 @@ export type Database = {
           id?: string
           user_id: string
           task_id?: string | null
+          kanban_item_id?: string | null
           message: string
           is_read?: boolean
           created_at?: string
@@ -358,6 +360,7 @@ export type Database = {
           id?: string
           user_id?: string
           task_id?: string | null
+          kanban_item_id?: string | null
           message?: string
           is_read?: boolean
           created_at?: string
@@ -375,6 +378,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_kanban_item_id_fkey"
+            columns: ["kanban_item_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_items"
             referencedColumns: ["id"]
           },
         ]

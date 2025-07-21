@@ -13,10 +13,18 @@ export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteAllNotifications } = useNotifications();
   const navigate = useNavigate(); // Initialize useNavigate
 
-  const handleNotificationClick = (notificationId: string, taskId?: string | null) => {
+  const handleNotificationClick = (notificationId: string, taskId?: string | null, kanbanItemId?: string | null) => {
     markAsRead(notificationId); // Mark as read first
     if (taskId) {
       navigate(`/tasks/${taskId}`); // Navigate to task details if task_id exists
+    } else if (kanbanItemId) {
+      // For Kanban items, we need to navigate to the Kanban board and potentially highlight the item
+      // For simplicity, we'll navigate to the Kanban page with the boardId as a search param.
+      // A more advanced implementation might require fetching the item's column and board to navigate precisely.
+      // For now, we'll just go to the main Kanban page.
+      navigate(`/kanban`); // Navigate to the Kanban board page
+      // If you want to navigate to a specific board, you'd need to fetch the board_id from the kanban_item_id
+      // For example: navigate(`/kanban?boardId=${boardId}`);
     }
   };
 
@@ -66,7 +74,7 @@ export function NotificationBell() {
                 <div 
                   key={notification.id} 
                   className={`flex items-start space-x-3 py-2 ${!notification.is_read ? 'bg-muted/20 rounded-md' : ''} px-2 cursor-pointer hover:bg-muted/50 transition-colors`} // Added cursor-pointer and hover effect
-                  onClick={() => handleNotificationClick(notification.id, notification.task_id)} // Added click handler
+                  onClick={() => handleNotificationClick(notification.id, notification.task_id, notification.kanban_item_id)} // Added kanban_item_id
                 >
                   <div className="flex-1">
                     <p className={`text-sm ${!notification.is_read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
