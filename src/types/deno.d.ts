@@ -46,12 +46,22 @@ declare module "https://esm.sh/@supabase/supabase-js@2.45.0" {
         /**
          * A custom schema.api.
          *
-         * @experimental
          */
         url?: string;
       };
     }
   ): SupabaseClient<Database, SchemaName, PublicSchema>;
+}
+
+// Declare the 'format' function from date-fns on esm.sh
+declare module "https://esm.sh/date-fns@3.6.0" {
+  export function format(date: Date | number, formatStr: string, options?: {
+    locale?: object;
+    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    firstWeekContainsDate?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+    useAdditionalWeekYearTokens?: boolean;
+    useAdditionalDayOfYearTokens?: boolean;
+  }): string;
 }
 
 // Declare the global Deno namespace, specifically Deno.env,
