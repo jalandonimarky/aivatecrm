@@ -1,4 +1,4 @@
-import { Plus, Users, Briefcase, CheckSquare } from "lucide-react";
+import { Plus, Users, Briefcase, CheckSquare, KanbanSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,13 @@ export function QuickActions() {
       color: "hsl(var(--success))",
       iconTextColor: "text-white", // White text for success background
       action: () => navigate("/tasks?new=true"),
+    },
+    {
+      title: "Manage Projects",
+      icon: KanbanSquare,
+      color: "hsl(var(--warning))",
+      iconTextColor: "text-warning-foreground",
+      action: () => navigate("/kanban"),
     },
   ];
 
