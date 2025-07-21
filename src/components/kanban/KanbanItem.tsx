@@ -49,7 +49,7 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
           {...provided.dragHandleProps}
           className={cn(
             "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
-            index > 0 ? "mt-[-28px]" : "", // Negative margin for stacking effect
+            index > 0 ? "mt-[-24px]" : "", // Adjusted negative margin for better title visibility
             getCategoryColorClass(item.category),
             // Z-index layering: dragging > hovered > expanded > default
             snapshot.isDragging
