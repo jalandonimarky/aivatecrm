@@ -7,13 +7,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Contacts } from "./pages/Contacts";
-import { ContactDetails } from "./pages/ContactDetails"; // Import ContactDetails
+import { ContactDetails } from "./pages/ContactDetails";
 import { Deals } from "./pages/Deals";
 import { DealDetails } from "./pages/DealDetails";
 import { Tasks } from "./pages/Tasks";
 import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
+import { Kanban } from "./pages/Kanban"; // Import Kanban page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,8 +63,9 @@ const App = () => {
               // Authenticated routes
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/kanban" element={<Kanban />} /> {/* New route for Kanban */}
                 <Route path="/contacts" element={<Contacts />} />
-                <Route path="/contacts/:id" element={<ContactDetails />} /> {/* New route for ContactDetails */}
+                <Route path="/contacts/:id" element={<ContactDetails />} />
                 <Route path="/deals" element={<Deals />} />
                 <Route path="/deals/:id" element={<DealDetails />} />
                 <Route path="/tasks" element={<Tasks />} />

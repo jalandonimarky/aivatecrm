@@ -94,6 +94,35 @@ export interface Task {
   notes?: TaskNote[]; // Added notes array for tasks
 }
 
+export interface KanbanItem {
+  id: string;
+  column_id: string;
+  title: string;
+  description?: string;
+  order_index: number;
+  created_by?: string;
+  created_at: string;
+  creator?: Profile; // To store the profile of the item creator
+}
+
+export interface KanbanColumn {
+  id: string;
+  board_id: string;
+  name: string;
+  order_index: number;
+  created_at: string;
+  items?: KanbanItem[]; // Nested items
+}
+
+export interface KanbanBoard {
+  id: string;
+  name: string;
+  created_by?: string;
+  created_at: string;
+  columns?: KanbanColumn[]; // Nested columns
+  creator?: Profile; // To store the profile of the board creator
+}
+
 export interface Notification {
   id: string;
   user_id: string;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 import { startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -9,6 +9,9 @@ export function useCRMData() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [kanbanBoards, setKanbanBoards] = useState<KanbanBoard[]>([]);
+  const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
+  const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     paidDealsValue: 0,
@@ -137,6 +140,54 @@ export function useCRMData() {
       if (tasksError) throw tasksError;
       setTasks((tasksData || []) as any as Task[]);
 
+      // Fetch Kanban Boards with nested columns and items
+      const { data: boardsData, error: boardsError } = await supabase
+        .from("kanban_boards")
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          columns:kanban_columns(
+            *,
+            items:kanban_items(
+              *,
+              creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            )
+          )
+        `)
+        .order("created_at", { ascending: false })
+        .order("order_index", { foreignTable: "columns", ascending: true })
+        .order("order_index", { foreignTable: "columns.items", ascending: true });
+
+      if (boardsError) throw boardsError;
+      // Explicitly cast nested profiles to ensure correct type for 'role'
+      const typedBoardsData = (boardsData || []).map(board => ({
+        ...board,
+        creator: board.creator ? (board.creator as Profile) : null,
+        columns: (board.columns || []).map(column => ({
+          ...column,
+          items: (column.items || []).map(item => ({
+            ...item,
+            creator: item.creator ? (item.creator as Profile) : null,
+          })),
+        })),
+      })) as KanbanBoard[];
+      setKanbanBoards(typedBoardsData);
+
+      // Extract all columns and items for flat state if needed elsewhere, or just use nested structure
+      const allColumns: KanbanColumn[] = [];
+      const allItems: KanbanItem[] = [];
+      typedBoardsData.forEach(board => { // Use typedBoardsData here
+        (board.columns || []).forEach(column => {
+          allColumns.push(column);
+          (column.items || []).forEach(item => {
+            allItems.push(item);
+          });
+        });
+      });
+      setKanbanColumns(allColumns);
+      setKanbanItems(allItems);
+
+
       // Calculate stats
       calculateStats((dealsData || []) as any as Deal[], (tasksData || []) as any as Task[], (contactsData || []) as any as Contact[]);
       
@@ -147,8 +198,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -270,8 +319,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -312,8 +359,6 @@ export function useCRMData() {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
         errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'object' && error !== null) {
-        errorMessage = JSON.stringify(error);
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -911,6 +956,279 @@ export function useCRMData() {
     }
   };
 
+  // CRUD operations for Kanban Boards
+  const createKanbanBoard = async (boardData: Omit<KanbanBoard, 'id' | 'created_at' | 'columns' | 'creator'>) => {
+    try {
+      const creatorProfileId = await getOrCreateUserProfileId();
+      const { data, error } = await supabase
+        .from("kanban_boards")
+        .insert([{ ...boardData, created_by: creatorProfileId }])
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Board created", description: "New Kanban board added." });
+      await fetchData();
+      return data as any as KanbanBoard;
+    } catch (error: any) {
+      console.error("Error creating Kanban board:", error);
+      toast({ title: "Error creating board", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateKanbanBoard = async (id: string, updates: Partial<Omit<KanbanBoard, 'columns' | 'creator'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("kanban_boards")
+        .update(updates)
+        .eq("id", id)
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Board updated", description: "Kanban board updated successfully." });
+      await fetchData();
+      return data as any as KanbanBoard;
+    } catch (error: any) {
+      console.error("Error updating Kanban board:", error);
+      toast({ title: "Error updating board", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteKanbanBoard = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("kanban_boards")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ title: "Board deleted", description: "Kanban board removed." });
+      await fetchData();
+    } catch (error: any) {
+      console.error("Error deleting Kanban board:", error);
+      toast({ title: "Error deleting board", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // CRUD operations for Kanban Columns
+  const createKanbanColumn = async (columnData: Omit<KanbanColumn, 'id' | 'created_at' | 'items'>) => {
+    try {
+      const { data, error } = await supabase
+        .from("kanban_columns")
+        .insert([columnData])
+        .select(`
+          *,
+          items:kanban_items(
+            *,
+            creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Column created", description: "New Kanban column added." });
+      await fetchData();
+      return data as any as KanbanColumn;
+    } catch (error: any) {
+      console.error("Error creating Kanban column:", error);
+      toast({ title: "Error creating column", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateKanbanColumn = async (id: string, updates: Partial<Omit<KanbanColumn, 'items'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("kanban_columns")
+        .update(updates)
+        .eq("id", id)
+        .select(`
+          *,
+          items:kanban_items(
+            *,
+            creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Column updated", description: "Kanban column updated successfully." });
+      await fetchData();
+      return data as any as KanbanColumn;
+    } catch (error: any) {
+      console.error("Error updating Kanban column:", error);
+      toast({ title: "Error updating column", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteKanbanColumn = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("kanban_columns")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ title: "Column deleted", description: "Kanban column removed." });
+      await fetchData();
+    } catch (error: any) {
+      console.error("Error deleting Kanban column:", error);
+      toast({ title: "Error deleting column", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // CRUD operations for Kanban Items
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator'>) => {
+    try {
+      const creatorProfileId = await getOrCreateUserProfileId();
+      const { data, error } = await supabase
+        .from("kanban_items")
+        .insert([{ ...itemData, created_by: creatorProfileId }])
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Item created", description: "New Kanban item added." });
+      await fetchData();
+      return data as any as KanbanItem;
+    } catch (error: any) {
+      console.error("Error creating Kanban item:", error);
+      toast({ title: "Error creating item", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("kanban_items")
+        .update(updates)
+        .eq("id", id)
+        .select(`
+          *,
+          creator:profiles(id, user_id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Item updated", description: "Kanban item updated successfully." });
+      await fetchData();
+      return data as any as KanbanItem;
+    } catch (error: any) {
+      console.error("Error updating Kanban item:", error);
+      toast({ title: "Error updating item", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteKanbanItem = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("kanban_items")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ title: "Item deleted", description: "Kanban item removed." });
+      await fetchData();
+    } catch (error: any) {
+      console.error("Error deleting Kanban item:", error);
+      toast({ title: "Error deleting item", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // Reordering functions
+  const reorderKanbanItems = async (columnId: string, itemIds: string[]) => {
+    try {
+      // Fetch existing items to get their full data
+      const { data: existingItems, error: fetchError } = await supabase
+        .from('kanban_items')
+        .select('*')
+        .in('id', itemIds);
+
+      if (fetchError) throw fetchError;
+
+      const updates = itemIds.map((id, index) => {
+        const existingItem = existingItems?.find(item => item.id === id);
+        if (!existingItem) {
+          throw new Error(`Item with ID ${id} not found for reordering.`);
+        }
+        return {
+          ...existingItem, // Spread existing data to include all required fields
+          id,
+          order_index: index,
+          column_id: columnId,
+        };
+      });
+
+      const { error } = await supabase
+        .from('kanban_items')
+        .upsert(updates, { onConflict: 'id' });
+
+      if (error) throw error;
+      toast({ title: "Items reordered", description: "Kanban items reordered successfully." });
+      await fetchData(); // Re-fetch to ensure UI consistency
+    } catch (error: any) {
+      console.error("Error reordering Kanban items:", error);
+      toast({ title: "Error reordering items", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const reorderKanbanColumns = async (boardId: string, columnIds: string[]) => {
+    try {
+      // Fetch existing columns to get their full data
+      const { data: existingColumns, error: fetchError } = await supabase
+        .from('kanban_columns')
+        .select('*')
+        .in('id', columnIds);
+
+      if (fetchError) throw fetchError;
+
+      const updates = columnIds.map((id, index) => {
+        const existingColumn = existingColumns?.find(column => column.id === id);
+        if (!existingColumn) {
+          throw new Error(`Column with ID ${id} not found for reordering.`);
+        }
+        return {
+          ...existingColumn, // Spread existing data to include all required fields
+          id,
+          order_index: index,
+          board_id: boardId,
+        };
+      });
+
+      const { error } = await supabase
+        .from('kanban_columns')
+        .upsert(updates, { onConflict: 'id' });
+
+      if (error) throw error;
+      toast({ title: "Columns reordered", description: "Kanban columns reordered successfully." });
+      await fetchData(); // Re-fetch to ensure UI consistency
+    } catch (error: any) {
+      console.error("Error reordering Kanban columns:", error);
+      toast({ title: "Error reordering columns", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -920,6 +1238,9 @@ export function useCRMData() {
     deals,
     tasks,
     profiles,
+    kanbanBoards,
+    kanbanColumns,
+    kanbanItems,
     stats,
     loading,
     refetch: fetchData,
@@ -940,6 +1261,17 @@ export function useCRMData() {
     deleteTaskNote,
     createDealAttachment, // Export new deal attachment functions
     deleteDealAttachment,
+    createKanbanBoard,
+    updateKanbanBoard,
+    deleteKanbanBoard,
+    createKanbanColumn,
+    updateKanbanColumn,
+    deleteKanbanColumn,
+    createKanbanItem,
+    updateKanbanItem,
+    deleteKanbanItem,
+    reorderKanbanItems,
+    reorderKanbanColumns,
     getFullName,
   };
 }

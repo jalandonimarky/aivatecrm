@@ -4,9 +4,10 @@ import {
   Users, 
   Briefcase, 
   CheckSquare, 
-  BarChart3, // Keep BarChart3 if it's used elsewhere, otherwise it can be removed
+  BarChart3,
   Settings,
-  LogOut
+  LogOut,
+  KanbanSquare // Import KanbanSquare icon
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -27,6 +28,7 @@ import { useCRMData } from "@/hooks/useCRMData";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
+  { title: "Project Management", url: "/kanban", icon: KanbanSquare }, // New Kanban item
   { title: "Contacts", url: "/contacts", icon: Users },
   { title: "Deals", url: "/deals", icon: Briefcase },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
