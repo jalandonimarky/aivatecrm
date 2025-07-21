@@ -76,6 +76,12 @@ export function useCRMData() {
     return dbPayload;
   };
 
+  // Helper to filter out non-column properties for KanbanColumn upsert
+  const getKanbanColumnDbPayload = (column: KanbanColumn) => {
+    const { items, ...dbPayload } = column; // Destructure 'items'
+    return dbPayload;
+  };
+
   // Helper to calculate percentage change
   const calculatePercentageChange = (current: number, previous: number): { value: number; trend: "up" | "down" } => {
     if (previous === 0) {
@@ -1341,11 +1347,11 @@ export function useCRMData() {
       const updates = columnIds.map((id, index) => {
         const existingColumn = kanbanColumns.find(column => column.id === id);
         if (!existingColumn) throw new Error(`Column with ID ${id} not found for reordering.`);
-        return {
-          ...existingColumn, // Spread existing data to include all required fields
+        return getKanbanColumnDbPayload({ // Apply the new helper here
+          ...existingColumn,
           order_index: index,
           board_id: boardId,
-        };
+        });
       });
 
       const { error } = await supabase
