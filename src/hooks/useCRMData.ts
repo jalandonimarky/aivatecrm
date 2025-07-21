@@ -1183,10 +1183,12 @@ export function useCRMData() {
 
       if (error) throw error;
       toast({ title: "Items reordered", description: "Kanban items reordered successfully." });
-      await fetchData(); // Re-fetch to ensure UI consistency
+      // No full fetchData() here, local state is already updated
     } catch (error: any) {
       console.error("Error reordering Kanban items:", error);
       toast({ title: "Error reordering items", description: error.message, variant: "destructive" });
+      // Optionally, revert local state if backend update fails
+      await fetchData(); // Fallback to full fetch on error
       throw error;
     }
   };
@@ -1220,10 +1222,12 @@ export function useCRMData() {
 
       if (error) throw error;
       toast({ title: "Columns reordered", description: "Kanban columns reordered successfully." });
-      await fetchData(); // Re-fetch to ensure UI consistency
+      // No full fetchData() here, local state is already updated
     } catch (error: any) {
       console.error("Error reordering Kanban columns:", error);
       toast({ title: "Error reordering columns", description: error.message, variant: "destructive" });
+      // Optionally, revert local state if backend update fails
+      await fetchData(); // Fallback to full fetch on error
       throw error;
     }
   };
