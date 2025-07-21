@@ -70,6 +70,12 @@ export function useCRMData() {
   // Helper to combine first and last name for display
   const getFullName = (profile: Profile) => `${profile.first_name} ${profile.last_name}`;
 
+  // Helper to filter out non-column properties for KanbanItem upsert
+  const getKanbanItemDbPayload = (item: KanbanItem) => {
+    const { creator, assigned_user, ...dbPayload } = item;
+    return dbPayload;
+  };
+
   // Helper to calculate percentage change
   const calculatePercentageChange = (current: number, previous: number): { value: number; trend: "up" | "down" } => {
     if (previous === 0) {
@@ -1194,11 +1200,11 @@ export function useCRMData() {
       const updates = itemIds.map((id, index) => {
         const existingItem = kanbanItems.find(item => item.id === id);
         if (!existingItem) throw new Error(`Item with ID ${id} not found for reordering.`);
-        return {
+        return getKanbanItemDbPayload({
           ...existingItem, // Spread existing data to include all required fields
           order_index: index,
           column_id: columnId,
-        };
+        });
       });
 
       const { error } = await supabase
@@ -1270,14 +1276,14 @@ export function useCRMData() {
       const updates: KanbanItem[] = [];
 
       // Update the moved item's column_id and order_index
-      updates.push({
+      updates.push(getKanbanItemDbPayload({
         ...movedItem, // Include all existing properties
         column_id: destinationColumnId,
         order_index: destinationIndex,
-      });
+      }));
 
       // Recalculate and update order_index for remaining items in source column
-      const finalSourceItems = sourceItemsBeforeOptimisticUpdate.filter(item => item.id !== itemId).map((item, index) => ({
+      const finalSourceItems = sourceItemsBeforeOptimisticUpdate.filter(item => item.id !== itemId).map((item, index) => getKanbanItemDbPayload({
         ...item, // Include all existing properties
         order_index: index,
         column_id: sourceColumnId,
@@ -1287,7 +1293,7 @@ export function useCRMData() {
       // Recalculate and update order_index for items in destination column
       const finalDestinationItems = destinationItemsBeforeOptimisticUpdate.filter(item => item.id !== itemId);
       finalDestinationItems.splice(destinationIndex, 0, movedItem); // Insert at new position
-      const updatedDestinationOrder = finalDestinationItems.map((item, index) => ({
+      const updatedDestinationOrder = finalDestinationItems.map((item, index) => getKanbanItemDbPayload({
         ...item, // Include all existing properties
         order_index: index,
         column_id: destinationColumnId,
