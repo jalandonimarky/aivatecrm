@@ -4,10 +4,9 @@ import {
   Users, 
   Briefcase, 
   CheckSquare, 
-  BarChart3, 
+  BarChart3, // Keep BarChart3 if it's used elsewhere, otherwise it can be removed
   Settings,
-  LogOut,
-  FolderKanban // Icon for Project Management
+  LogOut
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -29,12 +28,9 @@ import { useCRMData } from "@/hooks/useCRMData";
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Contacts", url: "/contacts", icon: Users },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
-];
-
-const projectManagementItems = [
   { title: "Deals", url: "/deals", icon: Briefcase },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
 ];
 
 const bottomNavItems = [
@@ -53,7 +49,7 @@ export function AppSidebar() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } = {} } = await supabase.auth.getUser();
+      const { data: { user } = {} } = await supabase.auth.getUser(); // Destructure with default empty object
       if (user) {
         const profile = profiles.find(p => p.user_id === user.id);
         setCurrentUserProfile(profile);
@@ -148,32 +144,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Project Management Section */}
-        <SidebarGroup className="mt-6">
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
-            <div className="flex items-center space-x-2">
-              <FolderKanban className="w-5 h-5" />
-              {!collapsed && <span>Project Management</span>}
-            </div>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {projectManagementItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Removed User Profile Initials (simplified) */}
 
         {/* Bottom Navigation */}
         <div className="mt-auto space-y-2">
