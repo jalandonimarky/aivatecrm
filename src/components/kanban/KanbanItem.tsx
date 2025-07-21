@@ -3,7 +3,7 @@ import { Draggable } from "react-beautiful-dnd";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from "lucide-react"; // Removed ChevronDown, ChevronUp
+import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -15,9 +15,10 @@ interface KanbanItemProps {
   index: number;
   onEdit: (item: KanbanItemType) => void;
   onDelete: (itemId: string) => void;
+  totalItemsInColumn: number; // New prop
 }
 
-export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
+export function KanbanItem({ item, index, onEdit, onDelete, totalItemsInColumn }: KanbanItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getCategoryColorClass = (category?: KanbanItemType['category']) => {
@@ -48,19 +49,24 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "mb-0.5 bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer", // Adjusted mb-1 to mb-0.5
+            "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
+            index > 0 ? "mt-[-10px]" : "", // Apply negative margin to stack
             getCategoryColorClass(item.category), // Apply category color border
-            snapshot.isDragging ? "shadow-lg ring-2 ring-primary" : ""
+            snapshot.isDragging ? "shadow-lg ring-2 ring-primary z-[100]" : "hover:z-[60] hover:-translate-y-1", // Lift on hover
+            isExpanded ? "z-[55]" : "" // Keep expanded card slightly elevated
           )}
-          onClick={toggleExpand} // Add click handler to toggle expand
+          style={{
+            ...provided.draggableProps.style,
+            zIndex: snapshot.isDragging ? 100 : (totalItemsInColumn - index), // Dynamic z-index for stacking
+          }}
+          onClick={toggleExpand}
         >
-          <CardContent className="p-2"> {/* Adjusted p-3 to p-2 */}
+          <CardContent className="p-2">
             <div className="flex items-center justify-between mb-1">
               <h4 className="font-semibold text-foreground text-sm flex-1 min-w-0 pr-2 break-words">
                 {item.title}
               </h4>
               <div className="flex items-center space-x-1">
-                {/* Removed ChevronUp and ChevronDown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
@@ -80,7 +86,7 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
                 </DropdownMenu>
               </div>
             </div>
-            {isExpanded && ( // Conditionally render expanded content
+            {isExpanded && (
               <>
                 {item.description && (
                   <p className="text-muted-foreground text-xs mb-2 line-clamp-3">
