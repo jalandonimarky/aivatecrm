@@ -15,10 +15,9 @@ interface KanbanItemProps {
   index: number;
   onEdit: (item: KanbanItemType) => void;
   onDelete: (itemId: string) => void;
-  totalItemsInColumn: number; // New prop
 }
 
-export function KanbanItem({ item, index, onEdit, onDelete, totalItemsInColumn }: KanbanItemProps) {
+export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getCategoryColorClass = (category?: KanbanItemType['category']) => {
@@ -50,15 +49,14 @@ export function KanbanItem({ item, index, onEdit, onDelete, totalItemsInColumn }
           {...provided.dragHandleProps}
           className={cn(
             "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
-            index > 0 ? "mt-[-10px]" : "", // Apply negative margin to stack
-            getCategoryColorClass(item.category), // Apply category color border
-            snapshot.isDragging ? "shadow-lg ring-2 ring-primary z-[100]" : "hover:z-[60] hover:-translate-y-1", // Lift on hover
-            isExpanded ? "z-[55]" : "" // Keep expanded card slightly elevated
+            index > 0 ? "mt-[-28px]" : "", // Negative margin for stacking effect
+            getCategoryColorClass(item.category),
+            // Z-index layering: dragging > hovered > expanded > default
+            snapshot.isDragging
+              ? "z-50 shadow-lg ring-2 ring-primary"
+              : "hover:z-40 hover:-translate-y-1", // Lift on hover
+            isExpanded ? "z-30" : ""
           )}
-          style={{
-            ...provided.draggableProps.style,
-            zIndex: snapshot.isDragging ? 100 : (totalItemsInColumn - index), // Dynamic z-index for stacking
-          }}
           onClick={toggleExpand}
         >
           <CardContent className="p-2">

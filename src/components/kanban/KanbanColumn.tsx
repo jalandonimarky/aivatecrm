@@ -60,7 +60,8 @@ export function KanbanColumn({
               <DropdownMenuItem onClick={() => onDeleteColumn(column.id)} className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete Column
-              </DropdownMenuContent>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
           </DropdownMenu>
         </div>
         <div className={cn("h-0.5 w-full rounded-full", getColumnColorClass(column.name))} />
@@ -80,7 +81,6 @@ export function KanbanColumn({
                   index={index}
                   onEdit={onEditItem}
                   onDelete={onDeleteItem}
-                  totalItemsInColumn={sortedItems.length} {/* Pass total items */}
                 />
               ))}
               {provided.placeholder}
