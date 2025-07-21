@@ -1171,24 +1171,31 @@ export function useCRMData() {
   };
 
   // Reordering functions
-  const reorderKanbanItems = async (columnId: string, itemIds: string[]) => {
+  const reorderKanbanItemsInColumn = async (columnId: string, itemIds: string[]) => {
     try {
-      // Fetch existing items to get their full data
-      const { data: existingItems, error: fetchError } = await supabase
-        .from('kanban_items')
-        .select('*')
-        .in('id', itemIds);
+      // Optimistically update local state
+      setKanbanBoards(prevBoards => 
+        prevBoards.map(board => ({
+          ...board,
+          columns: board.columns?.map(col => {
+            if (col.id === columnId) {
+              const updatedItems = itemIds.map((itemId, index) => {
+                const existingItem = col.items?.find(item => item.id === itemId);
+                return existingItem ? { ...existingItem, order_index: index } : null;
+              }).filter(Boolean) as KanbanItem[];
+              return { ...col, items: updatedItems };
+            }
+            return col;
+          }),
+        }))
+      );
 
-      if (fetchError) throw fetchError;
-
+      // Prepare updates for Supabase
       const updates = itemIds.map((id, index) => {
-        const existingItem = existingItems?.find(item => item.id === id);
-        if (!existingItem) {
-          throw new Error(`Item with ID ${id} not found for reordering.`);
-        }
+        const existingItem = kanbanItems.find(item => item.id === id);
+        if (!existingItem) throw new Error(`Item with ID ${id} not found for reordering.`);
         return {
           ...existingItem, // Spread existing data to include all required fields
-          id,
           order_index: index,
           column_id: columnId,
         };
@@ -1200,11 +1207,109 @@ export function useCRMData() {
 
       if (error) throw error;
       toast({ title: "Items reordered", description: "Kanban items reordered successfully." });
-      // No full fetchData() here, local state is already updated
     } catch (error: any) {
-      console.error("Error reordering Kanban items:", error);
+      console.error("Error reordering Kanban items within column:", error);
       toast({ title: "Error reordering items", description: error.message, variant: "destructive" });
-      // Optionally, revert local state if backend update fails
+      await fetchData(); // Fallback to full fetch on error
+      throw error;
+    }
+  };
+
+  const moveKanbanItem = async (
+    itemId: string,
+    sourceColumnId: string,
+    sourceIndex: number,
+    destinationColumnId: string,
+    destinationIndex: number
+  ) => {
+    try {
+      let movedItem: KanbanItem | undefined;
+      let sourceItemsBeforeOptimisticUpdate: KanbanItem[] = [];
+      let destinationItemsBeforeOptimisticUpdate: KanbanItem[] = [];
+
+      // Optimistically update local state
+      setKanbanBoards(prevBoards => {
+        const newBoards = prevBoards.map(board => {
+          const newColumns = board.columns?.map(col => {
+            if (col.id === sourceColumnId) {
+              sourceItemsBeforeOptimisticUpdate = [...(col.items || [])].sort((a, b) => a.order_index - b.order_index);
+              const newSourceItems = Array.from(sourceItemsBeforeOptimisticUpdate);
+              [movedItem] = newSourceItems.splice(sourceIndex, 1);
+              
+              // Recalculate order_index for source column
+              const updatedSourceItems = newSourceItems.map((item, index) => ({ ...item, order_index: index }));
+              return { ...col, items: updatedSourceItems };
+            } else if (col.id === destinationColumnId) {
+              destinationItemsBeforeOptimisticUpdate = [...(col.items || [])].sort((a, b) => a.order_index - b.order_index);
+              const newDestinationItems = Array.from(destinationItemsBeforeOptimisticUpdate);
+              
+              // Ensure movedItem is defined before inserting. If not, find it from global state.
+              const itemToInsert = movedItem || kanbanItems.find(item => item.id === itemId);
+              if (!itemToInsert) throw new Error("Item not found for optimistic update.");
+
+              newDestinationItems.splice(destinationIndex, 0, { ...itemToInsert, column_id: destinationColumnId });
+
+              // Recalculate order_index for destination column
+              const updatedDestinationItems = newDestinationItems.map((item, index) => ({ ...item, order_index: index }));
+              return { ...col, items: updatedDestinationItems };
+            }
+            return col;
+          });
+          return { ...board, columns: newColumns };
+        });
+        return newBoards;
+      });
+
+      // Ensure movedItem is the full object for database update
+      if (!movedItem) {
+        movedItem = kanbanItems.find(item => item.id === itemId);
+        if (!movedItem) throw new Error("Moved item not found in state for database update.");
+      }
+
+      // Prepare updates for Supabase
+      const updates: KanbanItem[] = [];
+
+      // Update the moved item's column_id and order_index
+      updates.push({
+        ...movedItem, // Include all existing properties
+        column_id: destinationColumnId,
+        order_index: destinationIndex,
+      });
+
+      // Recalculate and update order_index for remaining items in source column
+      const finalSourceItems = sourceItemsBeforeOptimisticUpdate.filter(item => item.id !== itemId).map((item, index) => ({
+        ...item, // Include all existing properties
+        order_index: index,
+        column_id: sourceColumnId,
+      }));
+      updates.push(...finalSourceItems);
+
+      // Recalculate and update order_index for items in destination column
+      const finalDestinationItems = destinationItemsBeforeOptimisticUpdate.filter(item => item.id !== itemId);
+      finalDestinationItems.splice(destinationIndex, 0, movedItem); // Insert at new position
+      const updatedDestinationOrder = finalDestinationItems.map((item, index) => ({
+        ...item, // Include all existing properties
+        order_index: index,
+        column_id: destinationColumnId,
+      }));
+      updates.push(...updatedDestinationOrder);
+
+      // Filter out duplicates (if any, though logic should prevent most)
+      const uniqueUpdatesMap = new Map<string, KanbanItem>();
+      for (const update of updates) {
+        uniqueUpdatesMap.set(update.id, update);
+      }
+      const finalUpdates = Array.from(uniqueUpdatesMap.values());
+
+      const { error } = await supabase
+        .from('kanban_items')
+        .upsert(finalUpdates, { onConflict: 'id' });
+
+      if (error) throw error;
+      toast({ title: "Item moved", description: "Kanban item moved successfully." });
+    } catch (error: any) {
+      console.error("Error moving Kanban item:", error);
+      toast({ title: "Error moving item", description: error.message, variant: "destructive" });
       await fetchData(); // Fallback to full fetch on error
       throw error;
     }
@@ -1212,22 +1317,26 @@ export function useCRMData() {
 
   const reorderKanbanColumns = async (boardId: string, columnIds: string[]) => {
     try {
-      // Fetch existing columns to get their full data
-      const { data: existingColumns, error: fetchError } = await supabase
-        .from('kanban_columns')
-        .select('*')
-        .in('id', columnIds);
+      // Optimistically update local state
+      setKanbanBoards(prevBoards => 
+        prevBoards.map(board => {
+          if (board.id === boardId) {
+            const updatedColumns = columnIds.map((colId, index) => {
+              const existingColumn = board.columns?.find(col => col.id === colId);
+              return existingColumn ? { ...existingColumn, order_index: index } : null;
+            }).filter(Boolean) as KanbanColumn[];
+            return { ...board, columns: updatedColumns };
+          }
+          return board;
+        })
+      );
 
-      if (fetchError) throw fetchError;
-
+      // Prepare updates for Supabase
       const updates = columnIds.map((id, index) => {
-        const existingColumn = existingColumns?.find(column => column.id === id);
-        if (!existingColumn) {
-          throw new Error(`Column with ID ${id} not found for reordering.`);
-        }
+        const existingColumn = kanbanColumns.find(column => column.id === id);
+        if (!existingColumn) throw new Error(`Column with ID ${id} not found for reordering.`);
         return {
           ...existingColumn, // Spread existing data to include all required fields
-          id,
           order_index: index,
           board_id: boardId,
         };
@@ -1239,11 +1348,9 @@ export function useCRMData() {
 
       if (error) throw error;
       toast({ title: "Columns reordered", description: "Kanban columns reordered successfully." });
-      // No full fetchData() here, local state is already updated
     } catch (error: any) {
       console.error("Error reordering Kanban columns:", error);
       toast({ title: "Error reordering columns", description: error.message, variant: "destructive" });
-      // Optionally, revert local state if backend update fails
       await fetchData(); // Fallback to full fetch on error
       throw error;
     }
@@ -1291,7 +1398,8 @@ export function useCRMData() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    reorderKanbanItems,
+    reorderKanbanItemsInColumn, // Renamed
+    moveKanbanItem, // New function
     reorderKanbanColumns,
     getFullName,
   };

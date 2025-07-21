@@ -26,7 +26,8 @@ export function Kanban() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    reorderKanbanItems,
+    reorderKanbanItemsInColumn, // Renamed
+    moveKanbanItem, // New function
     reorderKanbanColumns,
     profiles, // Destructure profiles
     getFullName, // Destructure getFullName
@@ -138,7 +139,11 @@ export function Kanban() {
 
   // Reordering handlers
   const handleReorderItems = async (columnId: string, itemIds: string[]) => {
-    await reorderKanbanItems(columnId, itemIds);
+    await reorderKanbanItemsInColumn(columnId, itemIds);
+  };
+
+  const handleMoveItem = async (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => {
+    await moveKanbanItem(itemId, sourceColumnId, sourceIndex, destinationColumnId, destinationIndex);
   };
 
   const handleReorderColumns = async (boardId: string, columnIds: string[]) => {
@@ -185,7 +190,8 @@ export function Kanban() {
             onAddItem={handleAddItemClick}
             onEditItem={handleEditItemClick}
             onDeleteItem={handleDeleteItem}
-            onReorderItems={handleReorderItems}
+            onReorderItemsInColumn={handleReorderItems} // Pass renamed function
+            onMoveItem={handleMoveItem} // Pass new function
             onReorderColumns={handleReorderColumns}
           />
         </div>

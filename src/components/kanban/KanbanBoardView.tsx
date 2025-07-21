@@ -14,7 +14,8 @@ interface KanbanBoardViewProps {
   onAddItem: (columnId: string) => void;
   onEditItem: (item: KanbanItemType) => void;
   onDeleteItem: (itemId: string) => void;
-  onReorderItems: (columnId: string, itemIds: string[]) => Promise<void>;
+  onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>; // Renamed
+  onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>; // New prop
   onReorderColumns: (boardId: string, columnIds: string[]) => Promise<void>;
 }
 
@@ -26,7 +27,8 @@ export function KanbanBoardView({
   onAddItem,
   onEditItem,
   onDeleteItem,
-  onReorderItems,
+  onReorderItemsInColumn, // Renamed
+  onMoveItem, // New prop
   onReorderColumns,
 }: KanbanBoardViewProps) {
   const { toast } = useToast();
@@ -75,18 +77,16 @@ export function KanbanBoardView({
         newItems.splice(destination.index, 0, reorderedItem);
         
         const newItemIds = newItems.map(item => item.id);
-        await onReorderItems(startColumn.id, newItemIds);
+        await onReorderItemsInColumn(startColumn.id, newItemIds); // Use renamed function
       } else {
         // Moving between different columns
-        const startItems = Array.from(startColumn.items || []).sort((a, b) => a.order_index - b.order_index);
-        const finishItems = Array.from(finishColumn.items || []).sort((a, b) => a.order_index - b.order_index);
-        
-        const [movedItem] = startItems.splice(source.index, 1);
-        finishItems.splice(destination.index, 0, { ...movedItem, column_id: finishColumn.id });
-
-        // Update both columns
-        await onReorderItems(startColumn.id, startItems.map(item => item.id));
-        await onReorderItems(finishColumn.id, finishItems.map(item => item.id));
+        await onMoveItem(
+          draggableId,
+          source.droppableId,
+          source.index,
+          destination.droppableId,
+          destination.index
+        );
       }
     }
   };
