@@ -16,7 +16,8 @@ export function Layout() {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const profile = profiles.find(p => p.user_id === user.id);
+        // Find the profile using the 'id' which now directly matches user.id
+        const profile = profiles.find(p => p.id === user.id);
         setCurrentUserProfile(profile);
       }
     };
