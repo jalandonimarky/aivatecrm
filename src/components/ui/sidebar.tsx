@@ -66,8 +66,8 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         ref={ref}
         className={cn(
           sidebarVariants({ collapsible }),
-          "flex-shrink-0", // Ensure it doesn't shrink in flex container
-          state === "collapsed" ? "w-14" : "w-64", // Apply dynamic width here
+          state === "collapsed" && "w-14",
+          state === "expanded" && "w-64",
           className
         )}
         {...props}
@@ -111,7 +111,6 @@ const SidebarContent = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const isMobile = useIsMobile()
-  const { state } = useSidebar()
 
   if (isMobile) {
     return (
@@ -123,17 +122,7 @@ const SidebarContent = React.forwardRef<
     )
   }
 
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "flex flex-col flex-grow flex-shrink overflow-y-auto", // Make it a flex column and allow scrolling
-        state === "collapsed" && "overflow-x-hidden", // Hide horizontal overflow when collapsed
-        className
-      )}
-      {...props}
-    />
-  )
+  return <div ref={ref} className={cn("h-full", className)} {...props} />
 })
 SidebarContent.displayName = "SidebarContent"
 
@@ -193,15 +182,11 @@ const SidebarMenuButton = React.forwardRef<
   React.HTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
 >(({ className, asChild, ...props }, ref) => {
   const Comp = asChild ? "span" : "button"
-  const { state } = useSidebar()
-  const collapsed = state === "collapsed"
-
   return (
     <Comp
       ref={ref as React.Ref<any>}
       className={cn(
-        "flex w-full items-center rounded-md py-2 text-sm font-medium", // Removed px-3 here
-        collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3", // Conditional padding and spacing
+        "flex w-full items-center justify-start rounded-md px-3 py-2 text-sm font-medium",
         className
       )}
       {...props}

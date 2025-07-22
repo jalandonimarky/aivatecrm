@@ -31,10 +31,7 @@ const mainNavItems = [
   { title: "Project Management", url: "/kanban", icon: KanbanSquare }, // New Kanban item
   { title: "Contacts", url: "/contacts", icon: Users },
   { title: "Deals", url: "/deals", icon: Briefcase },
-  { title: "Tasks",
-    url: "/tasks",
-    icon: CheckSquare
-  },
+  { title: "Tasks", url: "/tasks", icon: CheckSquare },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
 ];
 
@@ -96,7 +93,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={`transition-smooth bg-gradient-card border-r border-border/50`}
+      className={`${collapsed ? "w-14" : "w-64"} transition-smooth bg-gradient-card border-r border-border/50`}
       collapsible="icon"
     >
       <SidebarContent className="p-4">
@@ -137,9 +134,9 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/"}
-                      className={`flex items-center ${getNavClasses(isActive(item.url))}`}
+                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
                     >
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      <item.icon className="w-5 h-5" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -161,9 +158,9 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink 
                         to={item.url}
-                        className={`flex items-center ${getNavClasses(isActive(item.url))}`}
+                        className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
                       >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
+                        <item.icon className="w-5 h-5" />
                         {!collapsed && <span>{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
@@ -178,7 +175,7 @@ export function AppSidebar() {
                       collapsed ? "px-0 justify-center" : ""
                     }`}
                   >
-                    <LogOut className="w-5 h-5 flex-shrink-0" />
+                    <LogOut className="w-5 h-5" />
                     {!collapsed && <span>Sign Out</span>}
                   </Button>
                 </SidebarMenuItem>
