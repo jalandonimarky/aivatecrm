@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
 import { AppSidebar } from "./Sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet } from "react-router-dom";
-import { UserProfileCard } from "@/components/UserProfileCard"; // Import UserProfileCard
-import { useCRMData } from "@/hooks/useCRMData"; // Import useCRMData
-import { supabase } from "@/integrations/supabase/client"; // Import supabase
-import { NotificationBell } from "./NotificationBell"; // Import NotificationBell
-// import { ModeToggle } from "@/components/theme/ModeToggle"; // Removed ModeToggle
+import { UserProfileCard } from "@/components/UserProfileCard";
+import { useCRMData } from "@/hooks/useCRMData";
+import { supabase } from "@/integrations/supabase/client";
+import { NotificationBell } from "./NotificationBell";
+import { Button } from "@/components/ui/button";
+import { PanelLeft } from "lucide-react";
 
 export function Layout() {
-  const { profiles } = useCRMData(); // Destructure profiles
+  const { profiles } = useCRMData();
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Find the profile using the 'id' which now directly matches user.id
         const profile = profiles.find(p => p.id === user.id);
         setCurrentUserProfile(profile);
       }
@@ -29,13 +29,16 @@ export function Layout() {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center px-6 justify-between"> {/* Added justify-between */}
+          <header className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center px-6 justify-between">
             <div className="flex items-center">
-              {/* Removed SidebarTrigger */}
-              {/* Removed h1 with "CRM Dashboard" */}
+              <SidebarTrigger asChild>
+                <Button variant="ghost" size="icon" className="mr-2">
+                  <PanelLeft className="h-5 w-5" />
+                  <span className="sr-only">Toggle Sidebar</span>
+                </Button>
+              </SidebarTrigger>
             </div>
-            <div className="flex items-center space-x-4"> {/* Group notification bell and user profile */}
-              {/* <ModeToggle /> Removed ModeToggle here */}
+            <div className="flex items-center space-x-4">
               <NotificationBell />
               {currentUserProfile && <UserProfileCard profile={currentUserProfile} />}
             </div>
