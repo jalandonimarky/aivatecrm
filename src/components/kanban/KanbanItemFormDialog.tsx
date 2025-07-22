@@ -96,7 +96,7 @@ export function KanbanItemFormDialog({
         priority_level: itemPriorityLevel,
         assigned_to: itemAssignedTo === "unassigned" ? undefined : itemAssignedTo,
         due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
-        event_time: itemEventTime,
+        event_time: itemEventTime || undefined,
       });
       onOpenChange(false);
     } finally {
