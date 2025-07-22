@@ -45,7 +45,6 @@ export function AppSidebar() {
   const { toast } = useToast();
   const { profiles } = useCRMData();
   const currentPath = location.pathname;
-  const collapsed = state === "collapsed";
 
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
 
@@ -59,6 +58,10 @@ export function AppSidebar() {
     };
     fetchUser();
   }, [profiles]);
+
+  if (state === "collapsed") {
+    return null;
+  }
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -93,37 +96,26 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={`${collapsed ? "w-14" : "w-64"} transition-smooth bg-gradient-card border-r border-border/50`}
-      collapsible="icon"
+      className="w-64 transition-smooth bg-gradient-card border-r border-border/50"
     >
       <SidebarContent className="p-4">
         {/* Logo */}
         <div className="mb-8 px-2">
-          {!collapsed ? (
-            <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
-              <img 
-                src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
-                alt="AiVate CRM Logo" 
-                className="w-12 h-12 object-contain"
-              />
-              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                AiVate CRM
-              </span>
-            </a>
-          ) : (
-            <a href="/" onClick={handleLogoClick} className="w-12 h-12 flex items-center justify-center mx-auto cursor-pointer">
-              <img 
-                src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
-                alt="AiVate CRM Logo" 
-                className="w-12 h-12 object-contain"
-              />
-            </a>
-          )}
+          <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
+            <img 
+              src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
+              alt="AiVate CRM Logo" 
+              className="w-12 h-12 object-contain"
+            />
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              AiVate CRM
+            </span>
+          </a>
         </div>
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+          <SidebarGroupLabel>
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -137,7 +129,7 @@ export function AppSidebar() {
                       className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
                     >
                       <item.icon className="w-5 h-5" />
-                      {!collapsed && <span>{item.title}</span>}
+                      <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -145,8 +137,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* Removed User Profile Initials (simplified) */}
 
         {/* Bottom Navigation */}
         <div className="mt-auto space-y-2">
@@ -161,7 +151,7 @@ export function AppSidebar() {
                         className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
                       >
                         <item.icon className="w-5 h-5" />
-                        {!collapsed && <span>{item.title}</span>}
+                        <span>{item.title}</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -171,12 +161,10 @@ export function AppSidebar() {
                   <Button
                     variant="ghost"
                     onClick={handleSignOut}
-                    className={`w-full justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth ${
-                      collapsed ? "px-0 justify-center" : ""
-                    }`}
+                    className="w-full justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth"
                   >
                     <LogOut className="w-5 h-5" />
-                    {!collapsed && <span>Sign Out</span>}
+                    <span>Sign Out</span>
                   </Button>
                 </SidebarMenuItem>
               </SidebarMenu>
