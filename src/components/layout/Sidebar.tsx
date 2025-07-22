@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCRMData } from "@/hooks/useCRMData";
+import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -40,7 +41,7 @@ const bottomNavItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setState, isPinned } = useSidebar();
   const location = useLocation();
   const { toast } = useToast();
   const { profiles } = useCRMData();
@@ -59,9 +60,17 @@ export function AppSidebar() {
     fetchUser();
   }, [profiles]);
 
-  if (state === "collapsed") {
-    return null;
-  }
+  const handleMouseEnter = () => {
+    if (!isPinned) {
+      setState('expanded');
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isPinned) {
+      setState('collapsed');
+    }
+  };
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -95,59 +104,49 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar
-      className="w-64 transition-smooth bg-gradient-card border-r border-border/50"
-    >
-      <SidebarContent className="p-4">
-        {/* Logo */}
-        <div className="mb-8 px-2">
-          <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
-            <img 
-              src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
-              alt="AiVate CRM Logo" 
-              className="w-12 h-12 object-contain"
-            />
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              AiVate CRM
-            </span>
-          </a>
-        </div>
+    <>
+      {!isPinned && (
+        <div
+          onMouseEnter={handleMouseEnter}
+          className="fixed top-0 left-0 h-full w-4 z-30"
+        />
+      )}
+      <Sidebar
+        onMouseLeave={handleMouseLeave}
+        className={cn(
+          "w-64 bg-gradient-card border-r border-border/50 transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 h-full z-40",
+          state === "collapsed" ? "-translate-x-full" : "translate-x-0"
+        )}
+      >
+        <SidebarContent className="p-4">
+          {/* Logo */}
+          <div className="mb-8 px-2">
+            <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
+              <img 
+                src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
+                alt="AiVate CRM Logo" 
+                className="w-12 h-12 object-contain"
+              />
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                AiVate CRM
+              </span>
+            </a>
+          </div>
 
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            Navigation
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end={item.url === "/"}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Bottom Navigation */}
-        <div className="mt-auto space-y-2">
+          {/* Main Navigation */}
           <SidebarGroup>
+            <SidebarGroupLabel>
+              Navigation
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-2">
-                {bottomNavItems.map((item) => (
+                {mainNavItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink 
-                        to={item.url}
+                        to={item.url} 
+                        end={item.url === "/"}
                         className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
                       >
                         <item.icon className="w-5 h-5" />
@@ -156,22 +155,45 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
-                
-                <SidebarMenuItem>
-                  <Button
-                    variant="ghost"
-                    onClick={handleSignOut}
-                    className="w-full justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth"
-                  >
-                    <LogOut className="w-5 h-5" />
-                    <span>Sign Out</span>
-                  </Button>
-                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-        </div>
-      </SidebarContent>
-    </Sidebar>
+
+          {/* Bottom Navigation */}
+          <div className="mt-auto space-y-2">
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-2">
+                  {bottomNavItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink 
+                          to={item.url}
+                          className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
+                        >
+                          <item.icon className="w-5 h-5" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                  
+                  <SidebarMenuItem>
+                    <Button
+                      variant="ghost"
+                      onClick={handleSignOut}
+                      className="w-full justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span>Sign Out</span>
+                    </Button>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    </>
   );
 }
