@@ -72,7 +72,7 @@ export function KanbanColumn({
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`min-h-[50px] ${snapshot.isDraggingOver ? "bg-muted/30 rounded-md" : ""}`}
+              className={`min-h-[50px] space-y-4 ${snapshot.isDraggingOver ? "bg-muted/30 rounded-md" : ""}`}
             >
               {sortedItems.map((item, index) => (
                 <KanbanItem

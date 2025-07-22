@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { KanbanItem as KanbanItemType } from "@/types/crm";
+import { KanbanPriorityBadge } from "./KanbanPriorityBadge";
 
 interface KanbanItemProps {
   item: KanbanItemType;
@@ -21,13 +22,13 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getCategoryColorClass = (category?: KanbanItemType['category']) => {
-    switch (category) {
+    switch (category?.toLowerCase()) {
       case 'design': return "border-l-4 border-primary"; // Mint
       case 'development': return "border-l-4 border-accent"; // Purple
       case 'marketing': return "border-l-4 border-warning"; // Orange
       case 'business': return "border-l-4 border-success"; // Green
       case 'other': return "border-l-4 border-muted-foreground"; // Grey
-      default: return "border-l-4 border-transparent"; // No border or default
+      default: return category ? "border-l-4 border-secondary" : "border-l-4 border-transparent";
     }
   };
 
@@ -49,18 +50,16 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
           {...provided.dragHandleProps}
           className={cn(
             "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
-            index > 0 ? "mt-[-24px]" : "", // Adjusted negative margin for better title visibility
             getCategoryColorClass(item.category),
-            // Z-index layering: dragging > hovered > expanded > default
             snapshot.isDragging
               ? "z-50 shadow-lg ring-2 ring-primary"
-              : "hover:z-40 hover:-translate-y-1", // Lift on hover
+              : "hover:z-40 hover:-translate-y-1",
             isExpanded ? "z-30" : ""
           )}
           onClick={toggleExpand}
         >
-          <CardContent className="p-2">
-            <div className="flex items-center justify-between mb-1">
+          <CardContent className="p-3">
+            <div className="flex items-start justify-between mb-1">
               <h4 className="font-semibold text-foreground text-sm flex-1 min-w-0 pr-2 break-words">
                 {item.title}
               </h4>
@@ -84,19 +83,26 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
                 </DropdownMenu>
               </div>
             </div>
+            
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {item.priority_level && (
+                <KanbanPriorityBadge priority={item.priority_level} />
+              )}
+              {item.category && (
+                <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                  {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                </Badge>
+              )}
+            </div>
+
             {isExpanded && (
-              <>
+              <div className="mt-3">
                 {item.description && (
-                  <p className="text-muted-foreground text-xs mb-2 line-clamp-3">
+                  <p className="text-muted-foreground text-xs mb-3">
                     {item.description}
                   </p>
                 )}
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                  {item.category && (
-                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                      {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-                    </Badge>
-                  )}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   {item.assigned_user && (
                     <UserProfileCard profile={item.assigned_user} />
                   )}
@@ -107,7 +113,7 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
                     </div>
                   )}
                 </div>
-              </>
+              </div>
             )}
           </CardContent>
         </Card>

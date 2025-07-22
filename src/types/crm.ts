@@ -102,7 +102,8 @@ export interface KanbanItem {
   created_by?: string;
   created_at: string;
   creator?: Profile; // To store the profile of the item creator
-  category?: 'design' | 'development' | 'marketing' | 'business' | 'other'; // New: Category for the item
+  category?: string; // Changed to string to allow custom categories
+  priority_level?: 'p0' | 'p1' | 'p2' | 'p3'; // New: Priority level
   assigned_to?: string; // New: Assigned user ID
   assigned_user?: Profile; // New: Assigned user profile
   due_date?: string; // New: Due date for the item

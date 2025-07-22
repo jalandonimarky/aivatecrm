@@ -17,7 +17,7 @@ interface KanbanItemFormDialogProps {
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
   columnId: string;
-  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: KanbanItem['category'], assigned_to?: string, due_date?: string }) => Promise<void>;
+  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => Promise<void>;
   nextOrderIndex: number;
   profiles: Profile[]; // Pass profiles for assigned_to dropdown
   getFullName: (profile: Profile) => string; // Pass getFullName helper
@@ -35,13 +35,15 @@ export function KanbanItemFormDialog({
 }: KanbanItemFormDialogProps) {
   const [itemTitle, setItemTitle] = useState("");
   const [itemDescription, setItemDescription] = useState("");
-  const [itemCategory, setItemCategory] = useState<KanbanItem['category'] | undefined>(undefined);
+  const [itemCategory, setItemCategory] = useState<string | undefined>(undefined);
+  const [customCategory, setCustomCategory] = useState("");
+  const [itemPriorityLevel, setItemPriorityLevel] = useState<KanbanItem['priority_level'] | undefined>(undefined);
   const [itemAssignedTo, setItemAssignedTo] = useState<string | undefined>(undefined);
   const [itemDueDate, setItemDueDate] = useState<Date | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const itemCategories: { value: KanbanItem['category'], label: string }[] = [
+  const itemCategories: { value: string, label: string }[] = [
     { value: "design", label: "Design" },
     { value: "development", label: "Development" },
     { value: "marketing", label: "Marketing" },
@@ -49,14 +51,30 @@ export function KanbanItemFormDialog({
     { value: "other", label: "Other" },
   ];
 
+  const priorityLevels: { value: KanbanItem['priority_level'], label: string }[] = [
+    { value: "p0", label: "P0 - Urgent" },
+    { value: "p1", label: "P1 - High" },
+    { value: "p2", label: "P2 - Medium" },
+    { value: "p3", label: "P3 - Low" },
+  ];
+
   useEffect(() => {
     if (isOpen) {
       setItemTitle(initialData?.title || "");
       setItemDescription(initialData?.description || "");
-      setItemCategory(initialData?.category || undefined);
+      setItemPriorityLevel(initialData?.priority_level || undefined);
       setItemAssignedTo(initialData?.assigned_to || "unassigned");
       setItemDueDate(initialData?.due_date ? new Date(initialData.due_date) : undefined);
       setLoading(false);
+
+      const predefinedCategories = itemCategories.map(c => c.value);
+      if (initialData?.category && !predefinedCategories.includes(initialData.category)) {
+        setItemCategory("other");
+        setCustomCategory(initialData.category);
+      } else {
+        setItemCategory(initialData?.category || undefined);
+        setCustomCategory("");
+      }
     }
   }, [isOpen, initialData]);
 
@@ -65,12 +83,15 @@ export function KanbanItemFormDialog({
     if (!itemTitle.trim()) return;
     setLoading(true);
     try {
+      const finalCategory = itemCategory === 'other' ? customCategory : itemCategory;
+
       await onSubmit({
         title: itemTitle,
         description: itemDescription,
         column_id: columnId,
         order_index: initialData ? initialData.order_index : nextOrderIndex,
-        category: itemCategory,
+        category: finalCategory,
+        priority_level: itemPriorityLevel,
         assigned_to: itemAssignedTo === "unassigned" ? undefined : itemAssignedTo,
         due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
       });
@@ -88,7 +109,7 @@ export function KanbanItemFormDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="item-title">Item Title *</Label>
+            <Label htmlFor="item-title">Title *</Label>
             <Input
               id="item-title"
               value={itemTitle}
@@ -108,10 +129,29 @@ export function KanbanItemFormDialog({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="item-priority">Priority Level</Label>
+              <Select
+                value={itemPriorityLevel || "none"}
+                onValueChange={(value) => setItemPriorityLevel(value === "none" ? undefined : value as KanbanItem['priority_level'])}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {priorityLevels.map(p => (
+                    <SelectItem key={p.value} value={p.value}>
+                      {p.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="item-category">Category</Label>
               <Select
                 value={itemCategory || "none"}
-                onValueChange={(value) => setItemCategory(value === "none" ? undefined : value as KanbanItem['category'])}
+                onValueChange={(value) => setItemCategory(value === "none" ? undefined : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -126,6 +166,21 @@ export function KanbanItemFormDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {itemCategory === 'other' && (
+            <div className="space-y-2">
+              <Label htmlFor="custom-category">Custom Category</Label>
+              <Input
+                id="custom-category"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="Enter custom category name"
+              />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="item-assigned-to">Assigned To</Label>
               <Select
@@ -145,35 +200,34 @@ export function KanbanItemFormDialog({
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="item-due-date">Due Date</Label>
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !itemDueDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {itemDueDate ? format(itemDueDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={itemDueDate}
-                  onSelect={(date) => {
-                    setItemDueDate(date || undefined);
-                    setIsCalendarOpen(false);
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <div className="space-y-2">
+              <Label htmlFor="item-due-date">Due Date</Label>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !itemDueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {itemDueDate ? format(itemDueDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={itemDueDate}
+                    onSelect={(date) => {
+                      setItemDueDate(date || undefined);
+                      setIsCalendarOpen(false);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           <DialogFooter>

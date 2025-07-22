@@ -115,7 +115,7 @@ export function Kanban() {
     setIsItemFormDialogOpen(true);
   };
 
-  const handleCreateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: KanbanItem['category'], assigned_to?: string, due_date?: string }) => {
+  const handleCreateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => {
     await createKanbanItem(data);
   };
 
@@ -125,7 +125,7 @@ export function Kanban() {
     setIsItemFormDialogOpen(true);
   };
 
-  const handleUpdateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: KanbanItem['category'], assigned_to?: string, due_date?: string }) => {
+  const handleUpdateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => {
     if (editingItem) {
       await updateKanbanItem(editingItem.id, data);
     }
