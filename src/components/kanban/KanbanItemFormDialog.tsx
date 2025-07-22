@@ -17,7 +17,7 @@ interface KanbanItemFormDialogProps {
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
   columnId: string;
-  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => Promise<void>;
+  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string, event_time?: string }) => Promise<void>;
   nextOrderIndex: number;
   profiles: Profile[]; // Pass profiles for assigned_to dropdown
   getFullName: (profile: Profile) => string; // Pass getFullName helper
@@ -40,6 +40,7 @@ export function KanbanItemFormDialog({
   const [itemPriorityLevel, setItemPriorityLevel] = useState<KanbanItem['priority_level'] | undefined>(undefined);
   const [itemAssignedTo, setItemAssignedTo] = useState<string | undefined>(undefined);
   const [itemDueDate, setItemDueDate] = useState<Date | undefined>(undefined);
+  const [itemEventTime, setItemEventTime] = useState<string | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +66,7 @@ export function KanbanItemFormDialog({
       setItemPriorityLevel(initialData?.priority_level || undefined);
       setItemAssignedTo(initialData?.assigned_to || "unassigned");
       setItemDueDate(initialData?.due_date ? new Date(initialData.due_date) : undefined);
+      setItemEventTime(initialData?.event_time || undefined);
       setLoading(false);
 
       const predefinedCategories = itemCategories.map(c => c.value);
@@ -94,6 +96,7 @@ export function KanbanItemFormDialog({
         priority_level: itemPriorityLevel,
         assigned_to: itemAssignedTo === "unassigned" ? undefined : itemAssignedTo,
         due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
+        event_time: itemEventTime,
       });
       onOpenChange(false);
     } finally {
@@ -228,6 +231,16 @@ export function KanbanItemFormDialog({
                 </PopoverContent>
               </Popover>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="item-event-time">Time</Label>
+            <Input
+              id="item-event-time"
+              type="time"
+              value={itemEventTime || ""}
+              onChange={(e) => setItemEventTime(e.target.value)}
+            />
           </div>
 
           <DialogFooter>

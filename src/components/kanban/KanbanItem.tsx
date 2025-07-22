@@ -3,10 +3,10 @@ import { Draggable } from "react-beautiful-dnd";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { KanbanItem as KanbanItemType } from "@/types/crm";
 import { KanbanPriorityBadge } from "./KanbanPriorityBadge";
@@ -110,6 +110,12 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
                     <div className="flex items-center text-xs text-muted-foreground">
                       <CalendarIcon className="w-3 h-3 mr-1" />
                       {format(new Date(item.due_date), "MMM dd")}
+                    </div>
+                  )}
+                  {item.event_time && (
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {format(parse(item.event_time, 'HH:mm', new Date()), 'p')}
                     </div>
                   )}
                 </div>
