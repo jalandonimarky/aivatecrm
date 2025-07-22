@@ -182,7 +182,7 @@ export function AppSidebar() {
                     <Button
                       variant="ghost"
                       onClick={handleSignOut}
-                      className="w-full justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth"
+                      className="w-full flex items-center justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth"
                     >
                       <LogOut className="w-5 h-5" />
                       <span>Sign Out</span>
