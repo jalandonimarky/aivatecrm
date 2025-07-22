@@ -93,24 +93,16 @@ export function AppSidebar() {
       <SidebarContent className="p-4">
         {/* Logo */}
         <div className="mb-8 px-2">
-          {!collapsed ? (
+          {!collapsed && ( // Only render logo and text when not collapsed
             <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
               <img 
                 src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
                 alt="AiVate CRM Logo" 
-                className="w-12 h-12 object-contain" // Larger logo for expanded
+                className="w-12 h-12 object-contain"
               />
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 AiVate CRM
               </span>
-            </a>
-          ) : (
-            <a href="/" onClick={handleLogoClick} className="w-full flex items-center justify-center cursor-pointer">
-              <img 
-                src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
-                alt="AiVate CRM Logo" 
-                className="w-8 h-8 object-contain" // Smaller logo for collapsed
-              />
             </a>
           )}
         </div>
@@ -129,11 +121,9 @@ export function AppSidebar() {
                       to={item.url} 
                       end={item.url === "/"}
                       className={({ isActive }) => cn(
-                        "flex w-full items-center rounded-md py-2 text-sm font-medium",
-                        collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3",
                         isActive
                           ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                          : "hover:bg-muted/50 transition-smooth"
+                          : "text-foreground hover:bg-muted/50 transition-smooth"
                       )}
                     >
                       <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -157,11 +147,9 @@ export function AppSidebar() {
                       <NavLink 
                         to={item.url}
                         className={({ isActive }) => cn(
-                          "flex w-full items-center rounded-md py-2 text-sm font-medium",
-                          collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3",
                           isActive
                             ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                            : "hover:bg-muted/50 transition-smooth"
+                            : "text-foreground hover:bg-muted/50 transition-smooth"
                         )}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
