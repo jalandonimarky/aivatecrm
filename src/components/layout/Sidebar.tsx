@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCRMData } from "@/hooks/useCRMData";
+import { cn } from "@/lib/utils"; // Import cn for conditional class merging
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -62,16 +63,6 @@ export function AppSidebar() {
     };
     fetchUser();
   }, [profiles]);
-
-  const isActive = (path: string) => {
-    if (path === "/") return currentPath === "/";
-    return currentPath.startsWith(path);
-  };
-
-  const getNavClasses = (active: boolean) =>
-    active 
-      ? "bg-gradient-primary text-primary-foreground font-medium shadow-glow" 
-      : "hover:bg-muted/50 transition-smooth";
 
   const handleSignOut = async () => {
     try {
@@ -137,7 +128,13 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/"}
-                      className={`flex items-center ${getNavClasses(isActive(item.url))}`}
+                      className={({ isActive }) => cn(
+                        "flex w-full items-center rounded-md py-2 text-sm font-medium",
+                        collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3",
+                        isActive
+                          ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                          : "hover:bg-muted/50 transition-smooth"
+                      )}
                     >
                       <item.icon className="w-5 h-5 flex-shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
@@ -149,8 +146,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Removed User Profile Initials (simplified) */}
-
         {/* Bottom Navigation */}
         <div className="mt-auto space-y-2">
           <SidebarGroup>
@@ -161,7 +156,13 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink 
                         to={item.url}
-                        className={`flex items-center ${getNavClasses(isActive(item.url))}`}
+                        className={({ isActive }) => cn(
+                          "flex w-full items-center rounded-md py-2 text-sm font-medium",
+                          collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3",
+                          isActive
+                            ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                            : "hover:bg-muted/50 transition-smooth"
+                        )}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
                         {!collapsed && <span>{item.title}</span>}
@@ -174,9 +175,10 @@ export function AppSidebar() {
                   <Button
                     variant="ghost"
                     onClick={handleSignOut}
-                    className={`w-full justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth ${
+                    className={cn(
+                      "w-full justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth",
                       collapsed ? "px-0 justify-center" : ""
-                    }`}
+                    )}
                   >
                     <LogOut className="w-5 h-5 flex-shrink-0" />
                     {!collapsed && <span>Sign Out</span>}

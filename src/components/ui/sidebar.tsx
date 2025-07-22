@@ -192,7 +192,7 @@ const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
   React.HTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
 >(({ className, asChild, ...props }, ref) => {
-  const Comp = asChild ? "span" : "button"
+  const Comp = asChild ? Slot : "button"
   const { state } = useSidebar()
   const collapsed = state === "collapsed"
 
@@ -202,7 +202,7 @@ const SidebarMenuButton = React.forwardRef<
       className={cn(
         "flex w-full items-center rounded-md py-2 text-sm font-medium",
         collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3",
-        className // This should now correctly apply the gradient and text color
+        className
       )}
       {...props}
     />
