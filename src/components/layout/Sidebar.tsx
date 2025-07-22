@@ -94,6 +94,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       className={`${collapsed ? "w-14" : "w-64"} transition-smooth bg-gradient-card border-r border-border/50`}
+      collapsible="icon"
     >
       <SidebarContent className="p-4">
         {/* Logo */}

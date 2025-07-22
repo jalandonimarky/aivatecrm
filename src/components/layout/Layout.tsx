@@ -30,7 +30,7 @@ export function Layout() {
         <div className="flex-1 flex flex-col">
           <header className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center px-6 justify-between">
             <div className="flex items-center">
-              <SidebarTrigger className="mr-4">
+              <SidebarTrigger variant="ghost" size="icon" className="mr-4">
                 <Menu className="h-5 w-5" />
               </SidebarTrigger>
             </div>
