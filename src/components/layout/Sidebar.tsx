@@ -107,18 +107,18 @@ export function AppSidebar() {
               <img 
                 src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
                 alt="AiVate CRM Logo" 
-                className="w-12 h-12 object-contain"
+                className="w-12 h-12 object-contain" // Larger logo for expanded
               />
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 AiVate CRM
               </span>
             </a>
           ) : (
-            <a href="/" onClick={handleLogoClick} className="w-12 h-12 flex items-center justify-center mx-auto cursor-pointer">
+            <a href="/" onClick={handleLogoClick} className="w-full flex items-center justify-center cursor-pointer">
               <img 
                 src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
                 alt="AiVate CRM Logo" 
-                className="w-12 h-12 object-contain"
+                className="w-8 h-8 object-contain" // Smaller logo for collapsed
               />
             </a>
           )}

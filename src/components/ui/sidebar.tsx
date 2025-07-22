@@ -200,9 +200,9 @@ const SidebarMenuButton = React.forwardRef<
     <Comp
       ref={ref as React.Ref<any>}
       className={cn(
-        "flex w-full items-center rounded-md py-2 text-sm font-medium", // Removed px-3 here
-        collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3", // Conditional padding and spacing
-        className
+        "flex w-full items-center rounded-md py-2 text-sm font-medium",
+        collapsed ? "justify-center px-0" : "justify-start px-3 space-x-3",
+        className // This should now correctly apply the gradient and text color
       )}
       {...props}
     />
