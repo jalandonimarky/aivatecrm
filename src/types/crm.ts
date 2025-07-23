@@ -163,63 +163,8 @@ export interface DashboardStats {
   pendingTasksChange?: ChangeMetric;
 }
 
-export interface DataHygieneInsights { // Added DataHygieneInsights interface
+export interface DataHygieneInsights {
   missingFields: string[];
   suggestions: string[];
   dealBreakerWarning: boolean;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  status: 'Active' | 'Completed' | 'On Hold';
-  created_at: string;
-  owner_id: string;
-  tasks?: ProjectTask[];
-}
-
-export interface ProjectSubtask {
-  id: string;
-  task_id: string;
-  title: string;
-  is_completed: boolean;
-  created_at: string;
-  assignee_id?: string; // New: Optional assignee for subtask
-  due_date?: string; // New: Optional due date for subtask
-  assignee?: Profile; // New: Nested assignee profile
-}
-
-export interface ProjectTaskComment {
-  id: string;
-  task_id: string;
-  content: string;
-  created_by?: string;
-  created_at: string;
-  creator?: Profile;
-}
-
-export interface ProjectTask {
-  id: string;
-  title: string;
-  description?: string;
-  assignee_id?: string;
-  project_id: string;
-  due_date?: string;
-  priority: 'Low' | 'Medium' | 'High';
-  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed'; // Added 'Completed'
-  section: 'To Do' | 'Doing' | 'Done';
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-  dependencies?: ProjectTaskDependency[]; // New: Dependencies array
-  assignee?: Profile;
-  subtasks?: ProjectSubtask[]; // Added subtasks
-  comments?: ProjectTaskComment[]; // Added comments
-  is_blocked?: boolean; // New: To indicate if the task is blocked by dependencies
-}
-
-export interface ProjectTaskDependency {
-  task_id: string;
-  depends_on_task_id: string;
-  dependent_task?: ProjectTask; // New: Nested dependent task for display
 }
