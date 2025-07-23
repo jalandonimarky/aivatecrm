@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemNote } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemActivity } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -72,7 +72,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for KanbanItem upsert
   const getKanbanItemDbPayload = (item: KanbanItem) => {
-    const { creator, assigned_user, notes, ...dbPayload } = item;
+    const { creator, assigned_user, activity, ...dbPayload } = item;
     return dbPayload;
   };
 
@@ -164,9 +164,9 @@ export function useCRMData() {
               *,
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-              notes:kanban_item_notes(
+              activity:kanban_item_activity(
                 *,
-                creator:profiles(id, first_name, last_name, email)
+                user:profiles(id, first_name, last_name, email)
               )
             )
           )
@@ -1110,7 +1110,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'notes'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId();
       const { data, error } = await supabase
@@ -1125,7 +1125,7 @@ export function useCRMData() {
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:kanban_item_notes(*, creator:profiles(id, first_name, last_name, email))
+          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email))
         `)
         .single();
 
@@ -1140,7 +1140,7 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'notes'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'activity'>>) => {
     try {
       const dataToUpdate = {
         ...updates,
@@ -1156,7 +1156,7 @@ export function useCRMData() {
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          notes:kanban_item_notes(*, creator:profiles(id, first_name, last_name, email))
+          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email))
         `)
         .single();
 
@@ -1184,25 +1184,6 @@ export function useCRMData() {
     } catch (error: any) {
       console.error("Error deleting Kanban item:", error);
       toast({ title: "Error deleting item", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  // CRUD for Kanban Item Notes
-  const createKanbanItemNote = async (itemId: string, content: string) => {
-    try {
-      const creatorProfileId = await getOrCreateUserProfileId();
-      const { data, error } = await supabase
-        .from("kanban_item_notes")
-        .insert([{ item_id: itemId, content, created_by: creatorProfileId }])
-        .select("*, creator:profiles(id, first_name, last_name, email)")
-        .single();
-      if (error) throw error;
-      toast({ title: "Comment added" });
-      await fetchData();
-      return data as any as KanbanItemNote;
-    } catch (error: any) {
-      toast({ title: "Error adding comment", description: error.message, variant: "destructive" });
       throw error;
     }
   };
@@ -1435,7 +1416,6 @@ export function useCRMData() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    createKanbanItemNote,
     reorderKanbanItemsInColumn, // Renamed
     moveKanbanItem, // New function
     reorderKanbanColumns,

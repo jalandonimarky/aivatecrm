@@ -376,39 +376,42 @@ export type Database = {
           },
         ]
       }
-      kanban_item_notes: {
+      kanban_item_activity: {
         Row: {
+          activity_type: string
+          created_at: string
+          details: Json | null
           id: string
           item_id: string
-          content: string
-          created_by: string | null
-          created_at: string
+          user_id: string | null
         }
         Insert: {
+          activity_type: string
+          created_at?: string
+          details?: Json | null
           id?: string
           item_id: string
-          content: string
-          created_by?: string | null
-          created_at?: string
+          user_id?: string | null
         }
         Update: {
+          activity_type?: string
+          created_at?: string
+          details?: Json | null
           id?: string
           item_id?: string
-          content?: string
-          created_by?: string | null
-          created_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "kanban_item_notes_item_id_fkey"
+            foreignKeyName: "kanban_item_activity_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "kanban_items"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "kanban_item_notes_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "kanban_item_activity_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

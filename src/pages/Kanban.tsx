@@ -26,7 +26,6 @@ export function Kanban() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    createKanbanItemNote,
     reorderKanbanItemsInColumn,
     moveKanbanItem,
     reorderKanbanColumns,
@@ -191,7 +190,6 @@ export function Kanban() {
             onAddItem={handleAddItemClick}
             onEditItem={handleEditItemClick}
             onDeleteItem={handleDeleteItem}
-            onCreateItemNote={createKanbanItemNote}
             onReorderItemsInColumn={handleReorderItems}
             onMoveItem={handleMoveItem}
             onReorderColumns={handleReorderColumns}

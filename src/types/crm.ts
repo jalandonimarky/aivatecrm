@@ -93,13 +93,21 @@ export interface Task {
   notes?: TaskNote[]; // Added notes array for tasks
 }
 
-export interface KanbanItemNote {
+export interface KanbanItemActivity {
   id: string;
   item_id: string;
-  content: string;
+  user_id: string;
+  activity_type: 'created' | 'updated' | 'moved';
+  details: {
+    title?: string;
+    field?: string;
+    old?: any;
+    new?: any;
+    from?: string;
+    to?: string;
+  };
   created_at: string;
-  created_by?: string;
-  creator?: Profile;
+  user?: Profile;
 }
 
 export interface KanbanItem {
@@ -130,7 +138,7 @@ export interface KanbanItem {
   property_address?: string;
   property_beds_baths_sqft?: string;
   mtr_approved?: boolean;
-  notes?: KanbanItemNote[];
+  activity?: KanbanItemActivity[];
 }
 
 export interface KanbanColumn {
