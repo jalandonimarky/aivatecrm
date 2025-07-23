@@ -26,12 +26,13 @@ export function Kanban() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    reorderKanbanItemsInColumn, // Renamed
-    moveKanbanItem, // New function
+    createKanbanItemNote,
+    reorderKanbanItemsInColumn,
+    moveKanbanItem,
     reorderKanbanColumns,
-    profiles, // Destructure profiles
-    getFullName, // Destructure getFullName
-    refetch, // To re-fetch data after changes
+    profiles,
+    getFullName,
+    refetch,
   } = useCRMData();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -115,7 +116,7 @@ export function Kanban() {
     setIsItemFormDialogOpen(true);
   };
 
-  const handleCreateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => {
+  const handleCreateItem = async (data: any) => {
     await createKanbanItem(data);
   };
 
@@ -125,7 +126,7 @@ export function Kanban() {
     setIsItemFormDialogOpen(true);
   };
 
-  const handleUpdateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => {
+  const handleUpdateItem = async (data: any) => {
     if (editingItem) {
       await updateKanbanItem(editingItem.id, data);
     }
@@ -190,8 +191,9 @@ export function Kanban() {
             onAddItem={handleAddItemClick}
             onEditItem={handleEditItemClick}
             onDeleteItem={handleDeleteItem}
-            onReorderItemsInColumn={handleReorderItems} // Pass renamed function
-            onMoveItem={handleMoveItem} // Pass new function
+            onCreateItemNote={createKanbanItemNote}
+            onReorderItemsInColumn={handleReorderItems}
+            onMoveItem={handleMoveItem}
             onReorderColumns={handleReorderColumns}
           />
         </div>
@@ -217,8 +219,8 @@ export function Kanban() {
             columnId={currentColumnIdForItem}
             onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
             nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
-            profiles={profiles} // Pass profiles
-            getFullName={getFullName} // Pass getFullName
+            profiles={profiles}
+            getFullName={getFullName}
           />
         )}
       </div>

@@ -10,6 +10,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { KanbanItem, Profile } from "@/types/crm";
 
 interface KanbanItemFormDialogProps {
@@ -17,10 +19,10 @@ interface KanbanItemFormDialogProps {
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
   columnId: string;
-  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string, event_time?: string }) => Promise<void>;
+  onSubmit: (data: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'notes'>) => Promise<void>;
   nextOrderIndex: number;
-  profiles: Profile[]; // Pass profiles for assigned_to dropdown
-  getFullName: (profile: Profile) => string; // Pass getFullName helper
+  profiles: Profile[];
+  getFullName: (profile: Profile) => string;
 }
 
 export function KanbanItemFormDialog({
@@ -33,71 +35,52 @@ export function KanbanItemFormDialog({
   profiles,
   getFullName,
 }: KanbanItemFormDialogProps) {
-  const [itemTitle, setItemTitle] = useState("");
-  const [itemDescription, setItemDescription] = useState("");
-  const [itemCategory, setItemCategory] = useState<string | undefined>(undefined);
-  const [customCategory, setCustomCategory] = useState("");
-  const [itemPriorityLevel, setItemPriorityLevel] = useState<KanbanItem['priority_level'] | undefined>(undefined);
-  const [itemAssignedTo, setItemAssignedTo] = useState<string | undefined>(undefined);
-  const [itemDueDate, setItemDueDate] = useState<Date | undefined>(undefined);
-  const [itemEventTime, setItemEventTime] = useState<string | undefined>(undefined);
+  const [formData, setFormData] = useState<Partial<KanbanItem>>({});
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const itemCategories: { value: string, label: string }[] = [
-    { value: "design", label: "Design" },
-    { value: "development", label: "Development" },
-    { value: "marketing", label: "Marketing" },
-    { value: "business", label: "Business" },
-    { value: "other", label: "Other" },
-  ];
-
-  const priorityLevels: { value: KanbanItem['priority_level'], label: string }[] = [
-    { value: "p0", label: "P0 - Urgent" },
-    { value: "p1", label: "P1 - High" },
-    { value: "p2", label: "P2 - Medium" },
-    { value: "p3", label: "P3 - Low" },
-  ];
-
   useEffect(() => {
     if (isOpen) {
-      setItemTitle(initialData?.title || "");
-      setItemDescription(initialData?.description || "");
-      setItemPriorityLevel(initialData?.priority_level || undefined);
-      setItemAssignedTo(initialData?.assigned_to || "unassigned");
-      setItemDueDate(initialData?.due_date ? new Date(initialData.due_date) : undefined);
-      setItemEventTime(initialData?.event_time || undefined);
+      setFormData({
+        title: initialData?.title || "",
+        description: initialData?.description || "",
+        lead_type: initialData?.lead_type || undefined,
+        client_type: initialData?.client_type || undefined,
+        status: initialData?.status || 'New',
+        property_match: initialData?.property_match || "",
+        property_criteria: initialData?.property_criteria || "",
+        client_contact_info: initialData?.client_contact_info || "",
+        family_makeup: initialData?.family_makeup || "",
+        pets_info: initialData?.pets_info || "",
+        beds_baths_needed: initialData?.beds_baths_needed || "",
+        preferred_location: initialData?.preferred_location || "",
+        move_in_date: initialData?.move_in_date ? new Date(initialData.move_in_date).toISOString() : undefined,
+        housing_partner_contact_info: initialData?.housing_partner_contact_info || "",
+        property_address: initialData?.property_address || "",
+        property_beds_baths_sqft: initialData?.property_beds_baths_sqft || "",
+        mtr_approved: initialData?.mtr_approved || false,
+        assigned_to: initialData?.assigned_to || "unassigned",
+      });
       setLoading(false);
-
-      const predefinedCategories = itemCategories.map(c => c.value);
-      if (initialData?.category && !predefinedCategories.includes(initialData.category)) {
-        setItemCategory("other");
-        setCustomCategory(initialData.category);
-      } else {
-        setItemCategory(initialData?.category || undefined);
-        setCustomCategory("");
-      }
     }
   }, [isOpen, initialData]);
 
+  const handleValueChange = (key: keyof KanbanItem, value: any) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!itemTitle.trim()) return;
+    if (!formData.title?.trim()) return;
     setLoading(true);
     try {
-      const finalCategory = itemCategory === 'other' ? customCategory : itemCategory;
-
-      await onSubmit({
-        title: itemTitle,
-        description: itemDescription,
+      const dataToSubmit = {
+        ...formData,
         column_id: columnId,
         order_index: initialData ? initialData.order_index : nextOrderIndex,
-        category: finalCategory,
-        priority_level: itemPriorityLevel,
-        assigned_to: itemAssignedTo === "unassigned" ? undefined : itemAssignedTo,
-        due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
-        event_time: itemEventTime || undefined,
-      });
+      } as Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'notes'>;
+      
+      await onSubmit(dataToSubmit);
       onOpenChange(false);
     } finally {
       setLoading(false);
@@ -106,147 +89,146 @@ export function KanbanItemFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Item" : "Add New Item"}</DialogTitle>
+          <DialogTitle>{initialData ? "Edit Lead" : "Create New Lead"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="item-title">Title *</Label>
-            <Input
-              id="item-title"
-              value={itemTitle}
-              onChange={(e) => setItemTitle(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="item-description">Description</Label>
-            <Textarea
-              id="item-description"
-              value={itemDescription}
-              onChange={(e) => setItemDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <ScrollArea className="h-[70vh] pr-6">
+            <div className="space-y-4 py-4">
+              {/* Main Details */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
+                <Input id="title" value={formData.title || ""} onChange={(e) => handleValueChange('title', e.target.value)} required />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Lead Type</Label>
+                  <Select value={formData.lead_type} onValueChange={(v) => handleValueChange('lead_type', v)}>
+                    <SelectTrigger><SelectValue placeholder="Select lead type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Tenant Lead Contact">Tenant Lead Contact</SelectItem>
+                      <SelectItem value="Property Lead Contact">Property Lead Contact</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Client Type</Label>
+                  <Select value={formData.client_type} onValueChange={(v) => handleValueChange('client_type', v)}>
+                    <SelectTrigger><SelectValue placeholder="Select client type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="insurance">Insurance</SelectItem>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                      <SelectItem value="individual">Individual</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={formData.status} onValueChange={(v) => handleValueChange('status', v)}>
+                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="New">New</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Closed">Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Assigned To</Label>
+                <Select value={formData.assigned_to} onValueChange={(v) => handleValueChange('assigned_to', v)}>
+                  <SelectTrigger><SelectValue placeholder="Select a user" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">None</SelectItem>
+                    {profiles.map(p => <SelectItem key={p.id} value={p.id}>{getFullName(p)}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea value={formData.description || ""} onChange={(e) => handleValueChange('description', e.target.value)} rows={2} />
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="item-priority">Priority Level</Label>
-              <Select
-                value={itemPriorityLevel || "none"}
-                onValueChange={(value) => setItemPriorityLevel(value === "none" ? undefined : value as KanbanItem['priority_level'])}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {priorityLevels.map(p => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="item-category">Category</Label>
-              <Select
-                value={itemCategory || "none"}
-                onValueChange={(value) => setItemCategory(value === "none" ? undefined : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {itemCategories.map(cat => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+              <Separator className="my-4" />
 
-          {itemCategory === 'other' && (
-            <div className="space-y-2">
-              <Label htmlFor="custom-category">Custom Category</Label>
-              <Input
-                id="custom-category"
-                value={customCategory}
-                onChange={(e) => setCustomCategory(e.target.value)}
-                placeholder="Enter custom category name"
-              />
-            </div>
-          )}
+              {/* Tenant Leads Info */}
+              <h3 className="text-lg font-semibold">Tenant Lead Info</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Client Contact Info (US Phone)</Label>
+                  <Input value={formData.client_contact_info || ""} onChange={(e) => handleValueChange('client_contact_info', e.target.value)} placeholder="(555) 555-5555" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Move-in Date</Label>
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.move_in_date && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.move_in_date ? format(new Date(formData.move_in_date), "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={formData.move_in_date ? new Date(formData.move_in_date) : undefined} onSelect={(d) => { handleValueChange('move_in_date', d); setIsCalendarOpen(false); }} initialFocus /></PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label>Family Make-up</Label>
+                  <Input value={formData.family_makeup || ""} onChange={(e) => handleValueChange('family_makeup', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Pets (if any)</Label>
+                  <Input value={formData.pets_info || ""} onChange={(e) => handleValueChange('pets_info', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Beds/Baths Needed</Label>
+                  <Input value={formData.beds_baths_needed || ""} onChange={(e) => handleValueChange('beds_baths_needed', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Area/Location Preferred</Label>
+                  <Input value={formData.preferred_location || ""} onChange={(e) => handleValueChange('preferred_location', e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Property Criteria</Label>
+                <Textarea value={formData.property_criteria || ""} onChange={(e) => handleValueChange('property_criteria', e.target.value)} rows={3} />
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="item-assigned-to">Assigned To</Label>
-              <Select
-                value={itemAssignedTo || "unassigned"}
-                onValueChange={(value) => setItemAssignedTo(value === "unassigned" ? undefined : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a user" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">None</SelectItem>
-                  {profiles.map(profile => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {getFullName(profile)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="item-due-date">Due Date</Label>
-              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !itemDueDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {itemDueDate ? format(itemDueDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={itemDueDate}
-                    onSelect={(date) => {
-                      setItemDueDate(date || undefined);
-                      setIsCalendarOpen(false);
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
+              <Separator className="my-4" />
 
-          <div className="space-y-2">
-            <Label htmlFor="item-event-time">Time</Label>
-            <Input
-              id="item-event-time"
-              type="time"
-              value={itemEventTime || ""}
-              onChange={(e) => setItemEventTime(e.target.value)}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
-              Cancel
-            </Button>
+              {/* Housing Leads Info */}
+              <h3 className="text-lg font-semibold">Housing Lead Info</h3>
+              <div className="space-y-2">
+                <Label>Housing Partner Contact Info</Label>
+                <Input value={formData.housing_partner_contact_info || ""} onChange={(e) => handleValueChange('housing_partner_contact_info', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Property Address</Label>
+                <Input value={formData.property_address || ""} onChange={(e) => handleValueChange('property_address', e.target.value)} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Beds/Baths & Sq Ft</Label>
+                  <Input value={formData.property_beds_baths_sqft || ""} onChange={(e) => handleValueChange('property_beds_baths_sqft', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>MTR Approved</Label>
+                  <Select value={formData.mtr_approved ? "yes" : "no"} onValueChange={(v) => handleValueChange('mtr_approved', v === 'yes')}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">Yes</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Property Match</Label>
+                <Textarea value={formData.property_match || ""} onChange={(e) => handleValueChange('property_match', e.target.value)} rows={3} />
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="pt-4">
+            <Button variant="outline" onClick={() => onOpenChange(false)} type="button">Cancel</Button>
             <Button type="submit" className="bg-gradient-primary active:scale-95" disabled={loading}>
               {loading ? (initialData ? "Saving..." : "Creating...") : (initialData ? "Save Changes" : "Add Item")}
             </Button>

@@ -4,7 +4,7 @@ import { KanbanColumn } from "./KanbanColumn";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { KanbanBoard as KanbanBoardType, KanbanColumn as KanbanColumnType, KanbanItem as KanbanItemType } from "@/types/crm";
+import type { KanbanBoard as KanbanBoardType, KanbanColumn as KanbanColumnType, KanbanItem as KanbanItemType, KanbanItemNote } from "@/types/crm";
 
 interface KanbanBoardViewProps {
   board: KanbanBoardType;
@@ -14,8 +14,9 @@ interface KanbanBoardViewProps {
   onAddItem: (columnId: string) => void;
   onEditItem: (item: KanbanItemType) => void;
   onDeleteItem: (itemId: string) => void;
-  onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>; // Renamed
-  onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>; // New prop
+  onCreateItemNote: (itemId: string, content: string) => Promise<KanbanItemNote>;
+  onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>;
+  onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>;
   onReorderColumns: (boardId: string, columnIds: string[]) => Promise<void>;
 }
 
@@ -27,8 +28,9 @@ export function KanbanBoardView({
   onAddItem,
   onEditItem,
   onDeleteItem,
-  onReorderItemsInColumn, // Renamed
-  onMoveItem, // New prop
+  onCreateItemNote,
+  onReorderItemsInColumn,
+  onMoveItem,
   onReorderColumns,
 }: KanbanBoardViewProps) {
   const { toast } = useToast();
@@ -77,7 +79,7 @@ export function KanbanBoardView({
         newItems.splice(destination.index, 0, reorderedItem);
         
         const newItemIds = newItems.map(item => item.id);
-        await onReorderItemsInColumn(startColumn.id, newItemIds); // Use renamed function
+        await onReorderItemsInColumn(startColumn.id, newItemIds);
       } else {
         // Moving between different columns
         await onMoveItem(
@@ -116,6 +118,7 @@ export function KanbanBoardView({
                       onDeleteColumn={onDeleteColumn}
                       onEditItem={onEditItem}
                       onDeleteItem={onDeleteItem}
+                      onCreateItemNote={onCreateItemNote}
                     />
                   </div>
                 )}

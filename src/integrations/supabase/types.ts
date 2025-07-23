@@ -279,38 +279,77 @@ export type Database = {
       kanban_items: {
         Row: {
           assigned_to: string | null
-          category: string | null
+          beds_baths_needed: string | null
+          client_contact_info: string | null
+          client_type: string | null
           column_id: string
           created_at: string
           created_by: string | null
           description: string | null
-          due_date: string | null
+          family_makeup: string | null
+          housing_partner_contact_info: string | null
           id: string
+          lead_type: string | null
+          move_in_date: string | null
+          mtr_approved: boolean | null
           order_index: number
+          pets_info: string | null
+          preferred_location: string | null
+          property_address: string | null
+          property_beds_baths_sqft: string | null
+          property_criteria: string | null
+          property_match: string | null
+          status: string | null
           title: string
         }
         Insert: {
           assigned_to?: string | null
-          category?: string | null
+          beds_baths_needed?: string | null
+          client_contact_info?: string | null
+          client_type?: string | null
           column_id: string
           created_at?: string
           created_by?: string | null
           description?: string | null
-          due_date?: string | null
+          family_makeup?: string | null
+          housing_partner_contact_info?: string | null
           id?: string
+          lead_type?: string | null
+          move_in_date?: string | null
+          mtr_approved?: boolean | null
           order_index: number
+          pets_info?: string | null
+          preferred_location?: string | null
+          property_address?: string | null
+          property_beds_baths_sqft?: string | null
+          property_criteria?: string | null
+          property_match?: string | null
+          status?: string | null
           title: string
         }
         Update: {
           assigned_to?: string | null
-          category?: string | null
+          beds_baths_needed?: string | null
+          client_contact_info?: string | null
+          client_type?: string | null
           column_id?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
-          due_date?: string | null
+          family_makeup?: string | null
+          housing_partner_contact_info?: string | null
           id?: string
+          lead_type?: string | null
+          move_in_date?: string | null
+          mtr_approved?: boolean | null
           order_index?: number
+          pets_info?: string | null
+          preferred_location?: string | null
+          property_address?: string | null
+          property_beds_baths_sqft?: string | null
+          property_criteria?: string | null
+          property_match?: string | null
+          status?: string | null
           title?: string
         }
         Relationships: [
@@ -330,6 +369,45 @@ export type Database = {
           },
           {
             foreignKeyName: "kanban_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_item_notes: {
+        Row: {
+          id: string
+          item_id: string
+          content: string
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          content: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          content?: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_item_notes_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_item_notes_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"

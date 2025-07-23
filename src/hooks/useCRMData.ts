@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemNote } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -72,7 +72,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for KanbanItem upsert
   const getKanbanItemDbPayload = (item: KanbanItem) => {
-    const { creator, assigned_user, ...dbPayload } = item;
+    const { creator, assigned_user, notes, ...dbPayload } = item;
     return dbPayload;
   };
 
@@ -163,7 +163,11 @@ export function useCRMData() {
             items:kanban_items(
               *,
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+              notes:kanban_item_notes(
+                *,
+                creator:profiles(id, first_name, last_name, email)
+              )
             )
           )
         `)
@@ -1106,21 +1110,22 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'notes'>) => {
     try {
-      const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
+      const creatorProfileId = await getOrCreateUserProfileId();
       const { data, error } = await supabase
         .from("kanban_items")
         .insert([{ 
           ...itemData, 
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
-          due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
+          move_in_date: itemData.move_in_date ? format(new Date(itemData.move_in_date), "yyyy-MM-dd") : null,
         }])
         .select(`
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:kanban_item_notes(*, creator:profiles(id, first_name, last_name, email))
         `)
         .single();
 
@@ -1135,17 +1140,12 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'notes'>>) => {
     try {
-      // The form sends all fields, so we can safely convert undefined/empty to null for nullable fields.
       const dataToUpdate = {
         ...updates,
-        description: updates.description || null,
-        category: updates.category || null,
-        priority_level: updates.priority_level || null,
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
-        due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
-        event_time: updates.event_time || null,
+        move_in_date: updates.move_in_date ? format(new Date(updates.move_in_date), "yyyy-MM-dd") : null,
       };
 
       const { data, error } = await supabase
@@ -1155,7 +1155,8 @@ export function useCRMData() {
         .select(`
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          notes:kanban_item_notes(*, creator:profiles(id, first_name, last_name, email))
         `)
         .single();
 
@@ -1183,6 +1184,25 @@ export function useCRMData() {
     } catch (error: any) {
       console.error("Error deleting Kanban item:", error);
       toast({ title: "Error deleting item", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // CRUD for Kanban Item Notes
+  const createKanbanItemNote = async (itemId: string, content: string) => {
+    try {
+      const creatorProfileId = await getOrCreateUserProfileId();
+      const { data, error } = await supabase
+        .from("kanban_item_notes")
+        .insert([{ item_id: itemId, content, created_by: creatorProfileId }])
+        .select("*, creator:profiles(id, first_name, last_name, email)")
+        .single();
+      if (error) throw error;
+      toast({ title: "Comment added" });
+      await fetchData();
+      return data as any as KanbanItemNote;
+    } catch (error: any) {
+      toast({ title: "Error adding comment", description: error.message, variant: "destructive" });
       throw error;
     }
   };
@@ -1415,6 +1435,7 @@ export function useCRMData() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
+    createKanbanItemNote,
     reorderKanbanItemsInColumn, // Renamed
     moveKanbanItem, // New function
     reorderKanbanColumns,

@@ -93,6 +93,15 @@ export interface Task {
   notes?: TaskNote[]; // Added notes array for tasks
 }
 
+export interface KanbanItemNote {
+  id: string;
+  item_id: string;
+  content: string;
+  created_at: string;
+  created_by?: string;
+  creator?: Profile;
+}
+
 export interface KanbanItem {
   id: string;
   column_id: string;
@@ -101,13 +110,27 @@ export interface KanbanItem {
   order_index: number;
   created_by?: string;
   created_at: string;
-  creator?: Profile; // To store the profile of the item creator
-  category?: string; // Changed to string to allow custom categories
-  priority_level?: 'p0' | 'p1' | 'p2' | 'p3'; // New: Priority level
-  assigned_to?: string; // New: Assigned user ID
-  assigned_user?: Profile; // New: Assigned user profile
-  due_date?: string; // New: Due date for the item
-  event_time?: string | null;
+  creator?: Profile;
+  assigned_to?: string;
+  assigned_user?: Profile;
+  
+  // New and updated fields
+  lead_type?: 'Tenant Lead Contact' | 'Property Lead Contact';
+  client_type?: 'insurance' | 'corporate' | 'individual';
+  status?: 'New' | 'In Progress' | 'Closed';
+  property_match?: string;
+  property_criteria?: string;
+  client_contact_info?: string;
+  family_makeup?: string;
+  pets_info?: string;
+  beds_baths_needed?: string;
+  preferred_location?: string;
+  move_in_date?: string;
+  housing_partner_contact_info?: string;
+  property_address?: string;
+  property_beds_baths_sqft?: string;
+  mtr_approved?: boolean;
+  notes?: KanbanItemNote[];
 }
 
 export interface KanbanColumn {

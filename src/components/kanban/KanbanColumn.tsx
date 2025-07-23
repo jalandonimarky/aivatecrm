@@ -6,7 +6,7 @@ import { Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/lib/utils";
-import type { KanbanColumn as KanbanColumnType, KanbanItem as KanbanItemType } from "@/types/crm";
+import type { KanbanColumn as KanbanColumnType, KanbanItem as KanbanItemType, KanbanItemNote } from "@/types/crm";
 
 interface KanbanColumnProps {
   column: KanbanColumnType;
@@ -15,6 +15,7 @@ interface KanbanColumnProps {
   onDeleteColumn: (columnId: string) => void;
   onEditItem: (item: KanbanItemType) => void;
   onDeleteItem: (itemId: string) => void;
+  onCreateItemNote: (itemId: string, content: string) => Promise<KanbanItemNote>;
 }
 
 export function KanbanColumn({
@@ -24,6 +25,7 @@ export function KanbanColumn({
   onDeleteColumn,
   onEditItem,
   onDeleteItem,
+  onCreateItemNote,
 }: KanbanColumnProps) {
   const sortedItems = [...(column.items || [])].sort((a, b) => a.order_index - b.order_index);
 
@@ -81,6 +83,7 @@ export function KanbanColumn({
                   index={index}
                   onEdit={onEditItem}
                   onDelete={onDeleteItem}
+                  onCreateNote={onCreateItemNote}
                 />
               ))}
               {provided.placeholder}
