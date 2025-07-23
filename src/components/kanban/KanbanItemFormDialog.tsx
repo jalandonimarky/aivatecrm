@@ -20,7 +20,7 @@ interface KanbanItemFormDialogProps {
   initialData?: KanbanItem | null;
   columnId: string;
   boardProjectType: KanbanBoard['project_type']; // New prop
-  onSubmit: (data: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity'>) => Promise<void>;
+  onSubmit: (data: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity' | 'notes'>) => Promise<void>;
   nextOrderIndex: number;
   profiles: Profile[];
   getFullName: (profile: Profile) => string;
@@ -58,6 +58,8 @@ type KanbanItemFormState = {
   email_address: string | null;
   phone_number: string | null;
   category: string | null;
+  color_hex: string | null; // New field
+  due_date: Date | undefined; // New field
 };
 
 // Initial state for the form
@@ -91,6 +93,8 @@ const initialFormState: KanbanItemFormState = {
   email_address: null,
   phone_number: null,
   category: null,
+  color_hex: null,
+  due_date: undefined,
 };
 
 export function KanbanItemFormDialog({
@@ -109,8 +113,20 @@ export function KanbanItemFormDialog({
   const [loading, setLoading] = useState(false);
 
   const budsBonfireStatuses: KanbanItem['status'][] = ['New', 'In Progress', 'Closed'];
-  const aivateStatuses: KanbanItem['status'][] = ['New', 'In Progress', 'Completed', 'On Hold', 'Cancelled'];
+  const aivateStatuses: KanbanItem['status'][] = ['New', 'In Progress', 'Closed']; // Updated for AiVate
   const aivateCategories: string[] = ['Website', 'Mobile App', 'CRM', 'Other'];
+  const colorOptions = [
+    { name: "Red", hex: "#EF4444" }, // Tailwind red-500
+    { name: "Blue", hex: "#3B82F6" }, // Tailwind blue-500
+    { name: "Green", hex: "#22C55E" }, // Tailwind green-500
+    { name: "Yellow", hex: "#EAB308" }, // Tailwind yellow-500
+    { name: "Purple", hex: "#A855F7" }, // Tailwind purple-500
+    { name: "Pink", hex: "#EC4899" }, // Tailwind pink-500
+    { name: "Indigo", hex: "#6366F1" }, // Tailwind indigo-500
+    { name: "Teal", hex: "#14B8A6" }, // Tailwind teal-500
+    { name: "Orange", hex: "#F97316" }, // Tailwind orange-500
+    { name: "Gray", hex: "#6B7280" }, // Tailwind gray-500
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -144,6 +160,8 @@ export function KanbanItemFormDialog({
         email_address: initialData?.email_address || null,
         phone_number: initialData?.phone_number || null,
         category: initialData?.category || null,
+        color_hex: initialData?.color_hex || null, // Initialize new field
+        due_date: initialData?.due_date ? parseISO(initialData.due_date) : undefined, // Initialize new field
       });
       setLoading(false);
     } else {
@@ -162,7 +180,7 @@ export function KanbanItemFormDialog({
     setLoading(true);
     try {
       // Prepare data for submission, converting Date to string | null and undefined to null
-      const dataToSubmit: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity'> = {
+      const dataToSubmit: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity' | 'notes'> = {
         column_id: columnId, // Required
         order_index: initialData ? initialData.order_index : nextOrderIndex, // Required
         title: formData.title, // Required
@@ -196,6 +214,8 @@ export function KanbanItemFormDialog({
         email_address: boardProjectType === 'AiVate' ? (formData.email_address || null) : null,
         phone_number: boardProjectType === 'AiVate' ? (formData.phone_number || null) : null,
         category: boardProjectType === 'AiVate' ? (formData.category || null) : null,
+        color_hex: boardProjectType === 'AiVate' ? (formData.color_hex || null) : null, // New field
+        due_date: boardProjectType === 'AiVate' ? (formData.due_date ? format(formData.due_date, "yyyy-MM-dd") : null) : null, // New field
       };
       
       await onSubmit(dataToSubmit);
@@ -402,17 +422,53 @@ export function KanbanItemFormDialog({
                       <Input type="tel" id="phone_number" value={formData.phone_number || ""} onChange={(e) => handleValueChange('phone_number', e.target.value)} placeholder="(555) 555-5555" />
                     </div>
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select value={formData.category || "null"} onValueChange={(v) => handleValueChange('category', v === "null" ? null : v)}>
+                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="null">None</SelectItem>
+                          {aivateCategories.map(category => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="color_hex">Color</Label>
+                      <Select value={formData.color_hex || "null"} onValueChange={(v) => handleValueChange('color_hex', v === "null" ? null : v)}>
+                        <SelectTrigger className="flex items-center">
+                          {formData.color_hex && (
+                            <span className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: formData.color_hex }}></span>
+                          )}
+                          <SelectValue placeholder="Select a color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="null">None</SelectItem>
+                          {colorOptions.map(color => (
+                            <SelectItem key={color.hex} value={color.hex}>
+                              <div className="flex items-center">
+                                <span className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: color.hex }}></span>
+                                {color.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select value={formData.category || "null"} onValueChange={(v) => handleValueChange('category', v === "null" ? null : v)}>
-                      <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="null">None</SelectItem>
-                        {aivateCategories.map(category => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="due_date">Due Date</Label>
+                    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal focus-visible:ring-0 focus-visible:ring-offset-0", !formData.due_date && "text-muted-foreground")}>
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.due_date ? format(formData.due_date, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={formData.due_date} onSelect={(d) => { handleValueChange('due_date', d || undefined); setIsCalendarOpen(false); }} initialFocus /></PopoverContent>
+                    </Popover>
                   </div>
                 </>
               )}

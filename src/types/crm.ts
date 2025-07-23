@@ -43,6 +43,16 @@ export interface TaskNote { // New interface for task notes
   creator?: Profile; // To store the profile of the note creator
 }
 
+export interface KanbanItemNote { // New interface for Kanban item notes
+  id: string;
+  item_id: string;
+  note_type: 'business' | 'development';
+  content: string;
+  created_at: string;
+  created_by?: string;
+  creator?: Profile;
+}
+
 export interface DealAttachment { // New interface for deal attachments
   id: string;
   deal_id: string;
@@ -128,8 +138,8 @@ export interface KanbanItem {
   status?: 'New' | 'In Progress' | 'Closed' | 'Completed' | 'On Hold' | 'Cancelled' | null; // Union of all possible statuses
   property_match?: string | null;
   property_criteria?: string | null;
-  full_name?: string | null; // Tenant Lead: Full Name
-  client_contact_info?: string | null; // Tenant Lead: Phone Number
+  full_name?: string | null;
+  client_contact_info?: string | null;
   family_makeup?: string | null;
   pets_info?: number | null; // Changed to number | null
   num_bedrooms?: number | null; // New field
@@ -147,7 +157,11 @@ export interface KanbanItem {
   email_address?: string | null; // Used by both, but defined here for clarity of origin
   phone_number?: string | null; // Used by both, but defined here for clarity of origin
   category?: string | null; // e.g., 'Website', 'Mobile App', 'CRM', 'Other'
+  color_hex?: string | null; // New field for color picker
+  due_date?: string | null; // New field for due date
+
   activity?: KanbanItemActivity[]; // Added activity property
+  notes?: KanbanItemNote[]; // Added notes array for Kanban items
 }
 
 export interface KanbanColumn {

@@ -37,9 +37,7 @@ export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: 
       switch (status) {
         case 'New': return "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30";
         case 'In Progress': return "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30";
-        case 'Completed': return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30";
-        case 'On Hold': return "bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30";
-        case 'Cancelled': return "bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30";
+        case 'Closed': return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30"; // Changed for AiVate
         default: return "bg-muted text-muted-foreground";
       }
     } else { // Buds & Bonfire or Other
@@ -92,6 +90,13 @@ export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: 
               {boardProjectType === 'Buds & Bonfire' && item.lead_type && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.lead_type}</Badge>}
               {boardProjectType === 'Buds & Bonfire' && item.client_type && <Badge variant="outline" className="text-xs px-2 py-0.5">{item.client_type}</Badge>}
               {boardProjectType === 'AiVate' && item.category && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.category}</Badge>}
+              {boardProjectType === 'AiVate' && item.color_hex && (
+                <span 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: item.color_hex }} 
+                  title="Project Color"
+                ></span>
+              )}
             </div>
 
             <div className="flex items-center justify-between mt-3">

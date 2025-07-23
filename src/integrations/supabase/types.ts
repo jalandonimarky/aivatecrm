@@ -282,127 +282,6 @@ export type Database = {
           },
         ]
       }
-      kanban_items: {
-        Row: {
-          assigned_to: string | null
-          client_contact_info: string | null
-          client_type: string | null
-          column_id: string
-          created_at: string
-          created_by: string | null
-          description: string | null
-          email_address: string | null
-          family_makeup: string | null
-          full_name: string | null
-          housing_partner_email: string | null
-          housing_partner_full_name: string | null
-          housing_partner_phone: string | null
-          id: string
-          lead_type: string | null
-          move_in_date: string | null
-          mtr_approved: boolean | null
-          num_bathrooms: number | null
-          num_bedrooms: number | null
-          order_index: number
-          pets_info: number | null
-          preferred_location: string | null
-          property_address: string | null
-          property_beds_baths_sqft: string | null
-          property_criteria: string | null
-          property_match: string | null
-          status: string | null
-          title: string
-          category: string | null
-          phone_number: string | null
-        }
-        Insert: {
-          assigned_to?: string | null
-          client_contact_info?: string | null
-          client_type?: string | null
-          column_id: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          email_address?: string | null
-          family_makeup?: string | null
-          full_name?: string | null
-          housing_partner_email?: string | null
-          housing_partner_full_name?: string | null
-          housing_partner_phone?: string | null
-          id?: string
-          lead_type?: string | null
-          move_in_date?: string | null
-          mtr_approved?: boolean | null
-          num_bathrooms?: number | null
-          num_bedrooms?: number | null
-          order_index: number
-          pets_info?: number | null
-          preferred_location?: string | null
-          property_address?: string | null
-          property_beds_baths_sqft?: string | null
-          property_criteria?: string | null
-          property_match?: string | null
-          status?: string | null
-          title: string
-          category?: string | null
-          phone_number?: string | null
-        }
-        Update: {
-          assigned_to?: string | null
-          client_contact_info?: string | null
-          client_type?: string | null
-          column_id?: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          email_address?: string | null
-          family_makeup?: string | null
-          full_name?: string | null
-          housing_partner_email?: string | null
-          housing_partner_full_name?: string | null
-          housing_partner_phone?: string | null
-          id?: string
-          lead_type?: string | null
-          move_in_date?: string | null
-          mtr_approved?: boolean | null
-          num_bathrooms?: number | null
-          num_bedrooms?: number | null
-          order_index?: number
-          pets_info?: number | null
-          preferred_location?: string | null
-          property_address?: string | null
-          property_beds_baths_sqft?: string | null
-          property_criteria?: string | null
-          property_match?: string | null
-          status?: string | null
-          title?: string
-          category?: string | null
-          phone_number?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kanban_items_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_items_column_id_fkey"
-            columns: ["column_id"]
-            isOneToOne: false
-            referencedRelation: "kanban_columns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_items_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       kanban_item_activity: {
         Row: {
           activity_type: string
@@ -439,6 +318,175 @@ export type Database = {
           {
             foreignKeyName: "kanban_item_activity_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_item_notes: {
+        Row: {
+          id: string
+          item_id: string
+          note_type: string
+          content: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          note_type: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          note_type?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_item_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_item_notes_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_items: {
+        Row: {
+          assigned_to: string | null
+          client_contact_info: string | null
+          client_type: string | null
+          column_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          email_address: string | null
+          family_makeup: string | null
+          full_name: string | null
+          housing_partner_email: string | null
+          housing_partner_full_name: string | null
+          housing_partner_phone: string | null
+          id: string
+          lead_type: string | null
+          move_in_date: string | null
+          mtr_approved: boolean | null
+          num_bathrooms: number | null
+          num_bedrooms: number | null
+          order_index: number
+          pets_info: number | null
+          preferred_location: string | null
+          property_address: string | null
+          property_beds_baths_sqft: string | null
+          property_criteria: string | null
+          property_match: string | null
+          status: string | null
+          title: string
+          category: string | null
+          phone_number: string | null
+          color_hex: string | null
+          due_date: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          client_contact_info?: string | null
+          client_type?: string | null
+          column_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          email_address?: string | null
+          family_makeup?: string | null
+          full_name?: string | null
+          housing_partner_email?: string | null
+          housing_partner_full_name?: string | null
+          housing_partner_phone?: string | null
+          id?: string
+          lead_type?: string | null
+          move_in_date?: string | null
+          mtr_approved?: boolean | null
+          num_bathrooms?: number | null
+          num_bedrooms?: number | null
+          order_index: number
+          pets_info?: number | null
+          preferred_location?: string | null
+          property_address?: string | null
+          property_beds_baths_sqft?: string | null
+          property_criteria?: string | null
+          property_match?: string | null
+          status?: string | null
+          title: string
+          category?: string | null
+          phone_number?: string | null
+          color_hex?: string | null
+          due_date?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          client_contact_info?: string | null
+          client_type?: string | null
+          column_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          email_address?: string | null
+          family_makeup?: string | null
+          full_name?: string | null
+          housing_partner_email?: string | null
+          housing_partner_full_name?: string | null
+          housing_partner_phone?: string | null
+          id?: string
+          lead_type?: string | null
+          move_in_date?: string | null
+          mtr_approved?: boolean | null
+          num_bathrooms?: number | null
+          num_bedrooms?: number | null
+          order_index?: number
+          pets_info?: number | null
+          preferred_location?: string | null
+          property_address?: string | null
+          property_beds_baths_sqft?: string | null
+          property_criteria?: string | null
+          property_match?: string | null
+          status?: string | null
+          title?: string
+          category?: string | null
+          phone_number?: string | null
+          color_hex?: string | null
+          due_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_items_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_items_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_columns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_items_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
