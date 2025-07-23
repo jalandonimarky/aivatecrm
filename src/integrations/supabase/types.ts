@@ -285,8 +285,10 @@ export type Database = {
           created_by: string | null
           description: string | null
           due_date: string | null
+          event_time: string | null
           id: string
           order_index: number
+          priority_level: string | null
           title: string
         }
         Insert: {
@@ -297,8 +299,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           due_date?: string | null
+          event_time?: string | null
           id?: string
           order_index: number
+          priority_level?: string | null
           title: string
         }
         Update: {
@@ -309,8 +313,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           due_date?: string | null
+          event_time?: string | null
           id?: string
           order_index?: number
+          priority_level?: string | null
           title?: string
         }
         Relationships: [
