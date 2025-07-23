@@ -8,7 +8,7 @@ import { AivateKanbanBoardView } from "@/components/aivate-kanban/AivateKanbanBo
 import { AivateKanbanBoardFormDialog } from "@/components/aivate-kanban/AivateKanbanBoardFormDialog";
 import { AivateKanbanColumnFormDialog } from "@/components/aivate-kanban/AivateKanbanColumnFormDialog";
 import { AivateKanbanItemFormDialog } from "@/components/aivate-kanban/AivateKanbanItemFormDialog";
-import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard"; // Reusing for board cards
+import { AivateKanbanBoardCard } from "@/components/aivate-kanban/AivateKanbanBoardCard"; // Import new AivateKanbanBoardCard
 import type { AivateKanbanBoard, AivateKanbanColumn, AivateKanbanItem } from "@/types/crm";
 
 export function AivateKanban() {
@@ -251,7 +251,7 @@ export function AivateKanban() {
           </p>
         ) : (
           aivateKanbanBoards.map(board => (
-            <KanbanBoardCard
+            <AivateKanbanBoardCard // Changed to AivateKanbanBoardCard
               key={board.id}
               board={board}
               onSelect={handleSelectBoard}
