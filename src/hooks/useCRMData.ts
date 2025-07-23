@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, Project, ProjectTask } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, Project, ProjectTask, ProjectSubtask, ProjectTaskComment } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -80,6 +80,12 @@ export function useCRMData() {
   // Helper to filter out non-column properties for KanbanColumn upsert
   const getKanbanColumnDbPayload = (column: KanbanColumn) => {
     const { items, ...dbPayload } = column; // Destructure 'items'
+    return dbPayload;
+  };
+
+  // Helper to filter out non-column properties for ProjectTask upsert
+  const getProjectTaskDbPayload = (task: ProjectTask) => {
+    const { assignee, subtasks, comments, dependencies, ...dbPayload } = task;
     return dbPayload;
   };
 
@@ -202,20 +208,23 @@ export function useCRMData() {
       setKanbanColumns(allColumns);
       setKanbanItems(allItems);
 
-      // Fetch Projects with nested tasks and assignees
+      // Fetch Projects with nested tasks, assignees, subtasks, and comments
       const { data: projectsData, error: projectsError } = await supabase
         .from("projects")
         .select(`
           *,
           tasks:project_tasks(
             *,
-            assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+            subtasks:project_subtasks(*),
+            comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
           )
         `)
         .order("created_at", { ascending: false });
 
       if (projectsError) throw projectsError;
-      setProjects((projectsData || []) as any as Project[]);
+      // Explicitly cast the result to Project[]
+      setProjects((projectsData || []) as Project[]);
 
 
       // Calculate stats
@@ -789,7 +798,7 @@ export function useCRMData() {
       const creatorProfileId = await getOrCreateUserProfileId();
 
       const { data, error } = await supabase
-        .from("task_notes" as any)
+        .from("task_notes" as any) // Cast to any due to Supabase types not including this table
         .insert([{ task_id: taskId, content, created_by: creatorProfileId }])
         .select(`
           *,
@@ -827,7 +836,7 @@ export function useCRMData() {
   const updateTaskNote = async (noteId: string, taskId: string, updates: Partial<Omit<TaskNote, 'id' | 'task_id' | 'created_at' | 'created_by' | 'creator'>>) => {
     try {
       const { data, error } = await supabase
-        .from("task_notes" as any)
+        .from("task_notes" as any) // Cast to any due to Supabase types not including this table
         .update(updates)
         .eq("id", noteId)
         .select(`
@@ -866,7 +875,7 @@ export function useCRMData() {
   const deleteTaskNote = async (noteId: string, taskId: string) => {
     try {
       const { error } = await supabase
-        .from("task_notes" as any)
+        .from("task_notes" as any) // Cast to any due to Supabase types not including this table
         .delete()
         .eq("id", noteId);
 
@@ -1263,7 +1272,7 @@ export function useCRMData() {
       // Optimistically update local state
       setKanbanBoards(prevBoards => {
         const newBoards = prevBoards.map(board => {
-          const newColumns = board.columns?.map(col => {
+          const newColumns = col => {
             if (col.id === sourceColumnId) {
               sourceItemsBeforeOptimisticUpdate = [...(col.items || [])].sort((a, b) => a.order_index - b.order_index);
               const newSourceItems = Array.from(sourceItemsBeforeOptimisticUpdate);
@@ -1287,8 +1296,8 @@ export function useCRMData() {
               return { ...col, items: updatedDestinationItems };
             }
             return col;
-          });
-          return { ...board, columns: newColumns };
+          };
+          return { ...board, columns: board.columns?.map(newColumns) };
         });
         return newBoards;
       });
@@ -1431,7 +1440,7 @@ export function useCRMData() {
   };
 
   // CRUD for Project Tasks
-  const createProjectTask = async (taskData: Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'order_index'>) => {
+  const createProjectTask = async (taskData: Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'order_index' | 'subtasks' | 'comments'>) => {
     try {
       const { data: existingTasks, error: fetchError } = await supabase
         .from('project_tasks')
@@ -1448,7 +1457,12 @@ export function useCRMData() {
       const { data, error } = await supabase
         .from("project_tasks")
         .insert([{ ...taskData, order_index: nextOrderIndex }])
-        .select('*')
+        .select(`
+          *,
+          assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          subtasks:project_subtasks(*),
+          comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+        `)
         .single();
 
       if (error) throw error;
@@ -1461,13 +1475,18 @@ export function useCRMData() {
     }
   };
 
-  const updateProjectTask = async (id: string, updates: Partial<Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee'>>) => {
+  const updateProjectTask = async (id: string, updates: Partial<Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'subtasks' | 'comments'>>) => {
     try {
       const { data, error } = await supabase
         .from("project_tasks")
         .update(updates)
         .eq("id", id)
-        .select('*')
+        .select(`
+          *,
+          assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          subtasks:project_subtasks(*),
+          comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+        `)
         .single();
 
       if (error) throw error;
@@ -1479,6 +1498,122 @@ export function useCRMData() {
       throw error;
     }
   };
+
+  // CRUD for Project Subtasks
+  const createProjectSubtask = async (subtaskData: Omit<ProjectSubtask, 'id' | 'created_at'>) => {
+    try {
+      const { data, error } = await supabase
+        .from("project_subtasks" as any) // Cast to any due to Supabase types not including this table
+        .insert([subtaskData])
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Subtask added" });
+      await fetchData();
+      return data as ProjectSubtask;
+    } catch (error: any) {
+      toast({ title: "Error adding subtask", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateProjectSubtask = async (id: string, updates: Partial<Omit<ProjectSubtask, 'id' | 'created_at'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("project_subtasks" as any) // Cast to any due to Supabase types not including this table
+        .update(updates)
+        .eq("id", id)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Subtask updated" });
+      await fetchData();
+      return data as ProjectSubtask;
+    } catch (error: any) {
+      toast({ title: "Error updating subtask", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteProjectSubtask = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("project_subtasks" as any) // Cast to any due to Supabase types not including this table
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ title: "Subtask deleted" });
+      await fetchData();
+    } catch (error: any) {
+      toast({ title: "Error deleting subtask", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // CRUD for Project Task Comments
+  const createProjectTaskComment = async (commentData: Omit<ProjectTaskComment, 'id' | 'created_at' | 'creator'>) => {
+    try {
+      const creatorProfileId = await getOrCreateUserProfileId();
+      const { data, error } = await supabase
+        .from("project_task_comments" as any) // Cast to any due to Supabase types not including this table
+        .insert([{ ...commentData, created_by: creatorProfileId }])
+        .select(`
+          *,
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Comment added" });
+      await fetchData(); // Re-fetch to update UI
+      return data as ProjectTaskComment;
+    } catch (error: any) {
+      toast({ title: "Error adding comment", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateProjectTaskComment = async (id: string, updates: Partial<Omit<ProjectTaskComment, 'id' | 'created_at' | 'created_by' | 'creator'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("project_task_comments" as any) // Cast to any due to Supabase types not including this table
+        .update(updates)
+        .eq("id", id)
+        .select(`
+          *,
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Comment updated" });
+      await fetchData(); // Re-fetch to update UI
+      return data as ProjectTaskComment;
+    } catch (error: any) {
+      toast({ title: "Error updating comment", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteProjectTaskComment = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("project_task_comments" as any) // Cast to any due to Supabase types not including this table
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ title: "Comment deleted" });
+      await fetchData(); // Re-fetch to update UI
+    } catch (error: any) {
+      toast({ title: "Error deleting comment", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
 
   // Reordering for Project Tasks
   const reorderProjectTasks = async (taskId: string, section: ProjectTask['section'], newIndex: number) => {
@@ -1493,12 +1628,12 @@ export function useCRMData() {
       const remainingTasks = tasksInSection.filter(t => t.id !== taskId);
       remainingTasks.splice(newIndex, 0, movedTask);
 
-      const updates = remainingTasks.map((task, index) => ({
-        id: task.id,
+      const updates = remainingTasks.map((task, index) => getProjectTaskDbPayload({
+        ...task,
         order_index: index,
       }));
 
-      const { error } = await supabase.from('project_tasks').upsert(updates);
+      const { error } = await supabase.from('project_tasks').upsert(updates as any[]); // Cast to any[]
       if (error) throw error;
 
       await fetchData();
@@ -1523,17 +1658,17 @@ export function useCRMData() {
 
       // Reorder source section
       const sourceTasks = updatedTaskList.filter(t => t.section === fromSection).sort((a, b) => a.order_index - b.order_index);
-      const sourceUpdates = sourceTasks.map((task, index) => ({ id: task.id, order_index: index }));
+      const sourceUpdates = sourceTasks.map((task, index) => getProjectTaskDbPayload({ ...task, order_index: index }));
       if (sourceUpdates.length > 0) {
-        const { error } = await supabase.from('project_tasks').upsert(sourceUpdates);
+        const { error } = await supabase.from('project_tasks').upsert(sourceUpdates as any[]); // Cast to any[]
         if (error) throw error;
       }
 
       // Reorder destination section
       const destTasks = updatedTaskList.filter(t => t.section === toSection).sort((a, b) => a.order_index - b.order_index);
-      const destUpdates = destTasks.map((task, index) => ({ id: task.id, order_index: index }));
+      const destUpdates = destTasks.map((task, index) => getProjectTaskDbPayload({ ...task, order_index: index }));
       if (destUpdates.length > 0) {
-        const { error } = await supabase.from('project_tasks').upsert(destUpdates);
+        const { error } = await supabase.from('project_tasks').upsert(destUpdates as any[]); // Cast to any[]
         if (error) throw error;
       }
 
@@ -1596,6 +1731,12 @@ export function useCRMData() {
     updateProjectTask,
     reorderProjectTasks,
     moveProjectTask,
+    createProjectSubtask, // New
+    updateProjectSubtask, // New
+    deleteProjectSubtask, // New
+    createProjectTaskComment, // New
+    updateProjectTaskComment, // New
+    deleteProjectTaskComment, // New
     getFullName,
   };
 }

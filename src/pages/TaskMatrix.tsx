@@ -9,6 +9,7 @@ import { ProjectFormDialog } from "@/components/projects/ProjectFormDialog";
 import { ProjectTaskFormDialog } from "@/components/projects/ProjectTaskFormDialog";
 import { TaskMatrixListView } from "@/components/projects/TaskMatrixListView";
 import { TaskMatrixBoardView } from "@/components/projects/TaskMatrixBoardView";
+import { ProjectTaskDetailPanel } from "@/components/projects/ProjectTaskDetailPanel"; // Import the new component
 import type { Project, ProjectTask } from "@/types/crm";
 
 export function TaskMatrix() {
@@ -33,6 +34,9 @@ export function TaskMatrix() {
 
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null);
+
+  const [isDetailPanelOpen, setIsDetailPanelOpen] = useState(false); // State for detail panel
+  const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<ProjectTask | null>(null); // State for task in detail panel
 
   const sectionOrder: ProjectTask['section'][] = ["To Do", "Doing", "Done"];
 
@@ -80,6 +84,11 @@ export function TaskMatrix() {
     }
   };
 
+  const handleOpenTaskDetail = (task: ProjectTask) => {
+    setSelectedTaskForDetail(task);
+    setIsDetailPanelOpen(true);
+  };
+
   if (loading) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -119,12 +128,21 @@ export function TaskMatrix() {
           </div>
         </div>
         {viewMode === 'list' ? (
-          <TaskMatrixListView tasksBySection={tasksBySection} sectionOrder={sectionOrder} />
+          <TaskMatrixListView tasksBySection={tasksBySection} sectionOrder={sectionOrder} onOpenDetail={handleOpenTaskDetail} />
         ) : (
-          <TaskMatrixBoardView tasksBySection={tasksBySection} sectionOrder={sectionOrder} />
+          <TaskMatrixBoardView tasksBySection={tasksBySection} sectionOrder={sectionOrder} onOpenDetail={handleOpenTaskDetail} />
         )}
       </div>
       <ProjectTaskFormDialog isOpen={isTaskFormOpen} onOpenChange={setIsTaskFormOpen} onSubmit={handleTaskSubmit} initialData={editingTask} profiles={profiles} getFullName={getFullName} />
+      
+      {/* Task Detail Side Panel */}
+      <ProjectTaskDetailPanel
+        isOpen={isDetailPanelOpen}
+        onOpenChange={setIsDetailPanelOpen}
+        task={selectedTaskForDetail}
+        profiles={profiles}
+        getFullName={getFullName}
+      />
     </DragDropContext>
   );
 }

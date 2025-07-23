@@ -163,7 +163,7 @@ export interface DashboardStats {
   pendingTasksChange?: ChangeMetric;
 }
 
-export interface DataHygieneInsights {
+export interface DataHygieneInsights { // Added DataHygieneInsights interface
   missingFields: string[];
   suggestions: string[];
   dealBreakerWarning: boolean;
@@ -178,6 +178,23 @@ export interface Project {
   tasks?: ProjectTask[];
 }
 
+export interface ProjectSubtask {
+  id: string;
+  task_id: string;
+  title: string;
+  is_completed: boolean;
+  created_at: string;
+}
+
+export interface ProjectTaskComment {
+  id: string;
+  task_id: string;
+  content: string;
+  created_by?: string;
+  created_at: string;
+  creator?: Profile;
+}
+
 export interface ProjectTask {
   id: string;
   title: string;
@@ -186,13 +203,15 @@ export interface ProjectTask {
   project_id: string;
   due_date?: string;
   priority: 'Low' | 'Medium' | 'High';
-  status: 'On Track' | 'At Risk' | 'Off Track';
+  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed'; // Added 'Completed'
   section: 'To Do' | 'Doing' | 'Done';
   order_index: number;
   created_at: string;
   updated_at: string;
   dependencies?: ProjectTaskDependency[];
   assignee?: Profile;
+  subtasks?: ProjectSubtask[]; // Added subtasks
+  comments?: ProjectTaskComment[]; // Added comments
 }
 
 export interface ProjectTaskDependency {

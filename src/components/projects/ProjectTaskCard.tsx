@@ -12,9 +12,10 @@ import type { ProjectTask } from "@/types/crm";
 interface ProjectTaskCardProps {
   task: ProjectTask;
   index: number;
+  onOpenDetail: (task: ProjectTask) => void; // New prop
 }
 
-export function ProjectTaskCard({ task, index }: ProjectTaskCardProps) {
+export function ProjectTaskCard({ task, index, onOpenDetail }: ProjectTaskCardProps) {
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -23,9 +24,10 @@ export function ProjectTaskCard({ task, index }: ProjectTaskCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "bg-card border-border/50 shadow-sm hover:shadow-medium transition-shadow",
+            "bg-card border-border/50 shadow-sm hover:shadow-medium transition-shadow cursor-pointer", // Added cursor-pointer
             snapshot.isDragging && "shadow-lg ring-2 ring-primary"
           )}
+          onClick={() => onOpenDetail(task)} // Added onClick handler
         >
           <CardContent className="p-3 space-y-2">
             <p className="font-semibold text-sm">{task.title}</p>

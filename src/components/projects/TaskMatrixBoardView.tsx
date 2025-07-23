@@ -7,9 +7,10 @@ import type { ProjectTask } from "@/types/crm";
 interface TaskMatrixBoardViewProps {
   tasksBySection: { [key: string]: ProjectTask[] };
   sectionOrder: string[];
+  onOpenDetail: (task: ProjectTask) => void; // New prop
 }
 
-export function TaskMatrixBoardView({ tasksBySection, sectionOrder }: TaskMatrixBoardViewProps) {
+export function TaskMatrixBoardView({ tasksBySection, sectionOrder, onOpenDetail }: TaskMatrixBoardViewProps) {
   return (
     <div className="flex space-x-4 overflow-x-auto pb-4">
       {sectionOrder.map((section) => (
@@ -28,7 +29,7 @@ export function TaskMatrixBoardView({ tasksBySection, sectionOrder }: TaskMatrix
                   }`}
                 >
                   {tasksBySection[section]?.map((task, index) => (
-                    <ProjectTaskCard key={task.id} task={task} index={index} />
+                    <ProjectTaskCard key={task.id} task={task} index={index} onOpenDetail={onOpenDetail} />
                   ))}
                   {provided.placeholder}
                 </div>

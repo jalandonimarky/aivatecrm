@@ -7,9 +7,10 @@ import type { ProjectTask } from "@/types/crm";
 interface TaskMatrixListViewProps {
   tasksBySection: { [key: string]: ProjectTask[] };
   sectionOrder: string[];
+  onOpenDetail: (task: ProjectTask) => void; // New prop
 }
 
-export function TaskMatrixListView({ tasksBySection, sectionOrder }: TaskMatrixListViewProps) {
+export function TaskMatrixListView({ tasksBySection, sectionOrder, onOpenDetail }: TaskMatrixListViewProps) {
   return (
     <Accordion type="multiple" defaultValue={sectionOrder} className="w-full space-y-4">
       {sectionOrder.map((section) => (
@@ -28,7 +29,7 @@ export function TaskMatrixListView({ tasksBySection, sectionOrder }: TaskMatrixL
                   }`}
                 >
                   {tasksBySection[section]?.map((task, index) => (
-                    <ProjectTaskCard key={task.id} task={task} index={index} />
+                    <ProjectTaskCard key={task.id} task={task} index={index} onOpenDetail={onOpenDetail} />
                   ))}
                   {provided.placeholder}
                 </div>
