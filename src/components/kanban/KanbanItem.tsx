@@ -14,7 +14,7 @@ import type { KanbanItem as KanbanItemType, KanbanBoard } from "@/types/crm";
 interface KanbanItemProps {
   item: KanbanItemType;
   index: number;
-  boardProjectType: KanbanBoard['project_type']; // New prop
+  boardProjectType: KanbanBoard['project_type'];
   onEdit: (item: KanbanItemType) => void;
   onDelete: (itemId: string) => void;
 }
@@ -22,11 +22,11 @@ interface KanbanItemProps {
 export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: KanbanItemProps) {
   const navigate = useNavigate();
 
-  const getLeadTypeColorClass = (leadType?: KanbanItemType['lead_type']) => {
+  const getLeadTypeBorderColorClass = (leadType?: KanbanItemType['lead_type']) => {
     switch (leadType) {
-      case 'Tenant Lead Contact': return "border-l-4 border-primary";
-      case 'Property Lead Contact': return "border-l-4 border-accent";
-      default: return "border-l-4 border-transparent";
+      case 'Tenant Lead Contact': return "border-primary";
+      case 'Property Lead Contact': return "border-accent";
+      default: return "border-transparent";
     }
   };
 
@@ -37,7 +37,7 @@ export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: 
       switch (status) {
         case 'New': return "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30";
         case 'In Progress': return "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30";
-        case 'Closed': return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30"; // Changed for AiVate
+        case 'Closed': return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30";
         default: return "bg-muted text-muted-foreground";
       }
     } else { // Buds & Bonfire or Other
@@ -52,12 +52,16 @@ export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: 
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    // Prevent navigation if a button or dropdown trigger within the card is clicked
     if (target.closest('button') || target.closest('[data-radix-popper-content-wrapper]')) {
       return;
     }
     navigate(`/project-management/items/${item.id}`);
   };
+
+  const cardStyle: React.CSSProperties = {};
+  if (boardProjectType === 'AiVate' && item.color_hex) {
+    cardStyle.borderLeftColor = item.color_hex;
+  }
 
   return (
     <Draggable draggableId={item.id} index={index}>
@@ -68,9 +72,13 @@ export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: 
           {...provided.dragHandleProps}
           className={cn(
             "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
-            boardProjectType === 'Buds & Bonfire' ? getLeadTypeColorClass(item.lead_type) : "border-l-4 border-transparent", // Apply lead type color only for B&B
+            "border-l-4", // Always have the border width
+            boardProjectType === 'Buds & Bonfire' 
+              ? getLeadTypeBorderColorClass(item.lead_type) 
+              : "border-transparent",
             snapshot.isDragging ? "z-50 shadow-lg ring-2 ring-primary" : "hover:z-40 hover:-translate-y-1"
           )}
+          style={cardStyle}
           onClick={handleCardClick}
         >
           <CardContent className="p-3">
@@ -90,13 +98,6 @@ export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: 
               {boardProjectType === 'Buds & Bonfire' && item.lead_type && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.lead_type}</Badge>}
               {boardProjectType === 'Buds & Bonfire' && item.client_type && <Badge variant="outline" className="text-xs px-2 py-0.5">{item.client_type}</Badge>}
               {boardProjectType === 'AiVate' && item.category && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.category}</Badge>}
-              {boardProjectType === 'AiVate' && item.color_hex && (
-                <span 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: item.color_hex }} 
-                  title="Project Color"
-                ></span>
-              )}
             </div>
 
             <div className="flex items-center justify-between mt-3">
