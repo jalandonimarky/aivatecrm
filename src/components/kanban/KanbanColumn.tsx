@@ -6,10 +6,11 @@ import { Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/lib/utils";
-import type { KanbanColumn as KanbanColumnType, KanbanItem as KanbanItemType } from "@/types/crm";
+import type { KanbanColumn as KanbanColumnType, KanbanItem as KanbanItemType, KanbanBoard } from "@/types/crm";
 
 interface KanbanColumnProps {
   column: KanbanColumnType;
+  boardProjectType: KanbanBoard['project_type']; // New prop
   onAddItem: (columnId: string) => void;
   onEditColumn: (column: KanbanColumnType) => void;
   onDeleteColumn: (columnId: string) => void;
@@ -19,6 +20,7 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({
   column,
+  boardProjectType, // Use new prop
   onAddItem,
   onEditColumn,
   onDeleteColumn,
@@ -32,7 +34,7 @@ export function KanbanColumn({
     if (lowerCaseName.includes("backlog")) return "border-primary"; // Mint
     if (lowerCaseName.includes("in progress")) return "border-accent"; // Purple
     if (lowerCaseName.includes("on hold")) return "border-warning"; // Orange
-    if (lowerCaseName.includes("done")) return "border-success"; // Green
+    if (lowerCaseName.includes("done") || lowerCaseName.includes("completed")) return "border-success"; // Green
     return "border-muted-foreground"; // Default grey
   };
 
@@ -79,6 +81,7 @@ export function KanbanColumn({
                   key={item.id}
                   item={item}
                   index={index}
+                  boardProjectType={boardProjectType} // Pass boardProjectType
                   onEdit={onEditItem}
                   onDelete={onDeleteItem}
                 />

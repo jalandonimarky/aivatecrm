@@ -122,14 +122,13 @@ export interface KanbanItem {
   assigned_to?: string | null; // Allow null for assigned_to
   assigned_user?: Profile;
   
-  // New and updated fields
+  // Fields for 'Buds & Bonfire' project type
   lead_type?: 'Tenant Lead Contact' | 'Property Lead Contact' | null;
   client_type?: 'insurance' | 'corporate' | 'individual' | null;
-  status?: 'New' | 'In Progress' | 'Closed' | null;
+  status?: 'New' | 'In Progress' | 'Closed' | 'Completed' | 'On Hold' | 'Cancelled' | null; // Union of all possible statuses
   property_match?: string | null;
   property_criteria?: string | null;
   full_name?: string | null; // Tenant Lead: Full Name
-  email_address?: string | null; // Tenant Lead: Email Address
   client_contact_info?: string | null; // Tenant Lead: Phone Number
   family_makeup?: string | null;
   pets_info?: number | null; // Changed to number | null
@@ -143,7 +142,12 @@ export interface KanbanItem {
   property_address?: string | null;
   property_beds_baths_sqft?: string | null;
   mtr_approved?: boolean | null; // Allow boolean | null
-  activity?: KanbanItemActivity[];
+
+  // Fields for 'AiVate' project type (now merged into KanbanItem)
+  email_address?: string | null; // Used by both, but defined here for clarity of origin
+  phone_number?: string | null; // Used by both, but defined here for clarity of origin
+  category?: string | null; // e.g., 'Website', 'Mobile App', 'CRM', 'Other'
+  activity?: KanbanItemActivity[]; // Added activity property
 }
 
 export interface KanbanColumn {
@@ -160,43 +164,10 @@ export interface KanbanBoard {
   name: string;
   created_by?: string;
   created_at: string;
+  project_type: 'AiVate' | 'Buds & Bonfire' | 'Other'; // New field
+  custom_project_name?: string | null; // New field for 'Other'
   columns?: KanbanColumn[]; // Nested columns
   creator?: Profile; // To store the profile of the board creator
-}
-
-export interface AivateKanbanItem {
-  id: string;
-  column_id: string;
-  title: string; // Project Title
-  description?: string | null;
-  email_address?: string | null;
-  phone_number?: string | null;
-  status: 'New' | 'In Progress' | 'Completed' | 'On Hold' | 'Cancelled'; // Example statuses
-  assigned_to?: string | null;
-  assigned_user?: Profile; // Joined profile
-  category?: string | null; // e.g., 'Website', 'Mobile App', 'CRM', 'Other'
-  order_index: number;
-  created_by?: string | null;
-  created_at: string;
-  creator?: Profile;
-}
-
-export interface AivateKanbanColumn {
-  id: string;
-  board_id: string;
-  name: string;
-  order_index: number;
-  created_at: string;
-  items?: AivateKanbanItem[];
-}
-
-export interface AivateKanbanBoard {
-  id: string;
-  name: string;
-  created_by?: string;
-  created_at: string;
-  columns?: AivateKanbanColumn[];
-  creator?: Profile;
 }
 
 export interface Notification {

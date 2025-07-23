@@ -111,6 +111,7 @@ export function KanbanBoardView({
                   >
                     <KanbanColumn
                       column={column}
+                      boardProjectType={board.project_type} // Pass boardProjectType
                       onAddItem={onAddItem}
                       onEditColumn={onEditColumn}
                       onDeleteColumn={onDeleteColumn}

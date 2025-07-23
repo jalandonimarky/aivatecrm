@@ -8,18 +8,19 @@ import { UserProfileCard } from "@/components/UserProfileCard";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import type { KanbanItem as KanbanItemType } from "@/types/crm";
+import { useNavigate } from "react-router-dom";
+import type { KanbanItem as KanbanItemType, KanbanBoard } from "@/types/crm";
 
 interface KanbanItemProps {
   item: KanbanItemType;
   index: number;
+  boardProjectType: KanbanBoard['project_type']; // New prop
   onEdit: (item: KanbanItemType) => void;
   onDelete: (itemId: string) => void;
 }
 
-export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
-  const navigate = useNavigate(); // Initialize useNavigate
+export function KanbanItem({ item, index, boardProjectType, onEdit, onDelete }: KanbanItemProps) {
+  const navigate = useNavigate();
 
   const getLeadTypeColorClass = (leadType?: KanbanItemType['lead_type']) => {
     switch (leadType) {
@@ -29,12 +30,25 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
     }
   };
 
-  const getStatusBadgeClass = (status?: KanbanItemType['status']) => {
-    switch (status) {
-      case 'New': return "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30";
-      case 'In Progress': return "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30";
-      case 'Closed': return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30";
-      default: return "bg-muted text-muted-foreground";
+  const getStatusBadgeClass = (status?: KanbanItemType['status'], projectType?: KanbanBoard['project_type']) => {
+    if (!status) return "bg-muted text-muted-foreground";
+
+    if (projectType === 'AiVate') {
+      switch (status) {
+        case 'New': return "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30";
+        case 'In Progress': return "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30";
+        case 'Completed': return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30";
+        case 'On Hold': return "bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30";
+        case 'Cancelled': return "bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30";
+        default: return "bg-muted text-muted-foreground";
+      }
+    } else { // Buds & Bonfire or Other
+      switch (status) {
+        case 'New': return "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30";
+        case 'In Progress': return "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30";
+        case 'Closed': return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30";
+        default: return "bg-muted text-muted-foreground";
+      }
     }
   };
 
@@ -44,7 +58,7 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
     if (target.closest('button') || target.closest('[data-radix-popper-content-wrapper]')) {
       return;
     }
-    navigate(`/kanban/items/${item.id}`);
+    navigate(`/project-management/items/${item.id}`);
   };
 
   return (
@@ -56,10 +70,10 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
           {...provided.dragHandleProps}
           className={cn(
             "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
-            getLeadTypeColorClass(item.lead_type),
+            boardProjectType === 'Buds & Bonfire' ? getLeadTypeColorClass(item.lead_type) : "border-l-4 border-transparent", // Apply lead type color only for B&B
             snapshot.isDragging ? "z-50 shadow-lg ring-2 ring-primary" : "hover:z-40 hover:-translate-y-1"
           )}
-          onClick={handleCardClick} // Use the new click handler
+          onClick={handleCardClick}
         >
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-1">
@@ -73,23 +87,20 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
               </DropdownMenu>
             </div>
             
-            {/* Removed description from collapsed view */}
-
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              {item.status && <Badge className={cn("text-xs px-2 py-0.5", getStatusBadgeClass(item.status))}>{item.status}</Badge>}
-              {item.lead_type && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.lead_type}</Badge>}
-              {item.client_type && <Badge variant="outline" className="text-xs px-2 py-0.5">{item.client_type}</Badge>} {/* Added Client Type */}
+              {item.status && <Badge className={cn("text-xs px-2 py-0.5", getStatusBadgeClass(item.status, boardProjectType))}>{item.status}</Badge>}
+              {boardProjectType === 'Buds & Bonfire' && item.lead_type && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.lead_type}</Badge>}
+              {boardProjectType === 'Buds & Bonfire' && item.client_type && <Badge variant="outline" className="text-xs px-2 py-0.5">{item.client_type}</Badge>}
+              {boardProjectType === 'AiVate' && item.category && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.category}</Badge>}
             </div>
 
             <div className="flex items-center justify-between mt-3">
               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3" />
-                <span>{formatDistanceToNow(new Date(item.created_at))} ago</span> {/* SLA Timer */}
+                <span>{formatDistanceToNow(new Date(item.created_at))} ago</span>
               </div>
               {item.assigned_user && <UserProfileCard profile={item.assigned_user} />}
             </div>
-
-            {/* Activity log is now only on the details page, so this expanded section is removed from the card */}
           </CardContent>
         </Card>
       )}

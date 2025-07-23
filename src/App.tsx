@@ -14,11 +14,9 @@ import { Tasks } from "./pages/Tasks";
 import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
-import { ProjectManagement } from "./pages/ProjectManagement"; // Import new ProjectManagement page
-import { BudsBonfireKanban } from "./pages/BudsBonfireKanban"; // Import renamed Kanban page
-import { BudsBonfireKanbanItemDetails } from "./pages/BudsBonfireKanbanItemDetails"; // Import renamed KanbanItemDetails page
-import { AivateKanban } from "./pages/AivateKanban"; // Import new AivateKanban page
-import { AivateKanbanItemDetails } from "./pages/AivateKanbanItemDetails"; // Import new AivateKanbanItemDetails page
+import { ProjectManagement } from "./pages/ProjectManagement"; // Import ProjectManagement page
+import { KanbanBoards } from "./pages/KanbanBoards"; // Import unified KanbanBoards page
+import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import unified KanbanItemDetails page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,13 +66,10 @@ const App = () => {
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
                 
-                {/* New Project Management Routes */}
+                {/* Unified Project Management Routes */}
                 <Route path="/project-management" element={<ProjectManagement />}>
-                  <Route index element={<BudsBonfireKanban />} /> {/* Default tab */}
-                  <Route path="buds-bonfire" element={<BudsBonfireKanban />} />
-                  <Route path="buds-bonfire/items/:id" element={<BudsBonfireKanbanItemDetails />} />
-                  <Route path="aivate" element={<AivateKanban />} />
-                  <Route path="aivate/items/:id" element={<AivateKanbanItemDetails />} />
+                  <Route index element={<KanbanBoards />} /> {/* Default route for /project-management */}
+                  <Route path="items/:id" element={<KanbanItemDetails />} />
                 </Route>
 
                 <Route path="/contacts" element={<Contacts />} />

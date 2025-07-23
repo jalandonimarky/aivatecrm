@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, LayoutDashboard } from "lucide-react";
+import { Plus, ArrowLeft, Search, Filter } from "lucide-react";
 import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
 import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDialog";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
-export function BudsBonfireKanban() {
+export function KanbanBoards() {
   const {
     kanbanBoards,
     kanbanColumns,
@@ -31,13 +33,17 @@ export function BudsBonfireKanban() {
     reorderKanbanColumns,
     profiles,
     getFullName,
-    refetch,
   } = useCRMData();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const selectedBoardId = searchParams.get("boardId");
   const selectedBoard = kanbanBoards.find(board => board.id === selectedBoardId);
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProjectType, setSelectedProjectType] = useState<string>("all");
+  const [customProjectFilter, setCustomProjectFilter] = useState("");
 
   // Dialog states
   const [isBoardFormDialogOpen, setIsBoardFormDialogOpen] = useState(false);
@@ -51,12 +57,28 @@ export function BudsBonfireKanban() {
   const [editingItem, setEditingItem] = useState<KanbanItem | null>(null);
   const [currentColumnIdForItem, setCurrentColumnIdForItem] = useState<string | null>(null);
 
+  const projectTypes: KanbanBoard['project_type'][] = ['Buds & Bonfire', 'AiVate', 'Other'];
+
+  const filteredBoards = kanbanBoards.filter(board => {
+    const matchesSearch =
+      board.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (board.project_type === 'Other' && board.custom_project_name?.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesProjectType = selectedProjectType === "all" || board.project_type === selectedProjectType;
+
+    const matchesCustomProjectName = selectedProjectType === "Other" && customProjectFilter
+      ? board.custom_project_name?.toLowerCase().includes(customProjectFilter.toLowerCase())
+      : true;
+
+    return matchesSearch && matchesProjectType && matchesCustomProjectName;
+  });
+
   // Handlers for Board operations
-  const handleCreateBoard = async (data: { name: string }) => {
+  const handleCreateBoard = async (data: { name: string, project_type: KanbanBoard['project_type'], custom_project_name?: string | null }) => {
     await createKanbanBoard(data);
   };
 
-  const handleUpdateBoard = async (data: { name: string }) => {
+  const handleUpdateBoard = async (data: { name: string, project_type: KanbanBoard['project_type'], custom_project_name?: string | null }) => {
     if (editingBoard) {
       await updateKanbanBoard(editingBoard.id, data);
     }
@@ -150,6 +172,12 @@ export function BudsBonfireKanban() {
     await reorderKanbanColumns(boardId, columnIds);
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedProjectType("all");
+    setCustomProjectFilter("");
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -168,7 +196,7 @@ export function BudsBonfireKanban() {
       <div className="space-y-6 h-full flex flex-col">
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={handleBackToBoards}>
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Boards
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to All Boards
           </Button>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             {selectedBoard.name}
@@ -209,12 +237,13 @@ export function BudsBonfireKanban() {
         )}
 
         {/* Item Form Dialog */}
-        {currentColumnIdForItem && (
+        {currentColumnIdForItem && selectedBoard && (
           <KanbanItemFormDialog
             isOpen={isItemFormDialogOpen}
             onOpenChange={setIsItemFormDialogOpen}
             initialData={editingItem}
             columnId={currentColumnIdForItem}
+            boardProjectType={selectedBoard.project_type} // Pass project type
             onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
             nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
             profiles={profiles}
@@ -230,10 +259,10 @@ export function BudsBonfireKanban() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Buds & Bonfire Projects
+            Project Boards
           </h1>
           <p className="text-muted-foreground">
-            Organize your Buds & Bonfire projects with Kanban boards
+            Organize your projects with Kanban boards
           </p>
         </div>
         <Button
@@ -245,13 +274,62 @@ export function BudsBonfireKanban() {
         </Button>
       </div>
 
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="relative flex-1 w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            placeholder="Search boards..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <Select value={selectedProjectType} onValueChange={(value) => {
+          setSelectedProjectType(value);
+          if (value !== "Other") {
+            setCustomProjectFilter("");
+          }
+        }}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Project Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Project Types</SelectItem>
+            {projectTypes.map(type => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {selectedProjectType === "Other" && (
+          <Input
+            placeholder="Filter by Custom Project Name"
+            value={customProjectFilter}
+            onChange={(e) => setCustomProjectFilter(e.target.value)}
+            className="w-full sm:w-[200px]"
+          />
+        )}
+
+        {(searchTerm !== "" || selectedProjectType !== "all" || customProjectFilter !== "") && (
+          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+            <Filter className="w-4 h-4 mr-2" /> Clear Filters
+          </Button>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {kanbanBoards.length === 0 ? (
+        {filteredBoards.length === 0 ? (
           <p className="text-muted-foreground col-span-full text-center py-8">
-            No Kanban boards yet. Create your first board to get started!
+            {searchTerm || selectedProjectType !== "all" || customProjectFilter !== ""
+              ? "No boards found matching your filters."
+              : "No Kanban boards yet. Create your first board to get started!"}
           </p>
         ) : (
-          kanbanBoards.map(board => (
+          filteredBoards.map(board => (
             <KanbanBoardCard
               key={board.id}
               board={board}

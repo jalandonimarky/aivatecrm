@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemActivity, AivateKanbanBoard, AivateKanbanColumn, AivateKanbanItem } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemActivity } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -9,12 +9,9 @@ export function useCRMData() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [kanbanBoards, setKanbanBoards] = useState<KanbanBoard[]>([]); // For Buds & Bonfire
-  const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]); // For Buds & Bonfire
-  const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]); // For Buds & Bonfire
-  const [aivateKanbanBoards, setAivateKanbanBoards] = useState<AivateKanbanBoard[]>([]); // For AiVate
-  const [aivateKanbanColumns, setAivateKanbanColumns] = useState<AivateKanbanColumn[]>([]); // For AiVate
-  const [aivateKanbanItems, setAivateKanbanItems] = useState<AivateKanbanItem[]>([]); // For AiVate
+  const [kanbanBoards, setKanbanBoards] = useState<KanbanBoard[]>([]);
+  const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
+  const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     paidDealsValue: 0,
@@ -82,18 +79,6 @@ export function useCRMData() {
   // Helper to filter out non-column properties for KanbanColumn upsert
   const getKanbanColumnDbPayload = (column: KanbanColumn) => {
     const { items, ...dbPayload } = column; // Destructure 'items'
-    return dbPayload;
-  };
-
-  // Helper to filter out non-column properties for AivateKanbanItem upsert
-  const getAivateKanbanItemDbPayload = (item: AivateKanbanItem) => {
-    const { creator, assigned_user, ...dbPayload } = item;
-    return dbPayload;
-  };
-
-  // Helper to filter out non-column properties for AivateKanbanColumn upsert
-  const getAivateKanbanColumnDbPayload = (column: AivateKanbanColumn) => {
-    const { items, ...dbPayload } = column;
     return dbPayload;
   };
 
@@ -167,7 +152,7 @@ export function useCRMData() {
       if (tasksError) throw tasksError;
       setTasks((tasksData || []) as any as Task[]);
 
-      // Fetch Kanban Boards (Buds & Bonfire) with nested columns and items
+      // Fetch Kanban Boards with nested columns and items
       const { data: boardsData, error: boardsError } = await supabase
         .from("kanban_boards")
         .select(`
@@ -217,54 +202,6 @@ export function useCRMData() {
       });
       setKanbanColumns(allColumns);
       setKanbanItems(allItems);
-
-      // Fetch AiVate Kanban Boards with nested columns and items
-      const { data: aivateBoardsData, error: aivateBoardsError } = await supabase
-        .from("aivate_kanban_boards")
-        .select(`
-          *,
-          creator:profiles!aivate_kanban_boards_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          columns:aivate_kanban_columns(
-            *,
-            items:aivate_kanban_items(
-              *,
-              creator:profiles!aivate_kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-              assigned_user:profiles!aivate_kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
-            )
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .order("order_index", { foreignTable: "columns", ascending: true })
-        .order("order_index", { foreignTable: "columns.items", ascending: true });
-
-      if (aivateBoardsError) throw aivateBoardsError;
-      const typedAivateBoardsData = (aivateBoardsData || []).map(board => ({
-        ...board,
-        creator: board.creator ? (board.creator as Profile) : null,
-        columns: (board.columns || []).map(column => ({
-          ...column,
-          items: (column.items || []).map(item => ({
-            ...item,
-            creator: item.creator ? (item.creator as Profile) : null,
-            assigned_user: item.assigned_user ? (item.assigned_user as Profile) : null,
-          })),
-        })),
-      })) as AivateKanbanBoard[];
-      setAivateKanbanBoards(typedAivateBoardsData);
-
-      const allAivateColumns: AivateKanbanColumn[] = [];
-      const allAivateItems: AivateKanbanItem[] = [];
-      typedAivateBoardsData.forEach(board => {
-        (board.columns || []).forEach(column => {
-          allAivateColumns.push(column);
-          (column.items || []).forEach(item => {
-            allAivateItems.push(item);
-          });
-        });
-      });
-      setAivateKanbanColumns(allAivateColumns);
-      setAivateKanbanItems(allAivateItems);
-
 
       // Calculate stats
       calculateStats((dealsData || []) as any as Deal[], (tasksData || []) as any as Task[], (contactsData || []) as any as Contact[]);
@@ -1034,7 +971,7 @@ export function useCRMData() {
     }
   };
 
-  // CRUD operations for Kanban Boards (Buds & Bonfire)
+  // CRUD operations for Kanban Boards
   const createKanbanBoard = async (boardData: Omit<KanbanBoard, 'id' | 'created_at' | 'columns' | 'creator'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId();
@@ -1043,7 +980,19 @@ export function useCRMData() {
         .insert([{ ...boardData, created_by: creatorProfileId }])
         .select(`
           *,
-          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!kanban_boards_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          columns:kanban_columns(
+            *,
+            items:kanban_items(
+              *,
+              creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+              activity:kanban_item_activity(
+                *,
+                user:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+              )
+            )
+          )
         `)
         .single();
 
@@ -1066,7 +1015,19 @@ export function useCRMData() {
         .eq("id", id)
         .select(`
           *,
-          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          creator:profiles!kanban_boards_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          columns:kanban_columns(
+            *,
+            items:kanban_items(
+              *,
+              creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+              activity:kanban_item_activity(
+                *,
+                user:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+              )
+            )
+          )
         `)
         .single();
 
@@ -1098,7 +1059,7 @@ export function useCRMData() {
     }
   };
 
-  // CRUD operations for Kanban Columns (Buds & Bonfire)
+  // CRUD operations for Kanban Columns
   const createKanbanColumn = async (columnData: Omit<KanbanColumn, 'id' | 'created_at' | 'items'>) => {
     try {
       const { data, error } = await supabase
@@ -1169,7 +1130,7 @@ export function useCRMData() {
     }
   };
 
-  // CRUD operations for Kanban Items (Buds & Bonfire)
+  // CRUD operations for Kanban Items
   const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId();
@@ -1256,7 +1217,7 @@ export function useCRMData() {
     }
   };
 
-  // Reordering functions (Buds & Bonfire)
+  // Reordering functions
   const reorderKanbanItemsInColumn = async (columnId: string, itemIds: string[]) => {
     try {
       setKanbanBoards(prevBoards => 
@@ -1428,389 +1389,6 @@ export function useCRMData() {
     }
   };
 
-  // CRUD operations for AiVate Kanban Boards
-  const createAivateKanbanBoard = async (boardData: Omit<AivateKanbanBoard, 'id' | 'created_at' | 'columns' | 'creator'>) => {
-    try {
-      const creatorProfileId = await getOrCreateUserProfileId();
-      const { data, error } = await supabase
-        .from("aivate_kanban_boards")
-        .insert([{ ...boardData, created_by: creatorProfileId }])
-        .select(`
-          *,
-          creator:profiles!aivate_kanban_boards_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
-        `)
-        .single();
-
-      if (error) throw error;
-      toast({ title: "AiVate Board created", description: "New AiVate Kanban board added." });
-      await fetchData();
-      return data as any as AivateKanbanBoard;
-    } catch (error: any) {
-      console.error("Error creating AiVate Kanban board:", error);
-      toast({ title: "Error creating AiVate board", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  const updateAivateKanbanBoard = async (id: string, updates: Partial<Omit<AivateKanbanBoard, 'columns' | 'creator'>>) => {
-    try {
-      const { data, error } = await supabase
-        .from("aivate_kanban_boards")
-        .update(updates)
-        .eq("id", id)
-        .select(`
-          *,
-          creator:profiles!aivate_kanban_boards_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
-        `)
-        .single();
-
-      if (error) throw error;
-      toast({ title: "AiVate Board updated", description: "AiVate Kanban board updated successfully." });
-      await fetchData();
-      return data as any as AivateKanbanBoard;
-    } catch (error: any) {
-      console.error("Error updating AiVate Kanban board:", error);
-      toast({ title: "Error updating AiVate board", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  const deleteAivateKanbanBoard = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("aivate_kanban_boards")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      toast({ title: "AiVate Board deleted", description: "AiVate Kanban board removed." });
-      await fetchData();
-    } catch (error: any) {
-      console.error("Error deleting AiVate Kanban board:", error);
-      toast({ title: "Error deleting AiVate board", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  // CRUD operations for AiVate Kanban Columns
-  const createAivateKanbanColumn = async (columnData: Omit<AivateKanbanColumn, 'id' | 'created_at' | 'items'>) => {
-    try {
-      const { data, error } = await supabase
-        .from("aivate_kanban_columns")
-        .insert([columnData])
-        .select(`
-          *,
-          items:aivate_kanban_items(
-            *,
-            creator:profiles!aivate_kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-            assigned_user:profiles!aivate_kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
-          )
-        `)
-        .single();
-
-      if (error) throw error;
-      toast({ title: "AiVate Column created", description: "New AiVate Kanban column added." });
-      await fetchData();
-      return data as any as AivateKanbanColumn;
-    } catch (error: any) {
-      console.error("Error creating AiVate Kanban column:", error);
-      toast({ title: "Error creating AiVate column", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  const updateAivateKanbanColumn = async (id: string, updates: Partial<Omit<AivateKanbanColumn, 'items'>>) => {
-    try {
-      const { data, error } = await supabase
-        .from("aivate_kanban_columns")
-        .update(updates)
-        .eq("id", id)
-        .select(`
-          *,
-          items:aivate_kanban_items(
-            *,
-            creator:profiles!aivate_kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-            assigned_user:profiles!aivate_kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
-          )
-        `)
-        .single();
-
-      if (error) throw error;
-      toast({ title: "AiVate Column updated", description: "AiVate Kanban column updated successfully." });
-      await fetchData();
-      return data as any as AivateKanbanColumn;
-    } catch (error: any) {
-      console.error("Error updating AiVate Kanban column:", error);
-      toast({ title: "Error updating AiVate column", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  const deleteAivateKanbanColumn = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("aivate_kanban_columns")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      toast({ title: "AiVate Column deleted", description: "AiVate Kanban column removed." });
-      await fetchData();
-    } catch (error: any) {
-      console.error("Error deleting AiVate Kanban column:", error);
-      toast({ title: "Error deleting AiVate column", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  // CRUD operations for AiVate Kanban Items
-  const createAivateKanbanItem = async (itemData: Omit<AivateKanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user'>) => {
-    try {
-      const creatorProfileId = await getOrCreateUserProfileId();
-      const { data, error } = await supabase
-        .from("aivate_kanban_items")
-        .insert([{ 
-          ...itemData, 
-          created_by: creatorProfileId,
-          assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
-        }])
-        .select(`
-          *,
-          creator:profiles!aivate_kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!aivate_kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
-        `)
-        .single();
-
-      if (error) throw error;
-      toast({ title: "AiVate Item created", description: "New AiVate Kanban item added." });
-      await fetchData();
-      return data as any as AivateKanbanItem;
-    } catch (error: any) {
-      console.error("Error creating AiVate Kanban item:", error);
-      toast({ title: "Error creating AiVate item", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  const updateAivateKanbanItem = async (id: string, updates: Partial<Omit<AivateKanbanItem, 'creator' | 'assigned_user'>>) => {
-    try {
-      const dataToUpdate = {
-        ...updates,
-        assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
-      };
-
-      const { data, error } = await supabase
-        .from("aivate_kanban_items")
-        .update(dataToUpdate)
-        .eq("id", id)
-        .select(`
-          *,
-          creator:profiles!aivate_kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!aivate_kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
-        `)
-        .single();
-
-      if (error) throw error;
-      toast({ title: "AiVate Item updated", description: "AiVate Kanban item updated successfully." });
-      await fetchData();
-      return data as any as AivateKanbanItem;
-    } catch (error: any) {
-      console.error("Error updating AiVate Kanban item:", error);
-      toast({ title: "Error updating AiVate item", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  const deleteAivateKanbanItem = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("aivate_kanban_items")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      toast({ title: "AiVate Item deleted", description: "AiVate Kanban item removed." });
-      await fetchData();
-    } catch (error: any) {
-      console.error("Error deleting AiVate Kanban item:", error);
-      toast({ title: "Error deleting AiVate item", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
-  // Reordering functions (AiVate)
-  const reorderAivateKanbanItemsInColumn = async (columnId: string, itemIds: string[]) => {
-    try {
-      setAivateKanbanBoards(prevBoards => 
-        prevBoards.map(board => ({
-          ...board,
-          columns: board.columns?.map(col => {
-            if (col.id === columnId) {
-              const updatedItems = itemIds.map((itemId, index) => {
-                const existingItem = col.items?.find(item => item.id === itemId);
-                return existingItem ? { ...existingItem, order_index: index } : null;
-              }).filter(Boolean) as AivateKanbanItem[];
-              return { ...col, items: updatedItems };
-            }
-            return col;
-          }),
-        }))
-      );
-
-      const updates = itemIds.map((id, index) => {
-        const existingItem = aivateKanbanItems.find(item => item.id === id);
-        if (!existingItem) throw new Error(`AiVate Item with ID ${id} not found for reordering.`);
-        return getAivateKanbanItemDbPayload({
-          ...existingItem,
-          order_index: index,
-          column_id: columnId,
-        });
-      });
-
-      const { error } = await supabase
-        .from('aivate_kanban_items')
-        .upsert(updates, { onConflict: 'id' });
-
-      if (error) throw error;
-      toast({ title: "AiVate Items reordered", description: "AiVate Kanban items reordered successfully." });
-    } catch (error: any) {
-      console.error("Error reordering AiVate Kanban items within column:", error);
-      toast({ title: "Error reordering AiVate items", description: error.message, variant: "destructive" });
-      await fetchData();
-      throw error;
-    }
-  };
-
-  const moveAivateKanbanItem = async (
-    itemId: string,
-    sourceColumnId: string,
-    sourceIndex: number,
-    destinationColumnId: string,
-    destinationIndex: number
-  ) => {
-    try {
-      let movedItem: AivateKanbanItem | undefined;
-      let sourceItemsBeforeOptimisticUpdate: AivateKanbanItem[] = [];
-      let destinationItemsBeforeOptimisticUpdate: AivateKanbanItem[] = [];
-
-      setAivateKanbanBoards(prevBoards => {
-        const newBoards = prevBoards.map(board => {
-          const newColumns = board.columns?.map(col => {
-            if (col.id === sourceColumnId) {
-              sourceItemsBeforeOptimisticUpdate = [...(col.items || [])].sort((a, b) => a.order_index - b.order_index);
-              const newSourceItems = Array.from(sourceItemsBeforeOptimisticUpdate);
-              [movedItem] = newSourceItems.splice(sourceIndex, 1);
-              
-              const updatedSourceItems = newSourceItems.map((item, index) => ({ ...item, order_index: index }));
-              return { ...col, items: updatedSourceItems };
-            } else if (col.id === destinationColumnId) {
-              destinationItemsBeforeOptimisticUpdate = [...(col.items || [])].sort((a, b) => a.order_index - b.order_index);
-              const newDestinationItems = Array.from(destinationItemsBeforeOptimisticUpdate);
-              
-              const itemToInsert = movedItem || aivateKanbanItems.find(item => item.id === itemId);
-              if (!itemToInsert) throw new Error("AiVate Item not found for optimistic update.");
-
-              newDestinationItems.splice(destinationIndex, 0, { ...itemToInsert, column_id: destinationColumnId });
-
-              const updatedDestinationItems = newDestinationItems.map((item, index) => ({ ...item, order_index: index }));
-              return { ...col, items: updatedDestinationItems };
-            }
-            return col;
-          });
-          return { ...board, columns: newColumns };
-        });
-        return newBoards;
-      });
-
-      if (!movedItem) {
-        movedItem = aivateKanbanItems.find(item => item.id === itemId);
-        if (!movedItem) throw new Error("Moved AiVate item not found in state for database update.");
-      }
-
-      const updates: AivateKanbanItem[] = [];
-
-      updates.push(getAivateKanbanItemDbPayload({
-        ...movedItem,
-        column_id: destinationColumnId,
-        order_index: destinationIndex,
-      }));
-
-      const finalSourceItems = sourceItemsBeforeOptimisticUpdate.filter(item => item.id !== itemId).map((item, index) => getAivateKanbanItemDbPayload({
-        ...item,
-        order_index: index,
-        column_id: sourceColumnId,
-      }));
-      updates.push(...finalSourceItems);
-
-      const finalDestinationItems = destinationItemsBeforeOptimisticUpdate.filter(item => item.id !== itemId);
-      finalDestinationItems.splice(destinationIndex, 0, movedItem);
-      const updatedDestinationOrder = finalDestinationItems.map((item, index) => getAivateKanbanItemDbPayload({
-        ...item,
-        order_index: index,
-        column_id: destinationColumnId,
-      }));
-      updates.push(...updatedDestinationOrder);
-
-      const uniqueUpdatesMap = new Map<string, AivateKanbanItem>();
-      for (const update of updates) {
-        uniqueUpdatesMap.set(update.id, update);
-      }
-      const finalUpdates = Array.from(uniqueUpdatesMap.values());
-
-      const { error } = await supabase
-        .from('aivate_kanban_items')
-        .upsert(finalUpdates, { onConflict: 'id' });
-
-      if (error) throw error;
-      toast({ title: "AiVate Item moved", description: "AiVate Kanban item moved successfully." });
-    } catch (error: any) {
-      console.error("Error moving AiVate Kanban item:", error);
-      toast({ title: "Error moving AiVate item", description: error.message, variant: "destructive" });
-      await fetchData();
-      throw error;
-    }
-  };
-
-  const reorderAivateKanbanColumns = async (boardId: string, columnIds: string[]) => {
-    try {
-      setAivateKanbanBoards(prevBoards => 
-        prevBoards.map(board => {
-          if (board.id === boardId) {
-            const updatedColumns = columnIds.map((colId, index) => {
-              const existingColumn = board.columns?.find(col => col.id === colId);
-              return existingColumn ? { ...existingColumn, order_index: index } : null;
-            }).filter(Boolean) as AivateKanbanColumn[];
-            return { ...board, columns: updatedColumns };
-          }
-          return board;
-        })
-      );
-
-      const updates = columnIds.map((id, index) => {
-        const existingColumn = aivateKanbanColumns.find(column => column.id === id);
-        if (!existingColumn) throw new Error(`AiVate Column with ID ${id} not found for reordering.`);
-        return getAivateKanbanColumnDbPayload({
-          ...existingColumn,
-          order_index: index,
-          board_id: boardId,
-        });
-      });
-
-      const { error } = await supabase
-        .from('aivate_kanban_columns')
-        .upsert(updates, { onConflict: 'id' });
-
-      if (error) throw error;
-      toast({ title: "AiVate Columns reordered", description: "AiVate Kanban columns reordered successfully." });
-    } catch (error: any) {
-      console.error("Error reordering AiVate Kanban columns:", error);
-      toast({ title: "Error reordering AiVate columns", description: error.message, variant: "destructive" });
-      await fetchData();
-      throw error;
-    }
-  };
-
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -1823,9 +1401,6 @@ export function useCRMData() {
     kanbanBoards,
     kanbanColumns,
     kanbanItems,
-    aivateKanbanBoards, // Export new AiVate states
-    aivateKanbanColumns,
-    aivateKanbanItems,
     stats,
     loading,
     refetch: fetchData,
@@ -1858,18 +1433,6 @@ export function useCRMData() {
     reorderKanbanItemsInColumn,
     moveKanbanItem,
     reorderKanbanColumns,
-    createAivateKanbanBoard, // Export new AiVate CRUD functions
-    updateAivateKanbanBoard,
-    deleteAivateKanbanBoard,
-    createAivateKanbanColumn,
-    updateAivateKanbanColumn,
-    deleteAivateKanbanColumn,
-    createAivateKanbanItem,
-    updateAivateKanbanItem,
-    deleteAivateKanbanItem,
-    reorderAivateKanbanItemsInColumn,
-    moveAivateKanbanItem,
-    reorderAivateKanbanColumns,
     getFullName,
   };
 }
