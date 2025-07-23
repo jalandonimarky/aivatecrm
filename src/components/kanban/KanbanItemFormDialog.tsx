@@ -19,7 +19,7 @@ interface KanbanItemFormDialogProps {
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
   columnId: string;
-  onSubmit: (data: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'notes'>) => Promise<void>;
+  onSubmit: (data: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity'>) => Promise<void>;
   nextOrderIndex: number;
   profiles: Profile[];
   getFullName: (profile: Profile) => string;
@@ -49,11 +49,14 @@ export function KanbanItemFormDialog({
         status: initialData?.status || 'New',
         property_match: initialData?.property_match || "",
         property_criteria: initialData?.property_criteria || "",
-        client_contact_info: initialData?.client_contact_info || "",
+        full_name: initialData?.full_name || "", // New field
+        email_address: initialData?.email_address || "", // New field
+        client_contact_info: initialData?.client_contact_info || "", // Phone Number
         family_makeup: initialData?.family_makeup || "",
-        pets_info: initialData?.pets_info || "",
-        beds_baths_needed: initialData?.beds_baths_needed || "",
-        preferred_location: initialData?.preferred_location || "",
+        pets_info: initialData?.pets_info || undefined, // Changed to number
+        num_bedrooms: initialData?.num_bedrooms || undefined, // New field
+        num_bathrooms: initialData?.num_bathrooms || undefined, // New field
+        preferred_location: initialData?.preferred_location || "", // Renamed label
         move_in_date: initialData?.move_in_date ? new Date(initialData.move_in_date).toISOString() : undefined,
         housing_partner_contact_info: initialData?.housing_partner_contact_info || "",
         property_address: initialData?.property_address || "",
@@ -78,7 +81,11 @@ export function KanbanItemFormDialog({
         ...formData,
         column_id: columnId,
         order_index: initialData ? initialData.order_index : nextOrderIndex,
-      } as Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'notes'>;
+        // Ensure numeric fields are handled as numbers or null
+        pets_info: formData.pets_info === null || formData.pets_info === undefined ? null : Number(formData.pets_info),
+        num_bedrooms: formData.num_bedrooms === null || formData.num_bedrooms === undefined ? null : Number(formData.num_bedrooms),
+        num_bathrooms: formData.num_bathrooms === null || formData.num_bathrooms === undefined ? null : Number(formData.num_bathrooms),
+      } as Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity'>;
       
       await onSubmit(dataToSubmit);
       onOpenChange(false);
@@ -156,8 +163,16 @@ export function KanbanItemFormDialog({
               <h3 className="text-lg font-semibold">Tenant Lead Info</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Client Contact Info (US Phone)</Label>
-                  <Input value={formData.client_contact_info || ""} onChange={(e) => handleValueChange('client_contact_info', e.target.value)} placeholder="(555) 555-5555" />
+                  <Label>Full Name</Label> {/* New field */}
+                  <Input value={formData.full_name || ""} onChange={(e) => handleValueChange('full_name', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email Address</Label> {/* New field */}
+                  <Input type="email" value={formData.email_address || ""} onChange={(e) => handleValueChange('email_address', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone Number</Label> {/* Changed label and type */}
+                  <Input type="tel" value={formData.client_contact_info || ""} onChange={(e) => handleValueChange('client_contact_info', e.target.value)} placeholder="(555) 555-5555" />
                 </div>
                 <div className="space-y-2">
                   <Label>Move-in Date</Label>
@@ -176,15 +191,19 @@ export function KanbanItemFormDialog({
                   <Input value={formData.family_makeup || ""} onChange={(e) => handleValueChange('family_makeup', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Pets (if any)</Label>
-                  <Input value={formData.pets_info || ""} onChange={(e) => handleValueChange('pets_info', e.target.value)} />
+                  <Label>Number of Pets (Optional)</Label> {/* Changed label and type */}
+                  <Input type="number" value={formData.pets_info || ""} onChange={(e) => handleValueChange('pets_info', e.target.value === '' ? undefined : Number(e.target.value))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Beds/Baths Needed</Label>
-                  <Input value={formData.beds_baths_needed || ""} onChange={(e) => handleValueChange('beds_baths_needed', e.target.value)} />
+                  <Label>Number of Bedrooms</Label> {/* New field */}
+                  <Input type="number" value={formData.num_bedrooms || ""} onChange={(e) => handleValueChange('num_bedrooms', e.target.value === '' ? undefined : Number(e.target.value))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Area/Location Preferred</Label>
+                  <Label>Number of Bathrooms</Label> {/* New field */}
+                  <Input type="number" step="0.5" value={formData.num_bathrooms || ""} onChange={(e) => handleValueChange('num_bathrooms', e.target.value === '' ? undefined : Number(e.target.value))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Preferred Location</Label> {/* Changed label */}
                   <Input value={formData.preferred_location || ""} onChange={(e) => handleValueChange('preferred_location', e.target.value)} />
                 </div>
               </div>

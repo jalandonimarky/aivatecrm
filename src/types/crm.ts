@@ -128,11 +128,14 @@ export interface KanbanItem {
   status?: 'New' | 'In Progress' | 'Closed';
   property_match?: string;
   property_criteria?: string;
-  client_contact_info?: string;
+  full_name?: string; // New field
+  email_address?: string; // New field
+  client_contact_info?: string; // Renamed from client_contact_info (US Phone) to Phone Number
   family_makeup?: string;
-  pets_info?: string;
-  beds_baths_needed?: string;
-  preferred_location?: string;
+  pets_info?: number; // Changed to number
+  num_bedrooms?: number; // New field
+  num_bathrooms?: number; // New field
+  preferred_location?: string; // Renamed from Location Preferred
   move_in_date?: string;
   housing_partner_contact_info?: string;
   property_address?: string;

@@ -293,7 +293,7 @@ export type Database = {
           move_in_date: string | null
           mtr_approved: boolean | null
           order_index: number
-          pets_info: string | null
+          pets_info: number | null
           preferred_location: string | null
           property_address: string | null
           property_beds_baths_sqft: string | null
@@ -301,6 +301,10 @@ export type Database = {
           property_match: string | null
           status: string | null
           title: string
+          full_name: string | null
+          email_address: string | null
+          num_bedrooms: number | null
+          num_bathrooms: number | null
         }
         Insert: {
           assigned_to?: string | null
@@ -318,7 +322,7 @@ export type Database = {
           move_in_date?: string | null
           mtr_approved?: boolean | null
           order_index: number
-          pets_info?: string | null
+          pets_info?: number | null
           preferred_location?: string | null
           property_address?: string | null
           property_beds_baths_sqft?: string | null
@@ -326,6 +330,10 @@ export type Database = {
           property_match?: string | null
           status?: string | null
           title: string
+          full_name?: string | null
+          email_address?: string | null
+          num_bedrooms?: number | null
+          num_bathrooms?: number | null
         }
         Update: {
           assigned_to?: string | null
@@ -343,7 +351,7 @@ export type Database = {
           move_in_date?: string | null
           mtr_approved?: boolean | null
           order_index?: number
-          pets_info?: string | null
+          pets_info?: number | null
           preferred_location?: string | null
           property_address?: string | null
           property_beds_baths_sqft?: string | null
@@ -351,6 +359,10 @@ export type Database = {
           property_match?: string | null
           status?: string | null
           title?: string
+          full_name?: string | null
+          email_address?: string | null
+          num_bedrooms?: number | null
+          num_bathrooms?: number | null
         }
         Relationships: [
           {

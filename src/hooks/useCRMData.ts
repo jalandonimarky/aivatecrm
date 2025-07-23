@@ -166,7 +166,7 @@ export function useCRMData() {
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               activity:kanban_item_activity(
                 *,
-                user:profiles(id, first_name, last_name, email)
+                user:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
               )
             )
           )
@@ -1120,12 +1120,16 @@ export function useCRMData() {
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
           move_in_date: itemData.move_in_date ? format(new Date(itemData.move_in_date), "yyyy-MM-dd") : null,
+          // Ensure numeric fields are stored as numbers or null
+          pets_info: itemData.pets_info === undefined ? null : itemData.pets_info,
+          num_bedrooms: itemData.num_bedrooms === undefined ? null : itemData.num_bedrooms,
+          num_bathrooms: itemData.num_bathrooms === undefined ? null : itemData.num_bathrooms,
         }])
         .select(`
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email))
+          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -1146,6 +1150,10 @@ export function useCRMData() {
         ...updates,
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
         move_in_date: updates.move_in_date ? format(new Date(updates.move_in_date), "yyyy-MM-dd") : null,
+        // Ensure numeric fields are stored as numbers or null
+        pets_info: updates.pets_info === undefined ? null : updates.pets_info,
+        num_bedrooms: updates.num_bedrooms === undefined ? null : updates.num_bedrooms,
+        num_bathrooms: updates.num_bathrooms === undefined ? null : updates.num_bathrooms,
       };
 
       const { data, error } = await supabase
@@ -1156,7 +1164,7 @@ export function useCRMData() {
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email))
+          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
