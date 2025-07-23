@@ -187,13 +187,15 @@ export function KanbanItemFormDialog({
               {/* Main Details */}
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
-                <Input id="title" value={formData.title || ""} onChange={(e) => handleValueChange('title', e.target.value)} required />
+                <Input id="title" value={formData.title || ""} onChange={(e) => handleValueChange('title', e.target.value)} required className="focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Lead Type</Label>
                   <Select value={formData.lead_type} onValueChange={(v) => handleValueChange('lead_type', v)}>
-                    <SelectTrigger><SelectValue placeholder="Select lead type" /></SelectTrigger>
+                    <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
+                      <SelectValue placeholder="Select lead type" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Tenant Lead Contact">Tenant Lead Contact</SelectItem>
                       <SelectItem value="Property Lead Contact">Property Lead Contact</SelectItem>
@@ -203,7 +205,9 @@ export function KanbanItemFormDialog({
                 <div className="space-y-2">
                   <Label>Client Type</Label>
                   <Select value={formData.client_type} onValueChange={(v) => handleValueChange('client_type', v)}>
-                    <SelectTrigger><SelectValue placeholder="Select client type" /></SelectTrigger>
+                    <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
+                      <SelectValue placeholder="Select client type" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="insurance">Insurance</SelectItem>
                       <SelectItem value="corporate">Corporate</SelectItem>
@@ -214,7 +218,9 @@ export function KanbanItemFormDialog({
                 <div className="space-y-2">
                   <Label>Status</Label>
                   <Select value={formData.status} onValueChange={(v) => handleValueChange('status', v)}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="New">New</SelectItem>
                       <SelectItem value="In Progress">In Progress</SelectItem>
@@ -226,7 +232,9 @@ export function KanbanItemFormDialog({
               <div className="space-y-2">
                 <Label>Assigned To</Label>
                 <Select value={formData.assigned_to || "unassigned"} onValueChange={(v) => handleValueChange('assigned_to', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select a user" /></SelectTrigger>
+                  <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
+                      <SelectValue placeholder="Select a user" />
+                    </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">None</SelectItem>
                     {profiles.map(p => <SelectItem key={p.id} value={p.id}>{getFullName(p)}</SelectItem>)}
@@ -235,7 +243,7 @@ export function KanbanItemFormDialog({
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
-                <Textarea value={formData.description || ""} onChange={(e) => handleValueChange('description', e.target.value)} rows={2} />
+                <Textarea value={formData.description || ""} onChange={(e) => handleValueChange('description', e.target.value)} rows={2} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
 
               <Separator className="my-4" />
@@ -245,21 +253,21 @@ export function KanbanItemFormDialog({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input value={formData.full_name || ""} onChange={(e) => handleValueChange('full_name', e.target.value)} />
+                  <Input value={formData.full_name || ""} onChange={(e) => handleValueChange('full_name', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Email Address</Label>
-                  <Input type="email" value={formData.email_address || ""} onChange={(e) => handleValueChange('email_address', e.target.value)} />
+                  <Input type="email" value={formData.email_address || ""} onChange={(e) => handleValueChange('email_address', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Phone Number</Label>
-                  <Input type="tel" value={formData.client_contact_info || ""} onChange={(e) => handleValueChange('client_contact_info', e.target.value)} placeholder="(555) 555-5555" />
+                  <Input type="tel" value={formData.client_contact_info || ""} onChange={(e) => handleValueChange('client_contact_info', e.target.value)} placeholder="(555) 555-5555" className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Move-in Date</Label>
                   <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.move_in_date && "text-muted-foreground")}>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal focus-visible:ring-0 focus-visible:ring-offset-0", !formData.move_in_date && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {formData.move_in_date ? format(formData.move_in_date, "PPP") : <span>Pick a date</span>}
                       </Button>
@@ -269,28 +277,28 @@ export function KanbanItemFormDialog({
                 </div>
                 <div className="space-y-2">
                   <Label>Family Make-up</Label>
-                  <Input value={formData.family_makeup || ""} onChange={(e) => handleValueChange('family_makeup', e.target.value)} />
+                  <Input value={formData.family_makeup || ""} onChange={(e) => handleValueChange('family_makeup', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Number of Pets (Optional)</Label>
-                  <Input type="number" value={formData.pets_info === undefined ? "" : formData.pets_info} onChange={(e) => handleValueChange('pets_info', e.target.value === '' ? undefined : Number(e.target.value))} />
+                  <Input type="number" value={formData.pets_info === undefined ? "" : formData.pets_info} onChange={(e) => handleValueChange('pets_info', e.target.value === '' ? undefined : Number(e.target.value))} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Number of Bedrooms</Label>
-                  <Input type="number" value={formData.num_bedrooms === undefined ? "" : formData.num_bedrooms} onChange={(e) => handleValueChange('num_bedrooms', e.target.value === '' ? undefined : Number(e.target.value))} />
+                  <Input type="number" value={formData.num_bedrooms === undefined ? "" : formData.num_bedrooms} onChange={(e) => handleValueChange('num_bedrooms', e.target.value === '' ? undefined : Number(e.target.value))} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Number of Bathrooms</Label>
-                  <Input type="number" step="0.5" value={formData.num_bathrooms === undefined ? "" : formData.num_bathrooms} onChange={(e) => handleValueChange('num_bathrooms', e.target.value === '' ? undefined : Number(e.target.value))} />
+                  <Input type="number" step="0.5" value={formData.num_bathrooms === undefined ? "" : formData.num_bathrooms} onChange={(e) => handleValueChange('num_bathrooms', e.target.value === '' ? undefined : Number(e.target.value))} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Preferred Location</Label>
-                  <Input value={formData.preferred_location || ""} onChange={(e) => handleValueChange('preferred_location', e.target.value)} />
+                  <Input value={formData.preferred_location || ""} onChange={(e) => handleValueChange('preferred_location', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Property Criteria</Label>
-                <Textarea value={formData.property_criteria || ""} onChange={(e) => handleValueChange('property_criteria', e.target.value)} rows={3} />
+                <Textarea value={formData.property_criteria || ""} onChange={(e) => handleValueChange('property_criteria', e.target.value)} rows={3} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
 
               <Separator className="my-4" />
@@ -300,28 +308,30 @@ export function KanbanItemFormDialog({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input value={formData.housing_partner_full_name || ""} onChange={(e) => handleValueChange('housing_partner_full_name', e.target.value)} />
+                  <Input value={formData.housing_partner_full_name || ""} onChange={(e) => handleValueChange('housing_partner_full_name', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Email Address</Label>
-                  <Input type="email" value={formData.housing_partner_email || ""} onChange={(e) => handleValueChange('housing_partner_email', e.target.value)} />
+                  <Input type="email" value={formData.housing_partner_email || ""} onChange={(e) => handleValueChange('housing_partner_email', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Phone Number</Label>
-                  <Input type="tel" value={formData.housing_partner_phone || ""} onChange={(e) => handleValueChange('housing_partner_phone', e.target.value)} placeholder="(555) 555-5555" />
+                  <Input type="tel" value={formData.housing_partner_phone || ""} onChange={(e) => handleValueChange('housing_partner_phone', e.target.value)} placeholder="(555) 555-5555" className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Property Address</Label>
-                  <Input value={formData.property_address || ""} onChange={(e) => handleValueChange('property_address', e.target.value)} />
+                  <Input value={formData.property_address || ""} onChange={(e) => handleValueChange('property_address', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Beds/Baths & Sq Ft</Label>
-                  <Input value={formData.property_beds_baths_sqft || ""} onChange={(e) => handleValueChange('property_beds_baths_sqft', e.target.value)} />
+                  <Input value={formData.property_beds_baths_sqft || ""} onChange={(e) => handleValueChange('property_beds_baths_sqft', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label>MTR Approved</Label>
                   <Select value={formData.mtr_approved === undefined ? "undefined" : (formData.mtr_approved ? "yes" : "no")} onValueChange={(v) => handleValueChange('mtr_approved', v === 'undefined' ? undefined : (v === 'yes'))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="undefined">N/A</SelectItem>
                       <SelectItem value="yes">Yes</SelectItem>
@@ -332,7 +342,7 @@ export function KanbanItemFormDialog({
               </div>
               <div className="space-y-2">
                 <Label>Property Match</Label>
-                <Textarea value={formData.property_match || ""} onChange={(e) => handleValueChange('property_match', e.target.value)} rows={3} />
+                <Textarea value={formData.property_match || ""} onChange={(e) => handleValueChange('property_match', e.target.value)} rows={3} className="focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
             </div>
           </ScrollArea>
