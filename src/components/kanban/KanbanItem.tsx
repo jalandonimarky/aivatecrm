@@ -73,24 +73,23 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
               </DropdownMenu>
             </div>
             
-            {item.description && (
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                {item.description}
-              </p>
-            )}
+            {/* Removed description from collapsed view */}
 
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {item.status && <Badge className={cn("text-xs px-2 py-0.5", getStatusBadgeClass(item.status))}>{item.status}</Badge>}
               {item.lead_type && <Badge variant="secondary" className="text-xs px-2 py-0.5">{item.lead_type}</Badge>}
+              {item.client_type && <Badge variant="outline" className="text-xs px-2 py-0.5">{item.client_type}</Badge>} {/* Added Client Type */}
             </div>
 
             <div className="flex items-center justify-between mt-3">
               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3" />
-                <span>{formatDistanceToNow(new Date(item.created_at))} ago</span>
+                <span>{formatDistanceToNow(new Date(item.created_at))} ago</span> {/* SLA Timer */}
               </div>
               {item.assigned_user && <UserProfileCard profile={item.assigned_user} />}
             </div>
+
+            {/* Activity log is now only on the details page, so this expanded section is removed from the card */}
           </CardContent>
         </Card>
       )}
