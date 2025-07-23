@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import type { KanbanItem, KanbanItemActivity } from "@/types/crm";
 
-export function KanbanItemDetails() {
+export function BudsBonfireKanbanItemDetails() {
   const { kanbanItems, profiles, loading, updateKanbanItem, deleteKanbanItem, getFullName } = useCRMData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ export function KanbanItemDetails() {
 
   useEffect(() => {
     if (!loading && id && !kanbanItems.find(item => item.id === id)) {
-      navigate("/kanban"); // Redirect if item not found
+      navigate("/project-management/buds-bonfire"); // Redirect if item not found
     }
   }, [kanbanItems, id, loading, navigate]);
 
@@ -50,7 +50,7 @@ export function KanbanItemDetails() {
       try {
         if (id) {
           await deleteKanbanItem(id);
-          navigate("/kanban"); // Navigate back to Kanban board after deletion
+          navigate("/project-management/buds-bonfire"); // Navigate back to Kanban board after deletion
         }
       } catch (error) {
         // Error handled in useCRMData hook
@@ -96,8 +96,8 @@ export function KanbanItemDetails() {
   if (loading || !kanbanItem) {
     return (
       <div className="space-y-6">
-        <Button variant="outline" onClick={() => navigate("/kanban")} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Kanban
+        <Button variant="outline" onClick={() => navigate("/project-management/buds-bonfire")} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Buds & Bonfire Projects
         </Button>
         <Skeleton className="h-24 w-full" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -112,8 +112,8 @@ export function KanbanItemDetails() {
 
   return (
     <div className="space-y-6">
-      <Button variant="outline" onClick={() => navigate("/kanban")}>
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Kanban
+      <Button variant="outline" onClick={() => navigate("/project-management/buds-bonfire")}>
+        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Buds & Bonfire Projects
       </Button>
 
       <Card className="bg-gradient-card border-border/50">

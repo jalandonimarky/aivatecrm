@@ -11,7 +11,7 @@ import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
-export function Kanban() {
+export function BudsBonfireKanban() {
   const {
     kanbanBoards,
     kanbanColumns,
@@ -230,10 +230,10 @@ export function Kanban() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Project Management
+            Buds & Bonfire Projects
           </h1>
           <p className="text-muted-foreground">
-            Organize your projects with Kanban boards
+            Organize your Buds & Bonfire projects with Kanban boards
           </p>
         </div>
         <Button

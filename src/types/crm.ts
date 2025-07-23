@@ -164,6 +164,41 @@ export interface KanbanBoard {
   creator?: Profile; // To store the profile of the board creator
 }
 
+export interface AivateKanbanItem {
+  id: string;
+  column_id: string;
+  title: string; // Project Title
+  description?: string | null;
+  email_address?: string | null;
+  phone_number?: string | null;
+  status: 'New' | 'In Progress' | 'Completed' | 'On Hold' | 'Cancelled'; // Example statuses
+  assigned_to?: string | null;
+  assigned_user?: Profile; // Joined profile
+  category?: string | null; // e.g., 'Website', 'Mobile App', 'CRM', 'Other'
+  order_index: number;
+  created_by?: string | null;
+  created_at: string;
+  creator?: Profile;
+}
+
+export interface AivateKanbanColumn {
+  id: string;
+  board_id: string;
+  name: string;
+  order_index: number;
+  created_at: string;
+  items?: AivateKanbanItem[];
+}
+
+export interface AivateKanbanBoard {
+  id: string;
+  name: string;
+  created_by?: string;
+  created_at: string;
+  columns?: AivateKanbanColumn[];
+  creator?: Profile;
+}
+
 export interface Notification {
   id: string;
   user_id: string;

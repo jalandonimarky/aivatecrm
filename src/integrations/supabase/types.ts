@@ -600,6 +600,134 @@ export type Database = {
           },
         ]
       }
+      aivate_kanban_boards: {
+        Row: {
+          id: string
+          name: string
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aivate_kanban_boards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aivate_kanban_columns: {
+        Row: {
+          id: string
+          board_id: string
+          name: string
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          board_id: string
+          name: string
+          order_index: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          board_id?: string
+          name?: string
+          order_index?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aivate_kanban_columns_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "aivate_kanban_boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aivate_kanban_items: {
+        Row: {
+          id: string
+          column_id: string
+          title: string
+          description: string | null
+          email_address: string | null
+          phone_number: string | null
+          status: string
+          assigned_to: string | null
+          category: string | null
+          order_index: number
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          column_id: string
+          title: string
+          description?: string | null
+          email_address?: string | null
+          phone_number?: string | null
+          status?: string
+          assigned_to?: string | null
+          category?: string | null
+          order_index: number
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          column_id?: string
+          title?: string
+          description?: string | null
+          email_address?: string | null
+          phone_number?: string | null
+          status?: string
+          assigned_to?: string | null
+          category?: string | null
+          order_index?: number
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aivate_kanban_items_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aivate_kanban_items_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "aivate_kanban_columns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aivate_kanban_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

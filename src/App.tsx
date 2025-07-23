@@ -14,8 +14,11 @@ import { Tasks } from "./pages/Tasks";
 import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
-import { Kanban } from "./pages/Kanban"; // Import Kanban page
-import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import KanbanItemDetails page
+import { ProjectManagement } from "./pages/ProjectManagement"; // Import new ProjectManagement page
+import { BudsBonfireKanban } from "./pages/BudsBonfireKanban"; // Import renamed Kanban page
+import { BudsBonfireKanbanItemDetails } from "./pages/BudsBonfireKanbanItemDetails"; // Import renamed KanbanItemDetails page
+import { AivateKanban } from "./pages/AivateKanban"; // Import new AivateKanban page
+import { AivateKanbanItemDetails } from "./pages/AivateKanbanItemDetails"; // Import new AivateKanbanItemDetails page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,8 +67,16 @@ const App = () => {
               // Authenticated routes
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/kanban" element={<Kanban />} /> {/* New route for Kanban */}
-                <Route path="/kanban/items/:id" element={<KanbanItemDetails />} /> {/* New route for Kanban Item Details */}
+                
+                {/* New Project Management Routes */}
+                <Route path="/project-management" element={<ProjectManagement />}>
+                  <Route index element={<BudsBonfireKanban />} /> {/* Default tab */}
+                  <Route path="buds-bonfire" element={<BudsBonfireKanban />} />
+                  <Route path="buds-bonfire/items/:id" element={<BudsBonfireKanbanItemDetails />} />
+                  <Route path="aivate" element={<AivateKanban />} />
+                  <Route path="aivate/items/:id" element={<AivateKanbanItemDetails />} />
+                </Route>
+
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/:id" element={<ContactDetails />} />
                 <Route path="/deals" element={<Deals />} />
