@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemActivity } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -72,7 +72,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for KanbanItem upsert
   const getKanbanItemDbPayload = (item: KanbanItem) => {
-    const { creator, assigned_user, activity, ...dbPayload } = item;
+    const { creator, assigned_user, ...dbPayload } = item;
     return dbPayload;
   };
 
@@ -163,11 +163,7 @@ export function useCRMData() {
             items:kanban_items(
               *,
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-              activity:kanban_item_activity(
-                *,
-                user:profiles(id, first_name, last_name, email)
-              )
+              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
             )
           )
         `)
@@ -542,7 +538,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for tasks
-  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal' | 'notes' | 'sub_tasks'>) => {
+  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -583,7 +579,7 @@ export function useCRMData() {
     }
   };
 
-  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal' | 'notes' | 'sub_tasks'>>) => {
+  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -1110,22 +1106,21 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'activity'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user'>) => {
     try {
-      const creatorProfileId = await getOrCreateUserProfileId();
+      const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
         .from("kanban_items")
         .insert([{ 
           ...itemData, 
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
-          move_in_date: itemData.move_in_date ? format(new Date(itemData.move_in_date), "yyyy-MM-dd") : null,
+          due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
         }])
         .select(`
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email))
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 
@@ -1140,12 +1135,17 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'activity'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user'>>) => {
     try {
+      // The form sends all fields, so we can safely convert undefined/empty to null for nullable fields.
       const dataToUpdate = {
         ...updates,
+        description: updates.description || null,
+        category: updates.category || null,
+        priority_level: updates.priority_level || null,
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
-        move_in_date: updates.move_in_date ? format(new Date(updates.move_in_date), "yyyy-MM-dd") : null,
+        due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
+        event_time: updates.event_time || null,
       };
 
       const { data, error } = await supabase
@@ -1155,8 +1155,7 @@ export function useCRMData() {
         .select(`
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          activity:kanban_item_activity(*, user:profiles(id, first_name, last_name, email))
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
         `)
         .single();
 

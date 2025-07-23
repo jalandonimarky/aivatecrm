@@ -87,30 +87,10 @@ export interface Task {
   created_by?: string;
   created_at: string;
   updated_at: string;
-  parent_task_id?: string | null; // For sub-tasks
-  order_index?: number; // For drag-and-drop ordering
   assigned_user?: Profile;
   related_contact?: Contact;
   related_deal?: Deal;
   notes?: TaskNote[]; // Added notes array for tasks
-  sub_tasks?: Task[]; // For nesting in the UI
-}
-
-export interface KanbanItemActivity {
-  id: string;
-  item_id: string;
-  user_id: string;
-  activity_type: 'created' | 'updated' | 'moved';
-  details: {
-    title?: string;
-    field?: string;
-    old?: any;
-    new?: any;
-    from?: string;
-    to?: string;
-  };
-  created_at: string;
-  user?: Profile;
 }
 
 export interface KanbanItem {
@@ -121,27 +101,13 @@ export interface KanbanItem {
   order_index: number;
   created_by?: string;
   created_at: string;
-  creator?: Profile;
-  assigned_to?: string;
-  assigned_user?: Profile;
-  
-  // New and updated fields
-  lead_type?: 'Tenant Lead Contact' | 'Property Lead Contact';
-  client_type?: 'insurance' | 'corporate' | 'individual';
-  status?: 'New' | 'In Progress' | 'Closed';
-  property_match?: string;
-  property_criteria?: string;
-  client_contact_info?: string;
-  family_makeup?: string;
-  pets_info?: string;
-  beds_baths_needed?: string;
-  preferred_location?: string;
-  move_in_date?: string;
-  housing_partner_contact_info?: string;
-  property_address?: string;
-  property_beds_baths_sqft?: string;
-  mtr_approved?: boolean;
-  activity?: KanbanItemActivity[];
+  creator?: Profile; // To store the profile of the item creator
+  category?: string; // Changed to string to allow custom categories
+  priority_level?: 'p0' | 'p1' | 'p2' | 'p3'; // New: Priority level
+  assigned_to?: string; // New: Assigned user ID
+  assigned_user?: Profile; // New: Assigned user profile
+  due_date?: string; // New: Due date for the item
+  event_time?: string | null;
 }
 
 export interface KanbanColumn {

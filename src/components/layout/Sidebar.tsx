@@ -7,8 +7,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  KanbanSquare,
-  ListChecks // Import new icon
+  KanbanSquare // Import KanbanSquare icon
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -30,8 +29,7 @@ import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
-  { title: "Project Management", url: "/kanban", icon: KanbanSquare },
-  { title: "Productivity Tracker", url: "/productivity-tracker", icon: ListChecks }, // New item
+  { title: "Project Management", url: "/kanban", icon: KanbanSquare }, // New Kanban item
   { title: "Contacts", url: "/contacts", icon: Users },
   { title: "Deals", url: "/deals", icon: Briefcase },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },

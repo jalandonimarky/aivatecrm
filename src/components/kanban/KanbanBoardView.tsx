@@ -14,8 +14,8 @@ interface KanbanBoardViewProps {
   onAddItem: (columnId: string) => void;
   onEditItem: (item: KanbanItemType) => void;
   onDeleteItem: (itemId: string) => void;
-  onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>;
-  onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>;
+  onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>; // Renamed
+  onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>; // New prop
   onReorderColumns: (boardId: string, columnIds: string[]) => Promise<void>;
 }
 
@@ -27,8 +27,8 @@ export function KanbanBoardView({
   onAddItem,
   onEditItem,
   onDeleteItem,
-  onReorderItemsInColumn,
-  onMoveItem,
+  onReorderItemsInColumn, // Renamed
+  onMoveItem, // New prop
   onReorderColumns,
 }: KanbanBoardViewProps) {
   const { toast } = useToast();
@@ -77,7 +77,7 @@ export function KanbanBoardView({
         newItems.splice(destination.index, 0, reorderedItem);
         
         const newItemIds = newItems.map(item => item.id);
-        await onReorderItemsInColumn(startColumn.id, newItemIds);
+        await onReorderItemsInColumn(startColumn.id, newItemIds); // Use renamed function
       } else {
         // Moving between different columns
         await onMoveItem(
