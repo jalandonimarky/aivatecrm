@@ -188,6 +188,7 @@ export interface ProjectTask {
   priority: 'Low' | 'Medium' | 'High';
   status: 'On Track' | 'At Risk' | 'Off Track';
   section: 'To Do' | 'Doing' | 'Done';
+  order_index: number;
   created_at: string;
   updated_at: string;
   dependencies?: ProjectTaskDependency[];

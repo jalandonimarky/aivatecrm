@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, Project, ProjectTask } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -12,6 +12,7 @@ export function useCRMData() {
   const [kanbanBoards, setKanbanBoards] = useState<KanbanBoard[]>([]);
   const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([]);
   const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     paidDealsValue: 0,
@@ -200,6 +201,21 @@ export function useCRMData() {
       });
       setKanbanColumns(allColumns);
       setKanbanItems(allItems);
+
+      // Fetch Projects with nested tasks and assignees
+      const { data: projectsData, error: projectsError } = await supabase
+        .from("projects")
+        .select(`
+          *,
+          tasks:project_tasks(
+            *,
+            assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (projectsError) throw projectsError;
+      setProjects((projectsData || []) as any as Project[]);
 
 
       // Calculate stats
@@ -1373,6 +1389,161 @@ export function useCRMData() {
     }
   };
 
+  // CRUD for Projects
+  const createProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'owner_id' | 'tasks'>) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated.");
+
+      const { data, error } = await supabase
+        .from("projects")
+        .insert([{ ...projectData, owner_id: user.id }])
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Project created" });
+      await fetchData();
+      return data as Project;
+    } catch (error: any) {
+      toast({ title: "Error creating project", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateProject = async (id: string, updates: Partial<Omit<Project, 'id' | 'created_at' | 'owner_id' | 'tasks'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .update(updates)
+        .eq("id", id)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Project updated" });
+      await fetchData();
+      return data as Project;
+    } catch (error: any) {
+      toast({ title: "Error updating project", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // CRUD for Project Tasks
+  const createProjectTask = async (taskData: Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'order_index'>) => {
+    try {
+      const { data: existingTasks, error: fetchError } = await supabase
+        .from('project_tasks')
+        .select('order_index')
+        .eq('project_id', taskData.project_id)
+        .eq('section', taskData.section)
+        .order('order_index', { ascending: false })
+        .limit(1);
+
+      if (fetchError) throw fetchError;
+
+      const nextOrderIndex = existingTasks && existingTasks.length > 0 ? (existingTasks[0].order_index ?? -1) + 1 : 0;
+
+      const { data, error } = await supabase
+        .from("project_tasks")
+        .insert([{ ...taskData, order_index: nextOrderIndex }])
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Task created" });
+      await fetchData();
+      return data as ProjectTask;
+    } catch (error: any) {
+      toast({ title: "Error creating task", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateProjectTask = async (id: string, updates: Partial<Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("project_tasks")
+        .update(updates)
+        .eq("id", id)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Task updated" });
+      await fetchData();
+      return data as ProjectTask;
+    } catch (error: any) {
+      toast({ title: "Error updating task", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // Reordering for Project Tasks
+  const reorderProjectTasks = async (taskId: string, section: ProjectTask['section'], newIndex: number) => {
+    try {
+      const project = projects.find(p => p.tasks?.some(t => t.section === section));
+      if (!project || !project.tasks) return;
+
+      const tasksInSection = project.tasks.filter(t => t.section === section).sort((a, b) => a.order_index - b.order_index);
+      const movedTask = tasksInSection.find(t => t.id === taskId);
+      if (!movedTask) return;
+
+      const remainingTasks = tasksInSection.filter(t => t.id !== taskId);
+      remainingTasks.splice(newIndex, 0, movedTask);
+
+      const updates = remainingTasks.map((task, index) => ({
+        id: task.id,
+        order_index: index,
+      }));
+
+      const { error } = await supabase.from('project_tasks').upsert(updates);
+      if (error) throw error;
+
+      await fetchData();
+    } catch (error: any) {
+      toast({ title: "Error reordering tasks", description: error.message, variant: "destructive" });
+      await fetchData();
+    }
+  };
+
+  const moveProjectTask = async (taskId: string, fromSection: ProjectTask['section'], toSection: ProjectTask['section'], newIndex: number) => {
+    try {
+      const project = projects.find(p => p.tasks?.some(t => t.id === taskId));
+      if (!project || !project.tasks) return;
+
+      // Update the moved task's section first
+      await supabase.from('project_tasks').update({ section: toSection }).eq('id', taskId);
+      
+      // Create a temporary updated task list for reordering calculations
+      const movedTask = { ...project.tasks.find(t => t.id === taskId)!, section: toSection };
+      const otherTasks = project.tasks.filter(t => t.id !== taskId);
+      const updatedTaskList = [...otherTasks, movedTask];
+
+      // Reorder source section
+      const sourceTasks = updatedTaskList.filter(t => t.section === fromSection).sort((a, b) => a.order_index - b.order_index);
+      const sourceUpdates = sourceTasks.map((task, index) => ({ id: task.id, order_index: index }));
+      if (sourceUpdates.length > 0) {
+        const { error } = await supabase.from('project_tasks').upsert(sourceUpdates);
+        if (error) throw error;
+      }
+
+      // Reorder destination section
+      const destTasks = updatedTaskList.filter(t => t.section === toSection).sort((a, b) => a.order_index - b.order_index);
+      const destUpdates = destTasks.map((task, index) => ({ id: task.id, order_index: index }));
+      if (destUpdates.length > 0) {
+        const { error } = await supabase.from('project_tasks').upsert(destUpdates);
+        if (error) throw error;
+      }
+
+      await fetchData();
+    } catch (error: any) {
+      toast({ title: "Error moving task", description: error.message, variant: "destructive" });
+      await fetchData();
+    }
+  };
+
 
   useEffect(() => {
     fetchData();
@@ -1386,6 +1557,7 @@ export function useCRMData() {
     kanbanBoards,
     kanbanColumns,
     kanbanItems,
+    projects,
     stats,
     loading,
     refetch: fetchData,
@@ -1418,6 +1590,12 @@ export function useCRMData() {
     reorderKanbanItemsInColumn, // Renamed
     moveKanbanItem, // New function
     reorderKanbanColumns,
+    createProject,
+    updateProject,
+    createProjectTask,
+    updateProjectTask,
+    reorderProjectTasks,
+    moveProjectTask,
     getFullName,
   };
 }
