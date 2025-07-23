@@ -15,6 +15,7 @@ import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
 import { Kanban } from "./pages/Kanban"; // Import Kanban page
+import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import KanbanItemDetails page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +65,7 @@ const App = () => {
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/kanban" element={<Kanban />} /> {/* New route for Kanban */}
+                <Route path="/kanban/items/:id" element={<KanbanItemDetails />} /> {/* New route for Kanban Item Details */}
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/:id" element={<ContactDetails />} />
                 <Route path="/deals" element={<Deals />} />
