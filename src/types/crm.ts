@@ -43,16 +43,6 @@ export interface TaskNote { // New interface for task notes
   creator?: Profile; // To store the profile of the note creator
 }
 
-export interface KanbanItemNote { // New interface for Kanban item notes
-  id: string;
-  item_id: string;
-  note_type: 'business' | 'development';
-  content: string;
-  created_at: string;
-  created_by?: string;
-  creator?: Profile;
-}
-
 export interface DealAttachment { // New interface for deal attachments
   id: string;
   deal_id: string;
@@ -124,44 +114,31 @@ export interface KanbanItem {
   id: string;
   column_id: string;
   title: string;
-  description?: string | null; // Allow null for description
+  description?: string;
   order_index: number;
-  created_by?: string | null; // Allow null for created_by
+  created_by?: string;
   created_at: string;
   creator?: Profile;
-  assigned_to?: string | null; // Allow null for assigned_to
+  assigned_to?: string;
   assigned_user?: Profile;
   
-  // Fields for 'Buds & Bonfire' project type
-  lead_type?: 'Tenant Lead Contact' | 'Property Lead Contact' | null;
-  client_type?: 'insurance' | 'corporate' | 'individual' | null;
-  status?: 'New' | 'In Progress' | 'Closed' | 'Completed' | 'On Hold' | 'Cancelled' | null; // Union of all possible statuses
-  property_match?: string | null;
-  property_criteria?: string | null;
-  full_name?: string | null;
-  client_contact_info?: string | null;
-  family_makeup?: string | null;
-  pets_info?: number | null; // Changed to number | null
-  num_bedrooms?: number | null; // New field
-  num_bathrooms?: number | null; // New field
-  preferred_location?: string | null; // Tenant Lead: Preferred Location
-  move_in_date?: string | null; // Changed to string | null
-  housing_partner_full_name?: string | null; // Housing Lead: Full Name (renamed from housing_partner_contact_info)
-  housing_partner_email?: string | null; // Housing Lead: Email Address (new)
-  housing_partner_phone?: string | null; // Housing Lead: Phone Number (new)
-  property_address?: string | null;
-  property_beds_baths_sqft?: string | null;
-  mtr_approved?: boolean | null; // Allow boolean | null
-
-  // Fields for 'AiVate' project type (now merged into KanbanItem)
-  email_address?: string | null; // Used by both, but defined here for clarity of origin
-  phone_number?: string | null; // Used by both, but defined here for clarity of origin
-  category?: string | null; // e.g., 'Website', 'Mobile App', 'CRM', 'Other'
-  color_hex?: string | null; // New field for color picker
-  due_date?: string | null; // New field for due date
-
-  activity?: KanbanItemActivity[]; // Added activity property
-  notes?: KanbanItemNote[]; // Added notes array for Kanban items
+  // New and updated fields
+  lead_type?: 'Tenant Lead Contact' | 'Property Lead Contact';
+  client_type?: 'insurance' | 'corporate' | 'individual';
+  status?: 'New' | 'In Progress' | 'Closed';
+  property_match?: string;
+  property_criteria?: string;
+  client_contact_info?: string;
+  family_makeup?: string;
+  pets_info?: string;
+  beds_baths_needed?: string;
+  preferred_location?: string;
+  move_in_date?: string;
+  housing_partner_contact_info?: string;
+  property_address?: string;
+  property_beds_baths_sqft?: string;
+  mtr_approved?: boolean;
+  activity?: KanbanItemActivity[];
 }
 
 export interface KanbanColumn {
@@ -178,8 +155,6 @@ export interface KanbanBoard {
   name: string;
   created_by?: string;
   created_at: string;
-  project_type: 'AiVate' | 'Buds & Bonfire' | 'Other'; // New field
-  custom_project_name?: string | null; // New field for 'Other'
   columns?: KanbanColumn[]; // Nested columns
   creator?: Profile; // To store the profile of the board creator
 }

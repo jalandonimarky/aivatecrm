@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
-  { title: "Project Management", url: "/project-management", icon: KanbanSquare }, // Updated URL
+  { title: "Project Management", url: "/kanban", icon: KanbanSquare }, // New Kanban item
   { title: "Contacts", url: "/contacts", icon: Users },
   { title: "Deals", url: "/deals", icon: Briefcase },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },

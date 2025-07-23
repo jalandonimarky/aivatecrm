@@ -14,9 +14,7 @@ import { Tasks } from "./pages/Tasks";
 import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
-import { ProjectManagement } from "./pages/ProjectManagement"; // Import ProjectManagement page
-import { KanbanBoards } from "./pages/KanbanBoards"; // Import unified KanbanBoards page
-import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import unified KanbanItemDetails page
+import { Kanban } from "./pages/Kanban"; // Import Kanban page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,13 +63,7 @@ const App = () => {
               // Authenticated routes
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
-                
-                {/* Unified Project Management Routes */}
-                <Route path="/project-management" element={<ProjectManagement />}>
-                  <Route index element={<KanbanBoards />} /> {/* Default route for /project-management */}
-                  <Route path="items/:id" element={<KanbanItemDetails />} />
-                </Route>
-
+                <Route path="/kanban" element={<Kanban />} /> {/* New route for Kanban */}
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/:id" element={<ContactDetails />} />
                 <Route path="/deals" element={<Deals />} />

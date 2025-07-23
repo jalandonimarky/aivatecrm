@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
-import { Badge } from "@/components/ui/badge"; // Import Badge
 import type { KanbanBoard } from "@/types/crm";
 
 interface KanbanBoardCardProps {
@@ -15,10 +14,6 @@ interface KanbanBoardCardProps {
 }
 
 export function KanbanBoardCard({ board, onSelect, onEdit, onDelete }: KanbanBoardCardProps) {
-  const displayProjectName = board.project_type === 'Other' && board.custom_project_name
-    ? board.custom_project_name
-    : board.project_type;
-
   return (
     <Card className="bg-gradient-card border-border/50 hover:shadow-medium transition-smooth cursor-pointer">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -44,11 +39,6 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete }: KanbanBoa
         </DropdownMenu>
       </CardHeader>
       <CardContent onClick={() => onSelect(board.id)} className="pt-0">
-        <div className="flex items-center space-x-2 mb-2">
-          <Badge variant="secondary" className="text-xs">
-            {displayProjectName}
-          </Badge>
-        </div>
         <p className="text-sm text-muted-foreground mb-3">
           {board.columns?.length || 0} columns, {board.columns?.reduce((acc, col) => acc + (col.items?.length || 0), 0) || 0} items
         </p>
