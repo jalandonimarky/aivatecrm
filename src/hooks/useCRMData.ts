@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, Project, ProjectTask, ProjectSubtask, ProjectTaskComment } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, Project, ProjectTask, ProjectSubtask, ProjectTaskComment, ProjectTaskDependency } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -85,7 +85,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for ProjectTask upsert
   const getProjectTaskDbPayload = (task: ProjectTask) => {
-    const { assignee, subtasks, comments, dependencies, ...dbPayload } = task;
+    const { assignee, subtasks, comments, dependencies, is_blocked, ...dbPayload } = task;
     return dbPayload;
   };
 
@@ -216,15 +216,27 @@ export function useCRMData() {
           tasks:project_tasks(
             *,
             assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-            subtasks:project_subtasks(*),
-            comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+            subtasks:project_subtasks(*, assignee:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+            comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+            dependencies:project_task_dependencies(task_id, depends_on_task_id, dependent_task:project_tasks!depends_on_task_id(id, title, status))
           )
         `)
         .order("created_at", { ascending: false });
 
       if (projectsError) throw projectsError;
-      // Explicitly cast the result to Project[]
-      setProjects((projectsData || []) as Project[]);
+      
+      // Process projects to determine 'is_blocked' status
+      const processedProjects = (projectsData || []).map(project => ({
+        ...project,
+        tasks: (project.tasks || []).map(task => {
+          const isBlocked = (task.dependencies || []).some(dep => 
+            dep.dependent_task?.status !== 'Completed'
+          );
+          return { ...task, is_blocked: isBlocked };
+        }),
+      })) as Project[];
+
+      setProjects(processedProjects);
 
 
       // Calculate stats
@@ -1440,7 +1452,7 @@ export function useCRMData() {
   };
 
   // CRUD for Project Tasks
-  const createProjectTask = async (taskData: Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'order_index' | 'subtasks' | 'comments'>) => {
+  const createProjectTask = async (taskData: Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'order_index' | 'subtasks' | 'comments' | 'is_blocked'>) => {
     try {
       const { data: existingTasks, error: fetchError } = await supabase
         .from('project_tasks')
@@ -1460,8 +1472,9 @@ export function useCRMData() {
         .select(`
           *,
           assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          subtasks:project_subtasks(*),
-          comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          subtasks:project_subtasks(*, assignee:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          dependencies:project_task_dependencies(task_id, depends_on_task_id, dependent_task:project_tasks!depends_on_task_id(id, title, status))
         `)
         .single();
 
@@ -1475,7 +1488,7 @@ export function useCRMData() {
     }
   };
 
-  const updateProjectTask = async (id: string, updates: Partial<Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'subtasks' | 'comments'>>) => {
+  const updateProjectTask = async (id: string, updates: Partial<Omit<ProjectTask, 'id' | 'created_at' | 'updated_at' | 'dependencies' | 'assignee' | 'subtasks' | 'comments' | 'is_blocked'>>) => {
     try {
       const { data, error } = await supabase
         .from("project_tasks")
@@ -1484,8 +1497,9 @@ export function useCRMData() {
         .select(`
           *,
           assignee:profiles!project_tasks_assignee_id_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          subtasks:project_subtasks(*),
-          comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          subtasks:project_subtasks(*, assignee:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          comments:project_task_comments(*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          dependencies:project_task_dependencies(task_id, depends_on_task_id, dependent_task:project_tasks!depends_on_task_id(id, title, status))
         `)
         .single();
 
@@ -1500,12 +1514,16 @@ export function useCRMData() {
   };
 
   // CRUD for Project Subtasks
-  const createProjectSubtask = async (subtaskData: Omit<ProjectSubtask, 'id' | 'created_at'>) => {
+  const createProjectSubtask = async (subtaskData: Omit<ProjectSubtask, 'id' | 'created_at' | 'assignee'>) => {
     try {
       const { data, error } = await supabase
         .from("project_subtasks" as any) // Cast to any due to Supabase types not including this table
-        .insert([subtaskData])
-        .select('*')
+        .insert([{ 
+          ...subtaskData,
+          assignee_id: subtaskData.assignee_id === "unassigned" ? null : subtaskData.assignee_id,
+          due_date: subtaskData.due_date ? format(new Date(subtaskData.due_date), "yyyy-MM-dd") : null,
+        }])
+        .select(`*, assignee:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)`)
         .single();
 
       if (error) throw error;
@@ -1518,13 +1536,19 @@ export function useCRMData() {
     }
   };
 
-  const updateProjectSubtask = async (id: string, updates: Partial<Omit<ProjectSubtask, 'id' | 'created_at'>>) => {
+  const updateProjectSubtask = async (id: string, updates: Partial<Omit<ProjectSubtask, 'id' | 'created_at' | 'assignee'>>) => {
     try {
+      const dataToUpdate = {
+        ...updates,
+        assignee_id: updates.assignee_id === "unassigned" ? null : (updates.assignee_id || null),
+        due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
+      };
+
       const { data, error } = await supabase
         .from("project_subtasks" as any) // Cast to any due to Supabase types not including this table
-        .update(updates)
+        .update(dataToUpdate)
         .eq("id", id)
-        .select('*')
+        .select(`*, assignee:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)`)
         .single();
 
       if (error) throw error;
@@ -1559,7 +1583,7 @@ export function useCRMData() {
       const creatorProfileId = await getOrCreateUserProfileId();
       const { data, error } = await supabase
         .from("project_task_comments" as any) // Cast to any due to Supabase types not including this table
-        .insert([{ ...commentData, created_by: creatorProfileId }])
+        .insert([{ ...commentData, created_by: creatorProfileId } as any]) // Cast insert payload
         .select(`
           *,
           creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
@@ -1610,6 +1634,45 @@ export function useCRMData() {
       await fetchData(); // Re-fetch to update UI
     } catch (error: any) {
       toast({ title: "Error deleting comment", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  // CRUD for Project Task Dependencies
+  const createProjectTaskDependency = async (taskId: string, dependsOnTaskId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("project_task_dependencies")
+        .insert([{ task_id: taskId, depends_on_task_id: dependsOnTaskId }])
+        .select(`
+          *,
+          dependent_task:project_tasks!depends_on_task_id(id, title, status)
+        `)
+        .single();
+
+      if (error) throw error;
+      toast({ title: "Dependency added", description: "Task dependency created successfully." });
+      await fetchData();
+      return data as ProjectTaskDependency;
+    } catch (error: any) {
+      toast({ title: "Error adding dependency", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const deleteProjectTaskDependency = async (taskId: string, dependsOnTaskId: string) => {
+    try {
+      const { error } = await supabase
+        .from("project_task_dependencies")
+        .delete()
+        .eq("task_id", taskId)
+        .eq("depends_on_task_id", dependsOnTaskId);
+
+      if (error) throw error;
+      toast({ title: "Dependency removed", description: "Task dependency removed successfully." });
+      await fetchData();
+    } catch (error: any) {
+      toast({ title: "Error removing dependency", description: error.message, variant: "destructive" });
       throw error;
     }
   };
@@ -1737,6 +1800,8 @@ export function useCRMData() {
     createProjectTaskComment, // New
     updateProjectTaskComment, // New
     deleteProjectTaskComment, // New
+    createProjectTaskDependency, // New
+    deleteProjectTaskDependency, // New
     getFullName,
   };
 }

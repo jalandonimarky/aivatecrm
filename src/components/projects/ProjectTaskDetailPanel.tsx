@@ -17,7 +17,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarIcon, Plus, Edit, Trash2, MessageSquare, CheckSquare, User } from "lucide-react";
+import { CalendarIcon, Plus, Edit, Trash2, MessageSquare, CheckSquare, User, Link, Unlink, Lock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
@@ -26,7 +26,7 @@ import { ProjectTaskStatusBadge } from "./ProjectTaskStatusBadge";
 import { useCRMData } from "@/hooks/useCRMData";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { ProjectTask, Profile, ProjectSubtask, ProjectTaskComment } from "@/types/crm";
+import type { ProjectTask, Profile, ProjectSubtask, ProjectTaskComment, ProjectTaskDependency } from "@/types/crm";
 
 interface ProjectTaskDetailPanelProps {
   isOpen: boolean;
@@ -44,6 +44,7 @@ export function ProjectTaskDetailPanel({
   getFullName,
 }: ProjectTaskDetailPanelProps) {
   const {
+    projects, // Need projects to find other tasks for dependencies
     updateProjectTask,
     createProjectSubtask,
     updateProjectSubtask,
@@ -51,6 +52,8 @@ export function ProjectTaskDetailPanel({
     createProjectTaskComment,
     updateProjectTaskComment,
     deleteProjectTaskComment,
+    createProjectTaskDependency, // New
+    deleteProjectTaskDependency, // New
     refetch, // To refresh data after changes
   } = useCRMData();
   const { toast } = useToast();
@@ -66,9 +69,16 @@ export function ProjectTaskDetailPanel({
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [newSubtaskAssignee, setNewSubtaskAssignee] = useState<string | undefined>(undefined);
+  const [newSubtaskDueDate, setNewSubtaskDueDate] = useState<Date | undefined>(undefined);
+  const [isSubtaskCalendarOpen, setIsSubtaskCalendarOpen] = useState(false);
+
   const [newCommentContent, setNewCommentContent] = useState("");
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [localComments, setLocalComments] = useState<ProjectTaskComment[]>([]);
+
+  const [isAddingDependency, setIsAddingDependency] = useState(false);
+  const [selectedDependencyTask, setSelectedDependencyTask] = useState<string | undefined>(undefined);
 
   const taskPriorities: { value: ProjectTask['priority'], label: string }[] = [
     { value: "Low", label: "Low" },
@@ -80,7 +90,7 @@ export function ProjectTaskDetailPanel({
     { value: "On Track", label: "On Track" },
     { value: "At Risk", label: "At Risk" },
     { value: "Off Track", label: "Off Track" },
-    { value: "Completed", label: "Completed" }, // Added 'Completed' label
+    { value: "Completed", label: "Completed" },
   ];
 
   const taskSections: { value: ProjectTask['section'], label: string }[] = [
@@ -113,9 +123,13 @@ export function ProjectTaskDetailPanel({
         section: "To Do",
       });
       setNewSubtaskTitle("");
+      setNewSubtaskAssignee(undefined);
+      setNewSubtaskDueDate(undefined);
       setNewCommentContent("");
       setIsEditingDescription(false);
       setLocalComments([]);
+      setIsAddingDependency(false);
+      setSelectedDependencyTask(undefined);
     }
   }, [task]);
 
@@ -130,7 +144,7 @@ export function ProjectTaskDetailPanel({
         async (payload) => {
           // Re-fetch comments to ensure creator profile is included
           const { data, error } = await supabase
-            .from('project_task_comments' as any) // Cast to any
+            .from('project_task_comments')
             .select('*, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)')
             .eq('task_id', task.id)
             .order('created_at', { ascending: false });
@@ -139,7 +153,7 @@ export function ProjectTaskDetailPanel({
             console.error("Error fetching real-time comments:", error);
             toast({ title: "Error", description: "Failed to update comments in real-time.", variant: "destructive" });
           } else {
-            setLocalComments(data as ProjectTaskComment[] || []); // Cast data
+            setLocalComments(data || []);
           }
         }
       )
@@ -185,6 +199,31 @@ export function ProjectTaskDetailPanel({
 
   const handleMarkAsComplete = async () => {
     if (!task) return;
+
+    // Check for uncompleted subtasks
+    const uncompletedSubtasks = (task.subtasks || []).filter(sub => !sub.is_completed);
+    if (uncompletedSubtasks.length > 0) {
+      toast({
+        title: "Cannot Complete Task",
+        description: `Please complete all ${uncompletedSubtasks.length} subtask(s) first.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check for uncompleted dependencies
+    const uncompletedDependencies = (task.dependencies || []).filter(dep => 
+      dep.dependent_task?.status !== 'Completed'
+    );
+    if (uncompletedDependencies.length > 0) {
+      toast({
+        title: "Cannot Complete Task",
+        description: `This task is blocked by ${uncompletedDependencies.length} uncompleted dependency task(s).`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (confirm("Are you sure you want to mark this task as complete and move it to 'Done'?")) {
       try {
         await updateProjectTask(task.id, { status: "Completed", section: "Done" });
@@ -199,8 +238,16 @@ export function ProjectTaskDetailPanel({
   const handleAddSubtask = async () => {
     if (!task || !newSubtaskTitle.trim()) return;
     try {
-      await createProjectSubtask({ task_id: task.id, title: newSubtaskTitle, is_completed: false });
+      await createProjectSubtask({ 
+        task_id: task.id, 
+        title: newSubtaskTitle, 
+        is_completed: false,
+        assignee_id: newSubtaskAssignee === "unassigned" ? undefined : newSubtaskAssignee,
+        due_date: newSubtaskDueDate ? format(newSubtaskDueDate, "yyyy-MM-dd") : undefined,
+      });
       setNewSubtaskTitle("");
+      setNewSubtaskAssignee(undefined);
+      setNewSubtaskDueDate(undefined);
     } catch (error: any) {
       toast({ title: "Error adding subtask", description: error.message, variant: "destructive" });
     }
@@ -210,6 +257,19 @@ export function ProjectTaskDetailPanel({
     if (!task) return;
     try {
       await updateProjectSubtask(subtask.id, { is_completed: !subtask.is_completed });
+    } catch (error: any) {
+      toast({ title: "Error updating subtask", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleUpdateSubtaskField = async (subtask: ProjectSubtask, field: 'assignee_id' | 'due_date', value: any) => {
+    if (!task) return;
+    try {
+      const dataToUpdate = {
+        [field]: field === 'due_date' && value ? format(value, "yyyy-MM-dd") : (value === "unassigned" ? null : value),
+      };
+      await updateProjectSubtask(subtask.id, dataToUpdate);
+      toast({ title: "Subtask updated", description: `Subtask ${field.replace('_', ' ')} updated.` });
     } catch (error: any) {
       toast({ title: "Error updating subtask", description: error.message, variant: "destructive" });
     }
@@ -247,18 +307,66 @@ export function ProjectTaskDetailPanel({
     }
   };
 
+  const handleAddDependency = async () => {
+    if (!task || !selectedDependencyTask) return;
+    if (task.id === selectedDependencyTask) {
+      toast({
+        title: "Invalid Dependency",
+        description: "A task cannot depend on itself.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if ((task.dependencies || []).some(dep => dep.depends_on_task_id === selectedDependencyTask)) {
+      toast({
+        title: "Duplicate Dependency",
+        description: "This dependency already exists.",
+        variant: "warning",
+      });
+      return;
+    }
+    try {
+      await createProjectTaskDependency(task.id, selectedDependencyTask);
+      setSelectedDependencyTask(undefined);
+      setIsAddingDependency(false);
+    } catch (error: any) {
+      toast({ title: "Error adding dependency", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteDependency = async (dependsOnTaskId: string) => {
+    if (!task) return;
+    if (confirm("Are you sure you want to remove this dependency?")) {
+      try {
+        await deleteProjectTaskDependency(task.id, dependsOnTaskId);
+      } catch (error: any) {
+        toast({ title: "Error removing dependency", description: error.message, variant: "destructive" });
+      }
+    }
+  };
+
   if (!task) {
     return null; // Or a loading skeleton if preferred
   }
 
   const sortedSubtasks = [...(task.subtasks || [])].sort((a, b) => a.created_at.localeCompare(b.created_at));
   const sortedComments = [...(localComments || [])].sort((a, b) => parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime());
+  const sortedDependencies = [...(task.dependencies || [])].sort((a, b) => a.dependent_task?.title.localeCompare(b.dependent_task?.title || '') || 0);
+
+  // Get all other tasks in the same project for dependency selection
+  const currentProject = projects.find(p => p.id === task.project_id);
+  const otherTasksInProject = (currentProject?.tasks || []).filter(t => t.id !== task.id);
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg flex flex-col">
         <SheetHeader>
-          <SheetTitle className="text-2xl font-bold">{task.title}</SheetTitle>
+          <SheetTitle className="text-2xl font-bold flex items-center">
+            {task.title}
+            {task.is_blocked && (
+              <Lock className="w-5 h-5 ml-2 text-destructive" />
+            )}
+          </SheetTitle>
           <SheetDescription className="text-muted-foreground">
             Manage details, subtasks, and comments for this project task.
           </SheetDescription>
@@ -421,6 +529,71 @@ export function ProjectTaskDetailPanel({
 
             <Separator />
 
+            {/* Dependencies Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Link className="w-5 h-5 mr-2 text-primary" /> Dependencies ({sortedDependencies.length})
+              </h3>
+              <div className="space-y-2">
+                {sortedDependencies.length === 0 && (
+                  <p className="text-muted-foreground text-sm">No dependencies set for this task.</p>
+                )}
+                {sortedDependencies.map(dep => (
+                  <div key={dep.depends_on_task_id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center space-x-2">
+                      <span className={cn(
+                        "text-sm font-medium",
+                        dep.dependent_task?.status === 'Completed' ? "line-through text-muted-foreground" : "text-foreground"
+                      )}>
+                        {dep.dependent_task?.title || "Unknown Task"}
+                      </span>
+                      {dep.dependent_task?.status !== 'Completed' && (
+                        <Lock className="w-4 h-4 text-destructive" />
+                      )}
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteDependency(dep.depends_on_task_id)} className="h-8 w-8 text-destructive">
+                      <Unlink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                {isAddingDependency ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="dependency-task">Add Dependency</Label>
+                    <Select
+                      value={selectedDependencyTask}
+                      onValueChange={setSelectedDependencyTask}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a task to depend on" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {otherTasksInProject.length === 0 && (
+                          <p className="p-2 text-muted-foreground">No other tasks in this project.</p>
+                        )}
+                        {otherTasksInProject.map(otherTask => (
+                          <SelectItem key={otherTask.id} value={otherTask.id}>
+                            {otherTask.title} ({otherTask.status})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setIsAddingDependency(false)}>Cancel</Button>
+                      <Button onClick={handleAddDependency} disabled={!selectedDependencyTask}>Add Dependency</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button variant="outline" onClick={() => setIsAddingDependency(true)} className="w-full">
+                    <Plus className="w-4 h-4 mr-2" /> Add Dependency
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
             {/* Subtasks Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center">
@@ -431,40 +604,96 @@ export function ProjectTaskDetailPanel({
                   <p className="text-muted-foreground text-sm">No subtasks yet. Add one below!</p>
                 )}
                 {sortedSubtasks.map(subtask => (
-                  <div key={subtask.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`subtask-${subtask.id}`}
-                        checked={subtask.is_completed}
-                        onCheckedChange={() => handleToggleSubtaskComplete(subtask)}
-                      />
-                      <Label
-                        htmlFor={`subtask-${subtask.id}`}
-                        className={cn("text-sm", subtask.is_completed && "line-through text-muted-foreground")}
-                      >
-                        {subtask.title}
-                      </Label>
+                  <div key={subtask.id} className="flex flex-col p-2 rounded-md hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`subtask-${subtask.id}`}
+                          checked={subtask.is_completed}
+                          onCheckedChange={() => handleToggleSubtaskComplete(subtask)}
+                        />
+                        <Label
+                          htmlFor={`subtask-${subtask.id}`}
+                          className={cn("text-sm", subtask.is_completed && "line-through text-muted-foreground")}
+                        >
+                          {subtask.title}
+                        </Label>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => handleDeleteSubtask(subtask.id)} className="h-8 w-8">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteSubtask(subtask.id)} className="h-8 w-8">
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mt-2 pl-6">
+                      <div className="flex items-center space-x-2">
+                        {subtask.assignee && (
+                          <div className="flex items-center space-x-1">
+                            <User className="w-3 h-3" />
+                            <span>{getFullName(subtask.assignee)}</span>
+                          </div>
+                        )}
+                        {subtask.due_date && (
+                          <div className="flex items-center space-x-1">
+                            <CalendarIcon className="w-3 h-3" />
+                            <span>{format(parseISO(subtask.due_date), "MMM dd")}</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Add edit options for subtask assignee/due date if needed */}
+                    </div>
                   </div>
                 ))}
               </div>
-              <div className="flex space-x-2">
+              <div className="space-y-2">
                 <Input
-                  placeholder="Add new subtask"
+                  placeholder="New subtask title"
                   value={newSubtaskTitle}
                   onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddSubtask();
-                    }
-                  }}
                 />
-                <Button onClick={handleAddSubtask} disabled={!newSubtaskTitle.trim()}>
-                  <Plus className="w-4 h-4" />
+                <div className="grid grid-cols-2 gap-2">
+                  <Select
+                    value={newSubtaskAssignee || "unassigned"}
+                    onValueChange={(value) => setNewSubtaskAssignee(value === "unassigned" ? undefined : value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Assignee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {profiles.map(profile => (
+                        <SelectItem key={profile.id} value={profile.id}>
+                          {getFullName(profile)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Popover open={isSubtaskCalendarOpen} onOpenChange={setIsSubtaskCalendarOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !newSubtaskDueDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {newSubtaskDueDate ? format(newSubtaskDueDate, "PPP") : <span>Due Date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={newSubtaskDueDate}
+                        onSelect={(date) => {
+                          setNewSubtaskDueDate(date || undefined);
+                          setIsSubtaskCalendarOpen(false);
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <Button onClick={handleAddSubtask} disabled={!newSubtaskTitle.trim()} className="w-full">
+                  <Plus className="w-4 h-4 mr-2" /> Add Subtask
                 </Button>
               </div>
             </div>

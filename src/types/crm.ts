@@ -184,6 +184,9 @@ export interface ProjectSubtask {
   title: string;
   is_completed: boolean;
   created_at: string;
+  assignee_id?: string; // New: Optional assignee for subtask
+  due_date?: string; // New: Optional due date for subtask
+  assignee?: Profile; // New: Nested assignee profile
 }
 
 export interface ProjectTaskComment {
@@ -208,13 +211,15 @@ export interface ProjectTask {
   order_index: number;
   created_at: string;
   updated_at: string;
-  dependencies?: ProjectTaskDependency[];
+  dependencies?: ProjectTaskDependency[]; // New: Dependencies array
   assignee?: Profile;
   subtasks?: ProjectSubtask[]; // Added subtasks
   comments?: ProjectTaskComment[]; // Added comments
+  is_blocked?: boolean; // New: To indicate if the task is blocked by dependencies
 }
 
 export interface ProjectTaskDependency {
   task_id: string;
   depends_on_task_id: string;
+  dependent_task?: ProjectTask; // New: Nested dependent task for display
 }

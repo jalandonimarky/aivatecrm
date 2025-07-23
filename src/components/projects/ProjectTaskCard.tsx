@@ -5,7 +5,7 @@ import { UserProfileCard } from "@/components/UserProfileCard";
 import { ProjectTaskStatusBadge } from "./ProjectTaskStatusBadge";
 import { ProjectTaskPriorityBadge } from "./ProjectTaskPriorityBadge";
 import { format, parseISO } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, Lock } from "lucide-react"; // Import Lock icon
 import { cn } from "@/lib/utils";
 import type { ProjectTask } from "@/types/crm";
 
@@ -24,8 +24,9 @@ export function ProjectTaskCard({ task, index, onOpenDetail }: ProjectTaskCardPr
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "bg-card border-border/50 shadow-sm hover:shadow-medium transition-shadow cursor-pointer", // Added cursor-pointer
-            snapshot.isDragging && "shadow-lg ring-2 ring-primary"
+            "bg-card border-border/50 shadow-sm hover:shadow-medium transition-shadow cursor-pointer relative", // Added relative for absolute positioning of lock icon
+            snapshot.isDragging && "shadow-lg ring-2 ring-primary",
+            task.is_blocked && "border-l-4 border-destructive" // Visual cue for blocked tasks
           )}
           onClick={() => onOpenDetail(task)} // Added onClick handler
         >
@@ -45,6 +46,11 @@ export function ProjectTaskCard({ task, index, onOpenDetail }: ProjectTaskCardPr
               {task.assignee && <UserProfileCard profile={task.assignee} />}
             </div>
           </CardContent>
+          {task.is_blocked && (
+            <div className="absolute top-2 right-2 text-destructive" title="Blocked by dependencies">
+              <Lock className="w-4 h-4" />
+            </div>
+          )}
         </Card>
       )}
     </Draggable>
