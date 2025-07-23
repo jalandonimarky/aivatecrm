@@ -199,15 +199,15 @@ export function KanbanItemDetails() {
           <h3 className="text-lg font-semibold">Tenant Lead Info</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Full Name</p> {/* New field */}
+              <p className="text-sm text-muted-foreground">Full Name</p>
               <p className="text-lg font-semibold">{kanbanItem.full_name || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Email Address</p> {/* New field */}
+              <p className="text-sm text-muted-foreground">Email Address</p>
               <p className="text-lg font-semibold">{kanbanItem.email_address || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Phone Number</p> {/* Changed label */}
+              <p className="text-sm text-muted-foreground">Phone Number</p>
               <p className="text-lg font-semibold">{kanbanItem.client_contact_info || "N/A"}</p>
             </div>
             <div>
@@ -215,19 +215,19 @@ export function KanbanItemDetails() {
               <p className="text-lg font-semibold">{kanbanItem.family_makeup || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Number of Pets</p> {/* Changed label */}
+              <p className="text-sm text-muted-foreground">Number of Pets</p>
               <p className="text-lg font-semibold">{kanbanItem.pets_info !== undefined && kanbanItem.pets_info !== null ? kanbanItem.pets_info : "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Number of Bedrooms</p> {/* New field */}
+              <p className="text-sm text-muted-foreground">Number of Bedrooms</p>
               <p className="text-lg font-semibold">{kanbanItem.num_bedrooms !== undefined && kanbanItem.num_bedrooms !== null ? kanbanItem.num_bedrooms : "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Number of Bathrooms</p> {/* New field */}
+              <p className="text-sm text-muted-foreground">Number of Bathrooms</p>
               <p className="text-lg font-semibold">{kanbanItem.num_bathrooms !== undefined && kanbanItem.num_bathrooms !== null ? kanbanItem.num_bathrooms : "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Preferred Location</p> {/* Changed label */}
+              <p className="text-sm text-muted-foreground">Preferred Location</p>
               <p className="text-lg font-semibold">{kanbanItem.preferred_location || "N/A"}</p>
             </div>
           </div>
@@ -244,8 +244,16 @@ export function KanbanItemDetails() {
           <h3 className="text-lg font-semibold">Housing Lead Info</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Housing Partner Contact Info</p>
-              <p className="text-lg font-semibold">{kanbanItem.housing_partner_contact_info || "N/A"}</p>
+              <p className="text-sm text-muted-foreground">Full Name</p>
+              <p className="text-lg font-semibold">{kanbanItem.housing_partner_full_name || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Email Address</p>
+              <p className="text-lg font-semibold">{kanbanItem.housing_partner_email || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Phone Number</p>
+              <p className="text-lg font-semibold">{kanbanItem.housing_partner_phone || "N/A"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Property Address</p>

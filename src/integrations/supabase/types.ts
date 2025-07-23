@@ -279,19 +279,24 @@ export type Database = {
       kanban_items: {
         Row: {
           assigned_to: string | null
-          beds_baths_needed: string | null
           client_contact_info: string | null
           client_type: string | null
           column_id: string
           created_at: string
           created_by: string | null
           description: string | null
+          email_address: string | null
           family_makeup: string | null
-          housing_partner_contact_info: string | null
+          full_name: string | null
+          housing_partner_email: string | null
+          housing_partner_full_name: string | null
+          housing_partner_phone: string | null
           id: string
           lead_type: string | null
           move_in_date: string | null
           mtr_approved: boolean | null
+          num_bathrooms: number | null
+          num_bedrooms: number | null
           order_index: number
           pets_info: number | null
           preferred_location: string | null
@@ -301,26 +306,27 @@ export type Database = {
           property_match: string | null
           status: string | null
           title: string
-          full_name: string | null
-          email_address: string | null
-          num_bedrooms: number | null
-          num_bathrooms: number | null
         }
         Insert: {
           assigned_to?: string | null
-          beds_baths_needed?: string | null
           client_contact_info?: string | null
           client_type?: string | null
           column_id: string
           created_at?: string
           created_by?: string | null
           description?: string | null
+          email_address?: string | null
           family_makeup?: string | null
-          housing_partner_contact_info?: string | null
+          full_name?: string | null
+          housing_partner_email?: string | null
+          housing_partner_full_name?: string | null
+          housing_partner_phone?: string | null
           id?: string
           lead_type?: string | null
           move_in_date?: string | null
           mtr_approved?: boolean | null
+          num_bathrooms?: number | null
+          num_bedrooms?: number | null
           order_index: number
           pets_info?: number | null
           preferred_location?: string | null
@@ -330,26 +336,27 @@ export type Database = {
           property_match?: string | null
           status?: string | null
           title: string
-          full_name?: string | null
-          email_address?: string | null
-          num_bedrooms?: number | null
-          num_bathrooms?: number | null
         }
         Update: {
           assigned_to?: string | null
-          beds_baths_needed?: string | null
           client_contact_info?: string | null
           client_type?: string | null
           column_id?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
+          email_address?: string | null
           family_makeup?: string | null
-          housing_partner_contact_info?: string | null
+          full_name?: string | null
+          housing_partner_email?: string | null
+          housing_partner_full_name?: string | null
+          housing_partner_phone?: string | null
           id?: string
           lead_type?: string | null
           move_in_date?: string | null
           mtr_approved?: boolean | null
+          num_bathrooms?: number | null
+          num_bedrooms?: number | null
           order_index?: number
           pets_info?: number | null
           preferred_location?: string | null
@@ -359,10 +366,6 @@ export type Database = {
           property_match?: string | null
           status?: string | null
           title?: string
-          full_name?: string | null
-          email_address?: string | null
-          num_bedrooms?: number | null
-          num_bathrooms?: number | null
         }
         Relationships: [
           {

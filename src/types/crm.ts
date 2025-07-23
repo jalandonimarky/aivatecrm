@@ -114,33 +114,35 @@ export interface KanbanItem {
   id: string;
   column_id: string;
   title: string;
-  description?: string;
+  description?: string | null; // Allow null for description
   order_index: number;
-  created_by?: string;
+  created_by?: string | null; // Allow null for created_by
   created_at: string;
   creator?: Profile;
-  assigned_to?: string;
+  assigned_to?: string | null; // Allow null for assigned_to
   assigned_user?: Profile;
   
   // New and updated fields
-  lead_type?: 'Tenant Lead Contact' | 'Property Lead Contact';
-  client_type?: 'insurance' | 'corporate' | 'individual';
-  status?: 'New' | 'In Progress' | 'Closed';
-  property_match?: string;
-  property_criteria?: string;
-  full_name?: string; // New field
-  email_address?: string; // New field
-  client_contact_info?: string; // Renamed from client_contact_info (US Phone) to Phone Number
-  family_makeup?: string;
-  pets_info?: number; // Changed to number
-  num_bedrooms?: number; // New field
-  num_bathrooms?: number; // New field
-  preferred_location?: string; // Renamed from Location Preferred
-  move_in_date?: string;
-  housing_partner_contact_info?: string;
-  property_address?: string;
-  property_beds_baths_sqft?: string;
-  mtr_approved?: boolean;
+  lead_type?: 'Tenant Lead Contact' | 'Property Lead Contact' | null;
+  client_type?: 'insurance' | 'corporate' | 'individual' | null;
+  status?: 'New' | 'In Progress' | 'Closed' | null;
+  property_match?: string | null;
+  property_criteria?: string | null;
+  full_name?: string | null; // Tenant Lead: Full Name
+  email_address?: string | null; // Tenant Lead: Email Address
+  client_contact_info?: string | null; // Tenant Lead: Phone Number
+  family_makeup?: string | null;
+  pets_info?: number | null; // Changed to number | null
+  num_bedrooms?: number | null; // New field
+  num_bathrooms?: number | null; // New field
+  preferred_location?: string | null; // Tenant Lead: Preferred Location
+  move_in_date?: string | null; // Changed to string | null
+  housing_partner_full_name?: string | null; // Housing Lead: Full Name (renamed from housing_partner_contact_info)
+  housing_partner_email?: string | null; // Housing Lead: Email Address (new)
+  housing_partner_phone?: string | null; // Housing Lead: Phone Number (new)
+  property_address?: string | null;
+  property_beds_baths_sqft?: string | null;
+  mtr_approved?: boolean | null; // Allow boolean | null
   activity?: KanbanItemActivity[];
 }
 
