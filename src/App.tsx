@@ -15,6 +15,7 @@ import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
 import { Kanban } from "./pages/Kanban"; // Import Kanban page
+import { TaskMatrix } from "./pages/TaskMatrix";
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +64,8 @@ const App = () => {
               // Authenticated routes
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/kanban" element={<Kanban />} /> {/* New route for Kanban */}
+                <Route path="/kanban" element={<Kanban />} />
+                <Route path="/task-matrix" element={<TaskMatrix />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/:id" element={<ContactDetails />} />
                 <Route path="/deals" element={<Deals />} />

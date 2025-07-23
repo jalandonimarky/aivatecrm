@@ -168,3 +168,33 @@ export interface DataHygieneInsights {
   suggestions: string[];
   dealBreakerWarning: boolean;
 }
+
+export interface Project {
+  id: string;
+  name: string;
+  status: 'Active' | 'Completed' | 'On Hold';
+  created_at: string;
+  owner_id: string;
+  tasks?: ProjectTask[];
+}
+
+export interface ProjectTask {
+  id: string;
+  title: string;
+  description?: string;
+  assignee_id?: string;
+  project_id: string;
+  due_date?: string;
+  priority: 'Low' | 'Medium' | 'High';
+  status: 'On Track' | 'At Risk' | 'Off Track';
+  section: 'To Do' | 'Doing' | 'Done';
+  created_at: string;
+  updated_at: string;
+  dependencies?: ProjectTaskDependency[];
+  assignee?: Profile;
+}
+
+export interface ProjectTaskDependency {
+  task_id: string;
+  depends_on_task_id: string;
+}
