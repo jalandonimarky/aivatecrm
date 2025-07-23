@@ -87,10 +87,13 @@ export interface Task {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  parent_task_id?: string | null; // For sub-tasks
+  order_index?: number; // For drag-and-drop ordering
   assigned_user?: Profile;
   related_contact?: Contact;
   related_deal?: Deal;
   notes?: TaskNote[]; // Added notes array for tasks
+  sub_tasks?: Task[]; // For nesting in the UI
 }
 
 export interface KanbanItemActivity {

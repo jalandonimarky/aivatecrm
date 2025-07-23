@@ -542,7 +542,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for tasks
-  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>) => {
+  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal' | 'notes' | 'sub_tasks'>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -583,7 +583,7 @@ export function useCRMData() {
     }
   };
 
-  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>>) => {
+  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal' | 'notes' | 'sub_tasks'>>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")

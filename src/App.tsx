@@ -14,7 +14,8 @@ import { Tasks } from "./pages/Tasks";
 import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
-import { Kanban } from "./pages/Kanban"; // Import Kanban page
+import { Kanban } from "./pages/Kanban";
+import { ProductivityTracker } from "./pages/ProductivityTracker"; // Import new page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +64,8 @@ const App = () => {
               // Authenticated routes
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/kanban" element={<Kanban />} /> {/* New route for Kanban */}
+                <Route path="/kanban" element={<Kanban />} />
+                <Route path="/productivity-tracker" element={<ProductivityTracker />} /> {/* New route */}
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/:id" element={<ContactDetails />} />
                 <Route path="/deals" element={<Deals />} />
