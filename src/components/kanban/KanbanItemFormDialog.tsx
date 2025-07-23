@@ -177,12 +177,12 @@ export function KanbanItemFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col"> {/* Increased max-width and added max-h, flex-col */}
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit Lead" : "Create New Lead"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1"> {/* Added flex-1 to form */}
-          <ScrollArea className="flex-1 pr-6"> {/* Changed h-[70vh] to flex-1 */}
+        <form onSubmit={handleSubmit}>
+          <ScrollArea className="h-[70vh] pr-6">
             <div className="space-y-4 py-4">
               {/* Main Details */}
               <div className="space-y-2">
