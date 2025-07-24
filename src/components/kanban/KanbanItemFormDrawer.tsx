@@ -105,12 +105,12 @@ export function KanbanItemFormDrawer({ // Renamed component
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={onOpenChange} direction="right"> {/* Changed to Drawer */}
-      <DrawerContent className="w-full max-w-md h-full mt-0 rounded-none"> {/* Adjusted for side panel */}
+    <Drawer open={isOpen} onOpenChange={onOpenChange} direction="right">
+      <DrawerContent className="w-full md:w-1/2 lg:w-2/5 max-w-lg h-full mt-0 rounded-none"> {/* Adjusted width classes */}
         <DrawerHeader>
           <DrawerTitle>{initialData ? "Edit Item" : "Add New Item"}</DrawerTitle>
         </DrawerHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4 px-4 overflow-y-auto flex-1"> {/* Added px-4 and overflow-y-auto */}
+        <form onSubmit={handleSubmit} className="space-y-4 py-4 px-4 overflow-y-auto flex-1">
           <div className="space-y-2">
             <Label htmlFor="item-title">Title *</Label>
             <Input
@@ -243,7 +243,7 @@ export function KanbanItemFormDrawer({ // Renamed component
             />
           </div>
 
-          <DrawerFooter className="flex-shrink-0 px-0"> {/* Adjusted for drawer */}
+          <DrawerFooter className="flex-shrink-0 px-0">
             <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
               Cancel
             </Button>
