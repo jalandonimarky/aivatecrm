@@ -80,7 +80,7 @@ export function AppSidebar() {
   const getNavClasses = (active: boolean) =>
     active 
       ? "bg-gradient-primary text-primary-foreground font-medium shadow-glow" 
-      : "hover:bg-muted/50 transition-smooth";
+      : "hover:bg-sidebar-accent hover:text-sidebar-foreground transition-smooth"; // Changed hover styles
 
   const handleSignOut = async () => {
     try {
