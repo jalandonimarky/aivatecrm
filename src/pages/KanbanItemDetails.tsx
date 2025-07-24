@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format, parseISO, parse } from "date-fns";
+import { format, parseISO, parse, formatDistanceToNowStrict } from "date-fns"; // Import formatDistanceToNowStrict
 import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
@@ -329,7 +329,7 @@ export function KanbanItemDetails() {
             </DropdownMenu>
           </div>
           <p className="text-muted-foreground text-sm">
-            In column <span className="font-semibold">{item.column?.name || "N/A"}</span> | Created: {format(parseISO(item.created_at), "PPP")}
+            In column <span className="font-semibold">{item.column?.name || "N/A"}</span>
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -444,7 +444,7 @@ export function KanbanItemDetails() {
       )}
 
       <CollapsibleCard
-        title={`Notes (${sortedNotes.length})`}
+        title={`Notes (${sortedNotes.length}) - Created ${formatDistanceToNowStrict(parseISO(item.created_at), { addSuffix: true })}`}
         storageKey="kanban-notes-collapsed"
       >
         <div className="space-y-4">
