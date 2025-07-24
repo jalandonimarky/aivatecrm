@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { kanbanBoardColors } from "@/lib/kanban-colors";
 import type { KanbanBoard } from "@/types/crm";
 
 interface KanbanBoardFormDialogProps {
@@ -13,48 +15,23 @@ interface KanbanBoardFormDialogProps {
   onSubmit: (data: { name: string, background_color: string | null }) => Promise<void>;
 }
 
-// Only light, soft gradients for a gentle, eye-pleasing look
-const gradientOptions = [
-  {
-    name: "Mint to White",
-    value: "linear-gradient(135deg, #b9fbc0 0%, #ffffff 100%)",
-  },
-  {
-    name: "Sky Blue to White",
-    value: "linear-gradient(135deg, #dbeafe 0%, #ffffff 100%)",
-  },
-  {
-    name: "Peach to White",
-    value: "linear-gradient(135deg, #ffe5b4 0%, #ffffff 100%)",
-  },
-  {
-    name: "Lavender to White",
-    value: "linear-gradient(135deg, #e9d5ff 0%, #ffffff 100%)",
-  },
-  {
-    name: "Soft Yellow to White",
-    value: "linear-gradient(135deg, #fef9c3 0%, #ffffff 100%)",
-  },
-  {
-    name: "Blush to White",
-    value: "linear-gradient(135deg, #ffe4e6 0%, #ffffff 100%)",
-  },
-];
-
 export function KanbanBoardFormDialog({
   isOpen,
   onOpenChange,
   initialData,
   onSubmit,
 }: KanbanBoardFormDialogProps) {
+  const { theme } = useTheme();
   const [boardName, setBoardName] = useState("");
-  const [selectedGradient, setSelectedGradient] = useState<string | null>(null);
+  const [selectedColorKey, setSelectedColorKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setBoardName(initialData?.name || "");
-      setSelectedGradient(initialData?.background_color || null);
+      // Check if the stored value is a key or an old CSS value
+      const isKey = kanbanBoardColors.some(c => c.key === initialData?.background_color);
+      setSelectedColorKey(isKey ? initialData?.background_color || null : null);
       setLoading(false);
     }
   }, [isOpen, initialData]);
@@ -64,7 +41,7 @@ export function KanbanBoardFormDialog({
     if (!boardName.trim()) return;
     setLoading(true);
     try {
-      await onSubmit({ name: boardName, background_color: selectedGradient });
+      await onSubmit({ name: boardName, background_color: selectedColorKey });
       onOpenChange(false);
     } finally {
       setLoading(false);
@@ -92,33 +69,33 @@ export function KanbanBoardFormDialog({
           <div className="space-y-2">
             <Label>Board Color</Label>
             <div className="grid grid-cols-3 gap-2">
-              {gradientOptions.map((gradient) => (
+              {kanbanBoardColors.map((color) => (
                 <div
-                  key={gradient.value}
+                  key={color.key}
                   className={cn(
                     "w-full h-10 rounded-md cursor-pointer border-2 border-transparent transition-all flex items-center justify-center",
-                    selectedGradient === gradient.value && "border-primary ring-2 ring-primary"
+                    selectedColorKey === color.key && "border-primary ring-2 ring-primary"
                   )}
-                  style={{ backgroundImage: gradient.value }}
-                  onClick={() => setSelectedGradient(gradient.value)}
-                  title={gradient.name}
+                  style={{ backgroundImage: theme === 'dark' ? color.dark : color.light }}
+                  onClick={() => setSelectedColorKey(color.key)}
+                  title={color.name}
                 />
               ))}
               {/* None option */}
               <div
                 className={cn(
                   "w-full h-10 rounded-md cursor-pointer border-2 border-transparent flex items-center justify-center text-muted-foreground text-xs bg-muted",
-                  !selectedGradient && "border-primary ring-2 ring-primary"
+                  !selectedColorKey && "border-primary ring-2 ring-primary"
                 )}
-                onClick={() => setSelectedGradient(null)}
+                onClick={() => setSelectedColorKey(null)}
                 title="Default"
               >
                 <span className="text-sm font-medium">None</span>
               </div>
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              {selectedGradient
-                ? gradientOptions.find(g => g.value === selectedGradient)?.name || "Custom"
+              {selectedColorKey
+                ? kanbanBoardColors.find(c => c.key === selectedColorKey)?.name || "Custom"
                 : "Default (matches app theme)"}
             </div>
           </div>

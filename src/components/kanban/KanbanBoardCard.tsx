@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -6,6 +7,7 @@ import { MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import type { KanbanBoard } from "@/types/crm";
 import { cn } from "@/lib/utils";
+import { getKanbanColor } from "@/lib/kanban-colors";
 
 interface KanbanBoardCardProps {
   board: KanbanBoard;
@@ -16,26 +18,41 @@ interface KanbanBoardCardProps {
 }
 
 export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChange }: KanbanBoardCardProps) {
-  // If background_color is a gradient, apply as backgroundImage, else fallback to default
-  const cardStyle = board.background_color
-    ? { backgroundImage: board.background_color }
+  const { theme } = useTheme();
+
+  const backgroundColor = getKanbanColor(board.background_color, theme);
+  
+  const cardStyle = backgroundColor
+    ? { backgroundImage: backgroundColor }
     : {};
 
   return (
     <Card 
       className={cn(
         "border-border/50 hover:shadow-medium transition-smooth cursor-pointer",
-        !board.background_color && "bg-gradient-card"
+        !backgroundColor && "bg-gradient-card"
       )}
       style={cardStyle}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex-1 min-w-0 pr-2 break-words" onClick={() => onSelect(board.id)}>
+        <CardTitle 
+          className={cn(
+            "text-lg font-semibold flex-1 min-w-0 pr-2 break-words",
+            backgroundColor && theme === 'dark' && "text-white/90"
+          )} 
+          onClick={() => onSelect(board.id)}
+        >
           {board.name}
         </CardTitle>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "h-8 w-8 p-0",
+                backgroundColor && theme === 'dark' && "text-white/70 hover:bg-white/10 hover:text-white"
+              )}
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -52,11 +69,17 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChan
         </DropdownMenu>
       </CardHeader>
       <CardContent onClick={() => onSelect(board.id)} className="pt-0">
-        <p className="text-sm text-muted-foreground mb-3">
+        <p className={cn(
+          "text-sm text-muted-foreground mb-3",
+          backgroundColor && theme === 'dark' && "text-white/60"
+        )}>
           {board.columns?.length || 0} columns, {board.columns?.reduce((acc, col) => acc + (col.items?.length || 0), 0) || 0} items
         </p>
         {board.creator && (
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <div className={cn(
+            "flex items-center space-x-2 text-sm text-muted-foreground",
+            backgroundColor && theme === 'dark' && "text-white/60"
+          )}>
             <Users className="w-4 h-4" />
             <UserProfileCard profile={board.creator} />
           </div>
