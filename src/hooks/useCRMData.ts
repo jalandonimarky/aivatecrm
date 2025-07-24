@@ -155,7 +155,7 @@ export function useCRMData() {
 
       // Fetch Kanban Boards with nested columns and items
       const { data: boardsData, error: boardsError } = await (supabase
-        .from("kanban_boards")
+        .from("kanban_boards") as any)
         .select(`
           *,
           creator:profiles!kanban_boards_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
@@ -170,14 +170,14 @@ export function useCRMData() {
               tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
             )
           )
-        `) as any) // Cast the result of select to any here
+        `)
         .order("created_at", { ascending: false })
         .order("order_index", { foreignTable: "columns", ascending: true })
         .order("order_index", { foreignTable: "columns.items", ascending: true });
 
       if (boardsError) throw boardsError;
       
-      const typedBoardsData = (boardsData?.data || []).map((board: any) => ({
+      const typedBoardsData = (boardsData || []).map((board: any) => ({
         ...board,
         creator: board.creator ? (board.creator as Profile) : null,
         columns: (board.columns as any[] || []).map((column: any) => ({
