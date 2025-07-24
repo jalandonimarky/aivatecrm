@@ -545,7 +545,7 @@ export function KanbanItemDetails() {
       </CollapsibleCard>
 
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader><DialogTitle>Edit Note</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -583,7 +583,7 @@ export function KanbanItemDetails() {
       )}
 
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader><DialogTitle>{editingTask ? "Edit Task" : "Add New Task"}</DialogTitle></DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
             <div className="space-y-2">

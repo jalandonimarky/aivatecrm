@@ -114,7 +114,7 @@ export function DealFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Edit Deal" : "Add New Deal"}

@@ -113,7 +113,7 @@ export function Contacts() {
               Add Contact
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>
                 {editingContact ? "Edit Contact" : "Add New Contact"}

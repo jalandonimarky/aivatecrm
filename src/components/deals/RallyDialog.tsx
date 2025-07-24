@@ -67,7 +67,7 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Schedule Rally for "{deal.title}"</DialogTitle>
         </DialogHeader>

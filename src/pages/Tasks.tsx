@@ -193,7 +193,7 @@ export function Tasks() {
               Add Task
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingTask ? "Edit Task" : "Add New Task"}

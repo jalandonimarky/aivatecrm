@@ -92,7 +92,7 @@ export function KanbanItemFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit Item" : "Add New Item"}</DialogTitle>
         </DialogHeader>

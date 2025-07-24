@@ -366,7 +366,7 @@ export function TaskDetails() {
 
       {/* Edit Note Dialog */}
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Task Note</DialogTitle>
           </DialogHeader>
@@ -390,7 +390,7 @@ export function TaskDetails() {
 
       {/* Edit Task Dialog (existing) */}
       <Dialog open={isTaskFormDialogOpen} onOpenChange={setIsTaskFormDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>
           </DialogHeader>

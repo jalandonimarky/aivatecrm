@@ -297,7 +297,7 @@ export function ContactDetails() {
 
       {/* Edit Contact Dialog */}
       <Dialog open={isContactFormDialogOpen} onOpenChange={setIsContactFormDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Contact</DialogTitle>
           </DialogHeader>

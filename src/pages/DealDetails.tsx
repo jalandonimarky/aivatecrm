@@ -507,7 +507,7 @@ export function DealDetails() {
             onClick={() => setIsUploadAttachmentDialogOpen(true)}
             className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
           >
-            <Upload className="w-4 h-4 mr-2" /> Upload Attachment
+            <Plus className="w-4 h-4 mr-2" /> Upload Attachment
           </Button>
         </CardHeader>
         <CardContent>
@@ -792,7 +792,7 @@ export function DealDetails() {
 
       {/* Edit Note Dialog */}
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Note</DialogTitle>
           </DialogHeader>
@@ -828,7 +828,7 @@ export function DealDetails() {
 
       {/* Add/Edit Task Dialog */}
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingTask ? "Edit Task" : "Add New Task"}
@@ -1047,7 +1047,7 @@ export function DealDetails() {
 
       {/* Upload Attachment Dialog */}
       <Dialog open={isUploadAttachmentDialogOpen} onOpenChange={setIsUploadAttachmentDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Upload Attachment</DialogTitle>
           </DialogHeader>

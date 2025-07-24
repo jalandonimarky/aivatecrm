@@ -77,7 +77,7 @@ export function TenantInfoFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Edit Tenant Information</DialogTitle>
         </DialogHeader>
