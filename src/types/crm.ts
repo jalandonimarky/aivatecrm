@@ -151,6 +151,7 @@ export interface KanbanColumn {
   order_index: number;
   created_at: string;
   items?: KanbanItem[]; // Nested items
+  background_color?: string | null;
 }
 
 export interface KanbanBoard {

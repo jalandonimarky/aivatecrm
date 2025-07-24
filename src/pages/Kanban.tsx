@@ -87,7 +87,7 @@ export function Kanban() {
     setIsColumnFormDialogOpen(true);
   };
 
-  const handleCreateColumn = async (data: { name: string, board_id: string, order_index: number }) => {
+  const handleCreateColumn = async (data: { name: string, board_id: string, order_index: number, background_color: string | null }) => {
     await createKanbanColumn(data);
   };
 
@@ -97,7 +97,7 @@ export function Kanban() {
     setIsColumnFormDialogOpen(true);
   };
 
-  const handleUpdateColumn = async (data: { name: string, board_id: string, order_index: number }) => {
+  const handleUpdateColumn = async (data: { name: string, board_id: string, order_index: number, background_color: string | null }) => {
     if (editingColumn) {
       await updateKanbanColumn(editingColumn.id, data);
     }
