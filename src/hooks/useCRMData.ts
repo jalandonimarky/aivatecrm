@@ -130,17 +130,7 @@ export function useCRMData() {
           assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
           tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          client_category,
-          tenant_contact_full_name,
-          tenant_contact_phone,
-          tenant_contact_email,
-          household_composition,
-          pets_info,
-          bedrooms_needed,
-          bathrooms_needed,
-          preferred_locations,
-          desired_move_in_date
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
 
@@ -177,7 +167,17 @@ export function useCRMData() {
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               column:kanban_columns(name),
               notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-              tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+              tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+              client_category,
+              tenant_contact_full_name,
+              tenant_contact_phone,
+              tenant_contact_email,
+              household_composition,
+              pets_info,
+              bedrooms_needed,
+              bathrooms_needed,
+              preferred_locations,
+              desired_move_in_date
             )
           )
         `)
@@ -456,17 +456,7 @@ export function useCRMData() {
           assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
           tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          client_category,
-          tenant_contact_full_name,
-          tenant_contact_phone,
-          tenant_contact_email,
-          household_composition,
-          pets_info,
-          bedrooms_needed,
-          bathrooms_needed,
-          preferred_locations,
-          desired_move_in_date
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -509,17 +499,7 @@ export function useCRMData() {
           assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
           tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          client_category,
-          tenant_contact_full_name,
-          tenant_contact_phone,
-          tenant_contact_email,
-          household_composition,
-          pets_info,
-          bedrooms_needed,
-          bathrooms_needed,
-          preferred_locations,
-          desired_move_in_date
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -1209,7 +1189,17 @@ export function useCRMData() {
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name),
             notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-            tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+            tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+            client_category,
+            tenant_contact_full_name,
+            tenant_contact_phone,
+            tenant_contact_email,
+            household_composition,
+            pets_info,
+            bedrooms_needed,
+            bathrooms_needed,
+            preferred_locations,
+            desired_move_in_date
           )
         `)
         .single();
@@ -1239,7 +1229,17 @@ export function useCRMData() {
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name),
             notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-            tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+            tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+            client_category,
+            tenant_contact_full_name,
+            tenant_contact_phone,
+            tenant_contact_email,
+            household_composition,
+            pets_info,
+            bedrooms_needed,
+            bathrooms_needed,
+            preferred_locations,
+            desired_move_in_date
           )
         `)
         .single();
@@ -1283,6 +1283,16 @@ export function useCRMData() {
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
           due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
+          client_category: itemData.client_category === 'none' ? null : itemData.client_category,
+          tenant_contact_full_name: itemData.tenant_contact_full_name || null,
+          tenant_contact_phone: itemData.tenant_contact_phone || null,
+          tenant_contact_email: itemData.tenant_contact_email || null,
+          household_composition: itemData.household_composition || null,
+          pets_info: itemData.pets_info || null,
+          bedrooms_needed: itemData.bedrooms_needed ?? null,
+          bathrooms_needed: itemData.bathrooms_needed ?? null,
+          preferred_locations: itemData.preferred_locations || null,
+          desired_move_in_date: itemData.desired_move_in_date ? format(new Date(itemData.desired_move_in_date), "yyyy-MM-dd") : null,
         }])
         .select(`
           *,
@@ -1290,7 +1300,17 @@ export function useCRMData() {
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name),
           notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          client_category,
+          tenant_contact_full_name,
+          tenant_contact_phone,
+          tenant_contact_email,
+          household_composition,
+          pets_info,
+          bedrooms_needed,
+          bathrooms_needed,
+          preferred_locations,
+          desired_move_in_date
         `)
         .single();
 
@@ -1316,6 +1336,16 @@ export function useCRMData() {
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
         due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
         event_time: updates.event_time || null,
+        client_category: updates.client_category === 'none' ? null : (updates.client_category || null),
+        tenant_contact_full_name: updates.tenant_contact_full_name || null,
+        tenant_contact_phone: updates.tenant_contact_phone || null,
+        tenant_contact_email: updates.tenant_contact_email || null,
+        household_composition: updates.household_composition || null,
+        pets_info: updates.pets_info || null,
+        bedrooms_needed: updates.bedrooms_needed ?? null,
+        bathrooms_needed: updates.bathrooms_needed ?? null,
+        preferred_locations: updates.preferred_locations || null,
+        desired_move_in_date: updates.desired_move_in_date ? format(new Date(updates.desired_move_in_date), "yyyy-MM-dd") : null,
       };
 
       const { data, error } = await supabase
@@ -1328,7 +1358,17 @@ export function useCRMData() {
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name),
           notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          client_category,
+          tenant_contact_full_name,
+          tenant_contact_phone,
+          tenant_contact_email,
+          household_composition,
+          pets_info,
+          bedrooms_needed,
+          bathrooms_needed,
+          preferred_locations,
+          desired_move_in_date
         `)
         .single();
 

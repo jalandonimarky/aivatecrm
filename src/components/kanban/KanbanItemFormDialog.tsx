@@ -17,7 +17,28 @@ interface KanbanItemFormDialogProps { // Changed interface name
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
   columnId: string;
-  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string, event_time?: string }) => Promise<void>;
+  onSubmit: (data: {
+    title: string,
+    description?: string,
+    column_id: string,
+    order_index: number,
+    category?: string,
+    priority_level?: KanbanItem['priority_level'],
+    assigned_to?: string,
+    due_date?: string,
+    event_time?: string,
+    // New Tenant Lead Information fields
+    client_category?: KanbanItem['client_category'],
+    tenant_contact_full_name?: string,
+    tenant_contact_phone?: string,
+    tenant_contact_email?: string,
+    household_composition?: string,
+    pets_info?: string,
+    bedrooms_needed?: number,
+    bathrooms_needed?: number,
+    preferred_locations?: string,
+    desired_move_in_date?: string
+  }) => Promise<void>;
   nextOrderIndex: number;
   profiles: Profile[];
   getFullName: (profile: Profile) => string;
@@ -44,6 +65,19 @@ export function KanbanItemFormDialog({ // Changed export name
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Tenant Lead Information states
+  const [clientCategory, setClientCategory] = useState<KanbanItem['client_category'] | 'none'>('none');
+  const [tenantContactFullName, setTenantContactFullName] = useState("");
+  const [tenantContactPhone, setTenantContactPhone] = useState("");
+  const [tenantContactEmail, setTenantContactEmail] = useState("");
+  const [householdComposition, setHouseholdComposition] = useState("");
+  const [petsInfo, setPetsInfo] = useState("");
+  const [bedroomsNeeded, setBedroomsNeeded] = useState<number | undefined>(undefined);
+  const [bathroomsNeeded, setBathroomsNeeded] = useState<number | undefined>(undefined);
+  const [preferredLocations, setPreferredLocations] = useState("");
+  const [desiredMoveInDate, setDesiredMoveInDate] = useState<Date | undefined>(undefined);
+  const [isTenantLeadCalendarOpen, setIsTenantLeadCalendarOpen] = useState(false);
+
   const itemCategories: { value: string, label: string }[] = [
     { value: "design", label: "Design" },
     { value: "development", label: "Development" },
@@ -57,6 +91,13 @@ export function KanbanItemFormDialog({ // Changed export name
     { value: "p1", label: "P1 - High" },
     { value: "p2", label: "P2 - Medium" },
     { value: "p3", label: "P3 - Low" },
+  ];
+
+  const clientCategoriesOptions: { value: KanbanItem['client_category'] | 'none', label: string }[] = [
+    { value: 'none', label: 'Select Category' },
+    { value: 'Insurance Company', label: 'Insurance Company' },
+    { value: 'Corporate Relocation', label: 'Corporate Relocation' },
+    { value: 'Private Individual', label: 'Private Individual' },
   ];
 
   useEffect(() => {
@@ -77,6 +118,18 @@ export function KanbanItemFormDialog({ // Changed export name
         setItemCategory(initialData?.category || undefined);
         setCustomCategory("");
       }
+
+      // Set Tenant Lead Information fields
+      setClientCategory(initialData?.client_category || 'none');
+      setTenantContactFullName(initialData?.tenant_contact_full_name || "");
+      setTenantContactPhone(initialData?.tenant_contact_phone || "");
+      setTenantContactEmail(initialData?.tenant_contact_email || "");
+      setHouseholdComposition(initialData?.household_composition || "");
+      setPetsInfo(initialData?.pets_info || "");
+      setBedroomsNeeded(initialData?.bedrooms_needed || undefined);
+      setBathroomsNeeded(initialData?.bathrooms_needed || undefined);
+      setPreferredLocations(initialData?.preferred_locations || "");
+      setDesiredMoveInDate(initialData?.desired_move_in_date ? new Date(initialData.desired_move_in_date) : undefined);
     }
   }, [isOpen, initialData]);
 
@@ -97,6 +150,17 @@ export function KanbanItemFormDialog({ // Changed export name
         assigned_to: itemAssignedTo === "unassigned" ? undefined : itemAssignedTo,
         due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
         event_time: itemEventTime || undefined,
+        // Tenant Lead Information fields
+        client_category: clientCategory === 'none' ? undefined : clientCategory,
+        tenant_contact_full_name: tenantContactFullName || undefined,
+        tenant_contact_phone: tenantContactPhone || undefined,
+        tenant_contact_email: tenantContactEmail || undefined,
+        household_composition: householdComposition || undefined,
+        pets_info: petsInfo || undefined,
+        bedrooms_needed: bedroomsNeeded || undefined,
+        bathrooms_needed: bathroomsNeeded || undefined,
+        preferred_locations: preferredLocations || undefined,
+        desired_move_in_date: desiredMoveInDate ? format(desiredMoveInDate, "yyyy-MM-dd") : undefined,
       });
       onOpenChange(false);
     } finally {
@@ -106,11 +170,12 @@ export function KanbanItemFormDialog({ // Changed export name
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}> {/* Changed from Drawer */}
-      <DialogContent className="sm:max-w-[425px]"> {/* Changed from DrawerContent */}
+      <DialogContent className="sm:max-w-[600px]"> {/* Changed from DrawerContent */}
         <DialogHeader> {/* Changed from DrawerHeader */}
           <DialogTitle>{initialData ? "Edit Item" : "Add New Item"}</DialogTitle> {/* Changed from DrawerTitle */}
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4"> {/* Removed px-4 and flex-1 */}
+          <h3 className="text-lg font-semibold">Item Details</h3>
           <div className="space-y-2">
             <Label htmlFor="item-title">Title *</Label>
             <Input
@@ -241,6 +306,139 @@ export function KanbanItemFormDialog({ // Changed export name
               value={itemEventTime || ""}
               onChange={(e) => setItemEventTime(e.target.value)}
             />
+          </div>
+
+          <h3 className="text-lg font-semibold mt-6">Tenant Lead Information</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="client_category">Client Category</Label>
+              <Select
+                value={clientCategory || "none"}
+                onValueChange={(value) => setClientCategory(value as KanbanItem['client_category'] | 'none')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientCategoriesOptions.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tenant_contact_full_name">Primary Contact Full Name</Label>
+              <Input
+                id="tenant_contact_full_name"
+                value={tenantContactFullName}
+                onChange={(e) => setTenantContactFullName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="tenant_contact_phone">Contact Phone Number</Label>
+              <Input
+                id="tenant_contact_phone"
+                type="tel"
+                value={tenantContactPhone}
+                onChange={(e) => setTenantContactPhone(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tenant_contact_email">Contact Email Address</Label>
+              <Input
+                id="tenant_contact_email"
+                type="email"
+                value={tenantContactEmail}
+                onChange={(e) => setTenantContactEmail(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="household_composition">Household Composition</Label>
+            <Input
+              id="household_composition"
+              value={householdComposition}
+              onChange={(e) => setHouseholdComposition(e.target.value)}
+              placeholder="e.g., 2 adults, 2 children (ages 8 & 12)"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pets_info">Pets</Label>
+            <Input
+              id="pets_info"
+              value={petsInfo}
+              onChange={(e) => setPetsInfo(e.target.value)}
+              placeholder="e.g., 1 small dog (10 lbs)"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bedrooms_needed">Bedrooms Needed</Label>
+              <Input
+                id="bedrooms_needed"
+                type="number"
+                min={0}
+                value={bedroomsNeeded ?? ""}
+                onChange={(e) => setBedroomsNeeded(e.target.value === "" ? undefined : Number(e.target.value))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bathrooms_needed">Bathrooms Needed</Label>
+              <Input
+                id="bathrooms_needed"
+                type="number"
+                min={0}
+                value={bathroomsNeeded ?? ""}
+                onChange={(e) => setBathroomsNeeded(e.target.value === "" ? undefined : Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="preferred_locations">Preferred Locations / Zip Codes</Label>
+            <Input
+              id="preferred_locations"
+              value={preferredLocations}
+              onChange={(e) => setPreferredLocations(e.target.value)}
+              placeholder="e.g., Santa Monica, 90210"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="desired_move_in_date">Desired Move-In Date</Label>
+            <Popover open={isTenantLeadCalendarOpen} onOpenChange={setIsTenantLeadCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !desiredMoveInDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {desiredMoveInDate ? format(desiredMoveInDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={desiredMoveInDate}
+                  onSelect={(date) => {
+                    setDesiredMoveInDate(date || undefined);
+                    setIsTenantLeadCalendarOpen(false);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <DialogFooter> {/* Changed from DrawerFooter */}
