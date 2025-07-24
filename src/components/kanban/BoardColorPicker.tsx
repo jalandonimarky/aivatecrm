@@ -1,12 +1,13 @@
 import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 import { Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BoardColorPickerProps {
   currentColor?: string | null;
   onSelectColor: (color: string | null) => void;
+  // This trigger will be the element that opens the popover, e.g., a DropdownMenuItem
+  trigger: React.ReactNode;
 }
 
 const lightColors = [
@@ -18,14 +19,12 @@ const lightColors = [
   "#FEF9C3", // soft cream
 ];
 
-export function BoardColorPicker({ currentColor, onSelectColor }: BoardColorPickerProps) {
+export function BoardColorPicker({ currentColor, onSelectColor, trigger }: BoardColorPickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        {/* Add onClick to stop propagation */}
-        <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
-          <Palette className="h-4 w-4" />
-        </Button>
+        {/* The provided trigger element will be rendered here */}
+        {trigger}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2">
         <div className="grid grid-cols-3 gap-2">

@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Users, Palette } from "lucide-react"; // Import Palette here
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { BoardColorPicker } from "./BoardColorPicker"; // Import the new component
 import type { KanbanBoard } from "@/types/crm";
@@ -36,13 +36,17 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChan
               <Edit className="mr-2 h-4 w-4" />
               Edit Board
             </DropdownMenuItem>
-            <DropdownMenuItem className="p-0"> {/* Wrap color picker in DropdownMenuItem */}
-              <BoardColorPicker 
-                currentColor={board.background_color} 
-                onSelectColor={(color) => onColorChange(board.id, color)} 
-              />
-              <span className="ml-2 text-sm">Change Board Color</span>
-            </DropdownMenuItem>
+            {/* The BoardColorPicker now takes the DropdownMenuItem as its trigger */}
+            <BoardColorPicker
+              currentColor={board.background_color}
+              onSelectColor={(color) => onColorChange(board.id, color)}
+              trigger={
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}> {/* Prevent default close of DropdownMenu */}
+                  <Palette className="mr-2 h-4 w-4" />
+                  <span>Change Board Color</span>
+                </DropdownMenuItem>
+              }
+            />
             <DropdownMenuItem onClick={() => onDelete(board.id)} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Board
