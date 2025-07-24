@@ -122,6 +122,16 @@ export interface KanbanItem {
   column?: { name: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
   tasks?: Task[]; // New: Added tasks array for Kanban items
+  client_category?: string;
+  tenant_contact_full_name?: string;
+  tenant_contact_phone?: string;
+  tenant_contact_email?: string;
+  household_composition?: string;
+  pets_info?: string;
+  bedrooms_needed?: number;
+  bathrooms_needed?: number;
+  preferred_locations?: string;
+  desired_move_in_date?: string;
 }
 
 export interface KanbanColumn {

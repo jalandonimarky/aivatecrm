@@ -278,46 +278,76 @@ export type Database = {
       }
       kanban_items: {
         Row: {
-          assigned_to: string | null
-          category: string | null
+          id: string
           column_id: string
-          created_at: string
-          created_by: string | null
+          title: string
           description: string | null
+          order_index: number
+          created_by: string | null
+          created_at: string
+          assigned_to: string | null
           due_date: string | null
           event_time: string | null
-          id: string
-          order_index: number
+          category: string | null
           priority_level: string | null
-          title: string
+          client_category: string | null
+          tenant_contact_full_name: string | null
+          tenant_contact_phone: string | null
+          tenant_contact_email: string | null
+          household_composition: string | null
+          pets_info: string | null
+          bedrooms_needed: number | null
+          bathrooms_needed: number | null
+          preferred_locations: string | null
+          desired_move_in_date: string | null
         }
         Insert: {
-          assigned_to?: string | null
-          category?: string | null
+          id?: string
           column_id: string
-          created_at?: string
-          created_by?: string | null
+          title: string
           description?: string | null
+          order_index: number
+          created_by?: string | null
+          created_at?: string
+          assigned_to?: string | null
           due_date?: string | null
           event_time?: string | null
-          id?: string
-          order_index: number
+          category?: string | null
           priority_level?: string | null
-          title: string
+          client_category?: string | null
+          tenant_contact_full_name?: string | null
+          tenant_contact_phone?: string | null
+          tenant_contact_email?: string | null
+          household_composition?: string | null
+          pets_info?: string | null
+          bedrooms_needed?: number | null
+          bathrooms_needed?: number | null
+          preferred_locations?: string | null
+          desired_move_in_date?: string | null
         }
         Update: {
-          assigned_to?: string | null
-          category?: string | null
+          id?: string
           column_id?: string
-          created_at?: string
-          created_by?: string | null
+          title?: string
           description?: string | null
+          order_index?: number
+          created_by?: string | null
+          created_at?: string
+          assigned_to?: string | null
           due_date?: string | null
           event_time?: string | null
-          id?: string
-          order_index?: number
+          category?: string | null
           priority_level?: string | null
-          title?: string
+          client_category?: string | null
+          tenant_contact_full_name?: string | null
+          tenant_contact_phone?: string | null
+          tenant_contact_email?: string | null
+          household_composition?: string | null
+          pets_info?: string | null
+          bedrooms_needed?: number | null
+          bathrooms_needed?: number | null
+          preferred_locations?: string | null
+          desired_move_in_date?: string | null
         }
         Relationships: [
           {
