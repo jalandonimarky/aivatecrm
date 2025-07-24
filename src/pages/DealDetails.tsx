@@ -37,10 +37,9 @@ import { DealTimeline } from "@/components/deals/DealTimeline";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { RallyDialog } from "@/components/deals/RallyDialog";
 import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
-import { TenantLeadFormDialog } from "@/components/deals/TenantLeadFormDialog"; // Import new dialog
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { DealNote, Task, DealAttachment, Deal } from "@/types/crm";
+import type { DealNote, Task, DealAttachment } from "@/types/crm";
 
 interface TaskFormData {
   title: string;
@@ -89,7 +88,6 @@ export function DealDetails() {
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
-  const [isTenantLeadFormDialogOpen, setIsTenantLeadFormDialogOpen] = useState(false); // New state for tenant lead form
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -354,17 +352,6 @@ export function DealDetails() {
     }
   };
 
-  const handleEditTenantLeadClick = () => {
-    setIsTenantLeadFormDialogOpen(true);
-  };
-
-  const handleUpdateTenantLeadSubmit = async (data: Partial<Deal>) => {
-    if (deal && id) {
-      await updateDeal(id, data);
-      setIsTenantLeadFormDialogOpen(false);
-    }
-  };
-
   if (loading || !deal) {
     return (
       <div className="space-y-6">
@@ -501,74 +488,6 @@ export function DealDetails() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
-
-      {/* TENANT LEAD FORM FIELDS Section */}
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">TENANT LEAD FORM FIELDS</CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleEditTenantLeadClick}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Fields
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Client Category</p>
-              <p className="text-lg font-semibold">{deal.client_category || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Primary Contact Full Name</p>
-              <p className="text-lg font-semibold">{deal.primary_contact_full_name || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Contact Phone Number</p>
-              <p className="text-lg font-semibold">{deal.contact_phone_number || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Contact Email Address</p>
-              <p className="text-lg font-semibold">{deal.contact_email_address || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Household Composition</p>
-              <p className="text-lg font-semibold">{deal.household_composition || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pets</p>
-              <p className="text-lg font-semibold">{deal.pets || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Bedrooms Needed</p>
-              <p className="text-lg font-semibold">{deal.bedrooms_needed ?? "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Bathrooms Needed</p>
-              <p className="text-lg font-semibold">{deal.bathrooms_needed ?? "N/A"}</p>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-sm text-muted-foreground">Preferred Locations / Zip Codes</p>
-              <p className="text-lg font-semibold">{deal.preferred_locations_zip_codes || "N/A"}</p>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-sm text-muted-foreground">Desired Move-In Date</p>
-              <p className="text-lg font-semibold">
-                {deal.desired_move_in_date ? format(parseISO(deal.desired_move_in_date), "PPP") : "N/A"}
-              </p>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -1166,16 +1085,6 @@ export function DealDetails() {
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* Tenant Lead Form Dialog */}
-      {deal && (
-        <TenantLeadFormDialog
-          isOpen={isTenantLeadFormDialogOpen}
-          onOpenChange={setIsTenantLeadFormDialogOpen}
-          initialData={deal}
-          onSubmit={handleUpdateTenantLeadSubmit}
-        />
-      )}
     </div>
   );
 }
