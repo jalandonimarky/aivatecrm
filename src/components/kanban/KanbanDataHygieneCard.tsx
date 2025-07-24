@@ -63,7 +63,7 @@ export function KanbanDataHygieneCard({ item }: KanbanDataHygieneCardProps) {
     return (
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Item Hygiene Check</CardTitle>
+          <CardTitle className="text-lg font-semibold">Data Hygiene Check</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-6 w-3/4" />
@@ -79,7 +79,7 @@ export function KanbanDataHygieneCard({ item }: KanbanDataHygieneCardProps) {
     return (
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-destructive">Item Hygiene Check Error</CardTitle>
+          <CardTitle className="text-lg font-semibold text-destructive">Data Hygiene Check Error</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-destructive">{error}</p>
@@ -98,7 +98,7 @@ export function KanbanDataHygieneCard({ item }: KanbanDataHygieneCardProps) {
     <Card className="bg-gradient-card border-border/50">
       <CardHeader>
         <CardTitle className="text-lg font-semibold flex items-center">
-          Item Hygiene Check
+          Data Hygiene Check
           {insights.criticalItemAlert && (
             <Badge variant="destructive" className="ml-2">
               <AlertCircle className="w-3 h-3 mr-1" /> Critical Item Alert
