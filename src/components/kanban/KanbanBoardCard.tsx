@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import type { KanbanBoard } from "@/types/crm";
-import { cn } from "@/lib/utils"; // Import cn utility
+import { cn } from "@/lib/utils";
 
 interface KanbanBoardCardProps {
   board: KanbanBoard;
@@ -16,13 +16,18 @@ interface KanbanBoardCardProps {
 }
 
 export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChange }: KanbanBoardCardProps) {
+  // If background_color is a gradient, apply as backgroundImage, else fallback to default
+  const cardStyle = board.background_color
+    ? { backgroundImage: board.background_color }
+    : {};
+
   return (
     <Card 
       className={cn(
         "border-border/50 hover:shadow-medium transition-smooth cursor-pointer",
-        !board.background_color && "bg-gradient-card" // Only apply gradient if no custom color is set
+        !board.background_color && "bg-gradient-card"
       )}
-      style={board.background_color ? { backgroundColor: board.background_color } : {}} // Apply custom background color if available
+      style={cardStyle}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold flex-1 min-w-0 pr-2 break-words" onClick={() => onSelect(board.id)}>

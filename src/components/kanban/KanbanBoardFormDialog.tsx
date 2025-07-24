@@ -3,23 +3,42 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils"; // Import cn for utility classes
+import { cn } from "@/lib/utils";
 import type { KanbanBoard } from "@/types/crm";
 
 interface KanbanBoardFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanBoard | null;
-  onSubmit: (data: { name: string, background_color: string | null }) => Promise<void>; // Updated onSubmit signature
+  onSubmit: (data: { name: string, background_color: string | null }) => Promise<void>;
 }
 
-const lightColors = [
-  "#FDE68A", // light yellow
-  "#BFDBFE", // light blue
-  "#C7D2FE", // light indigo
-  "#FBCFE8", // light pink
-  "#D1FAE5", // light mint
-  "#FEF9C3", // soft cream
+// Theme-matching gradients for both light and dark mode
+const gradientOptions = [
+  {
+    name: "Mint to Purple",
+    value: "linear-gradient(135deg, #88ebc5 0%, #5946df 100%)",
+  },
+  {
+    name: "Purple to Pink",
+    value: "linear-gradient(135deg, #5946df 0%, #fbcfe8 100%)",
+  },
+  {
+    name: "Blue to Mint",
+    value: "linear-gradient(135deg, #bfdbfe 0%, #88ebc5 100%)",
+  },
+  {
+    name: "Orange to Yellow",
+    value: "linear-gradient(135deg, #fbbf24 0%, #fde68a 100%)",
+  },
+  {
+    name: "Indigo to Blue",
+    value: "linear-gradient(135deg, #6366f1 0%, #60a5fa 100%)",
+  },
+  {
+    name: "Pink to Orange",
+    value: "linear-gradient(135deg, #fbcfe8 0%, #fbbf24 100%)",
+  },
 ];
 
 export function KanbanBoardFormDialog({
@@ -29,13 +48,13 @@ export function KanbanBoardFormDialog({
   onSubmit,
 }: KanbanBoardFormDialogProps) {
   const [boardName, setBoardName] = useState("");
-  const [selectedColor, setSelectedColor] = useState<string | null>(null); // New state for color
+  const [selectedGradient, setSelectedGradient] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setBoardName(initialData?.name || "");
-      setSelectedColor(initialData?.background_color || null); // Initialize selected color
+      setSelectedGradient(initialData?.background_color || null);
       setLoading(false);
     }
   }, [isOpen, initialData]);
@@ -45,7 +64,7 @@ export function KanbanBoardFormDialog({
     if (!boardName.trim()) return;
     setLoading(true);
     try {
-      await onSubmit({ name: boardName, background_color: selectedColor }); // Pass selected color
+      await onSubmit({ name: boardName, background_color: selectedGradient });
       onOpenChange(false);
     } finally {
       setLoading(false);
@@ -69,33 +88,38 @@ export function KanbanBoardFormDialog({
             />
           </div>
 
-          {/* Color Picker Section */}
+          {/* Gradient Picker Section */}
           <div className="space-y-2">
             <Label>Board Color</Label>
-            <div className="grid grid-cols-4 gap-2"> {/* Adjusted grid for better layout */}
-              {lightColors.map((color) => (
+            <div className="grid grid-cols-3 gap-2">
+              {gradientOptions.map((gradient) => (
                 <div
-                  key={color}
+                  key={gradient.value}
                   className={cn(
                     "w-full h-10 rounded-md cursor-pointer border-2 border-transparent transition-all flex items-center justify-center",
-                    selectedColor === color && "border-primary ring-2 ring-primary"
+                    selectedGradient === gradient.value && "border-primary ring-2 ring-primary"
                   )}
-                  style={{ backgroundColor: color }}
-                  onClick={() => setSelectedColor(color)}
-                  title={color}
+                  style={{ backgroundImage: gradient.value }}
+                  onClick={() => setSelectedGradient(gradient.value)}
+                  title={gradient.name}
                 />
               ))}
+              {/* None option */}
               <div
                 className={cn(
-                  "w-full h-10 rounded-md cursor-pointer border-2 border-transparent flex items-center justify-center text-muted-foreground text-xs",
-                  !selectedColor && "border-primary ring-2 ring-primary"
+                  "w-full h-10 rounded-md cursor-pointer border-2 border-transparent flex items-center justify-center text-muted-foreground text-xs bg-muted",
+                  !selectedGradient && "border-primary ring-2 ring-primary"
                 )}
-                style={{ backgroundColor: "hsl(var(--muted))" }}
-                onClick={() => setSelectedColor(null)}
-                title="Clear Color"
+                onClick={() => setSelectedGradient(null)}
+                title="Default"
               >
                 <span className="text-sm font-medium">None</span>
               </div>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {selectedGradient
+                ? gradientOptions.find(g => g.value === selectedGradient)?.name || "Custom"
+                : "Default (matches app theme)"}
             </div>
           </div>
 
