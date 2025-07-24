@@ -30,16 +30,12 @@ export function TenantInfoFormDialog({
   const [isMoveInCalendarOpen, setIsMoveInCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const clientCategories: { value: string, label: string }[] = [
-    { value: "Insurance Company", label: "Insurance Company" },
-    { value: "Corporate Relocation", label: "Corporate Relocation" },
-    { value: "Private Individual", label: "Private Individual" },
-  ];
+  // Removed clientCategories array as it's no longer needed
 
   useEffect(() => {
     if (isOpen && initialData) {
       setFormData({
-        client_category: initialData.client_category || undefined,
+        // client_category: initialData.client_category || undefined, // Removed
         tenant_contact_full_name: initialData.tenant_contact_full_name || "",
         tenant_contact_phone: initialData.tenant_contact_phone || "",
         tenant_contact_email: initialData.tenant_contact_email || "",
@@ -84,21 +80,7 @@ export function TenantInfoFormDialog({
         <form onSubmit={handleSubmit}>
           <ScrollArea className="h-[70vh] p-4">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="client-category">Client Category</Label>
-                <Select
-                  value={formData.client_category || "none"}
-                  onValueChange={(value) => handleInputChange('client_category', value === "none" ? undefined : value)}
-                >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent">
-                    <SelectValue placeholder="Select client category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {clientCategories.map(cat => <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Removed Client Category field */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tenant-name">Tenant Full Name</Label>

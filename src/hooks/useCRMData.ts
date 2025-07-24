@@ -162,7 +162,8 @@ export function useCRMData() {
           columns:kanban_columns(
             *,
             items:kanban_items(
-              *,
+              id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level,
+              tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               column:kanban_columns(name, board_id),
@@ -1174,7 +1175,8 @@ export function useCRMData() {
         .select(`
           *,
           items:kanban_items(
-            *,
+            id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level,
+            tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name, board_id),
@@ -1204,7 +1206,8 @@ export function useCRMData() {
         .select(`
           *,
           items:kanban_items(
-            *,
+            id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level,
+            tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name, board_id),
@@ -1253,9 +1256,11 @@ export function useCRMData() {
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
           due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
+          // client_category: itemData.client_category || null, // Removed
         }])
         .select(`
-          *,
+          id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level,
+          tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name, board_id),
@@ -1286,6 +1291,7 @@ export function useCRMData() {
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
         due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
         event_time: updates.event_time || null,
+        // client_category: updates.client_category || null, // Removed
       };
 
       const { data, error } = await supabase
@@ -1293,7 +1299,8 @@ export function useCRMData() {
         .update(dataToUpdate)
         .eq("id", id)
         .select(`
-          *,
+          id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level,
+          tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name, board_id),
