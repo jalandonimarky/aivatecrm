@@ -7,7 +7,7 @@ import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
 import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDialog";
-import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
+import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog"; // Updated import
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
@@ -25,13 +25,13 @@ export function Kanban() {
     deleteKanbanColumn,
     createKanbanItem,
     updateKanbanItem,
-    deleteKanbanItem, // Destructure deleteKanbanItem
-    reorderKanbanItemsInColumn,
-    moveKanbanItem,
+    deleteKanbanItem,
+    reorderKanbanItemsInColumn, // Renamed
+    moveKanbanItem, // New function
     reorderKanbanColumns,
-    profiles,
-    getFullName,
-    refetch,
+    profiles, // Destructure profiles
+    getFullName, // Destructure getFullName
+    refetch, // To re-fetch data after changes
   } = useCRMData();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -188,9 +188,9 @@ export function Kanban() {
             onEditColumn={handleEditColumnClick}
             onDeleteColumn={handleDeleteColumn}
             onAddItem={handleAddItemClick}
-            onDeleteItem={deleteKanbanItem} // Pass deleteKanbanItem
-            onReorderItemsInColumn={handleReorderItems}
-            onMoveItem={handleMoveItem}
+            // Removed onEditItem and onDeleteItem props
+            onReorderItemsInColumn={handleReorderItems} // Pass renamed function
+            onMoveItem={handleMoveItem} // Pass new function
             onReorderColumns={handleReorderColumns}
           />
         </div>
@@ -209,15 +209,15 @@ export function Kanban() {
 
         {/* Item Form Dialog */}
         {currentColumnIdForItem && (
-          <KanbanItemFormDialog
+          <KanbanItemFormDialog // Updated component name
             isOpen={isItemFormDialogOpen}
             onOpenChange={setIsItemFormDialogOpen}
             initialData={editingItem}
             columnId={currentColumnIdForItem}
             onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
             nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
-            profiles={profiles}
-            getFullName={getFullName}
+            profiles={profiles} // Pass profiles
+            getFullName={getFullName} // Pass getFullName
           />
         )}
       </div>
