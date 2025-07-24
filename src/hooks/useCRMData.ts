@@ -1283,7 +1283,7 @@ export function useCRMData() {
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
           due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
-          client_category: itemData.client_category === 'none' ? null : itemData.client_category,
+          client_category: itemData.client_category === 'none' ? null : itemData.client_category, // Fixed: comparison is now valid
           tenant_contact_full_name: itemData.tenant_contact_full_name || null,
           tenant_contact_phone: itemData.tenant_contact_phone || null,
           tenant_contact_email: itemData.tenant_contact_email || null,
@@ -1336,7 +1336,7 @@ export function useCRMData() {
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
         due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
         event_time: updates.event_time || null,
-        client_category: updates.client_category === 'none' ? null : (updates.client_category || null),
+        client_category: updates.client_category === 'none' ? null : (updates.client_category || null), // Fixed: comparison is now valid
         tenant_contact_full_name: updates.tenant_contact_full_name || null,
         tenant_contact_phone: updates.tenant_contact_phone || null,
         tenant_contact_email: updates.tenant_contact_email || null,

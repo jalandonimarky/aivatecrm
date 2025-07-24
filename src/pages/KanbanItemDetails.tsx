@@ -36,6 +36,7 @@ import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge"; // Import TaskStatusBadge
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge"; // Import TaskPriorityBadge
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -92,6 +93,7 @@ export function KanbanItemDetails() {
   } = useCRMData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast(); // Fixed: Destructure toast from useToast
 
   const item = kanbanItems.find((i) => i.id === id);
 

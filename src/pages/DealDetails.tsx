@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } => "react";
 import { useParams, useNavigate, NavLink } from "react-router-dom"; // Import NavLink
 import { useCRMData } from "@/hooks/useCRMData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,7 +90,7 @@ export function DealDetails() {
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(selectedFile);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Fixed: Initialize with null
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 

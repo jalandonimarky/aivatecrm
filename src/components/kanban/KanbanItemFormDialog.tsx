@@ -28,7 +28,7 @@ interface KanbanItemFormDialogProps { // Changed interface name
     due_date?: string,
     event_time?: string,
     // New Tenant Lead Information fields
-    client_category?: KanbanItem['client_category'],
+    client_category?: KanbanItem['client_category'] | 'none', // Added 'none' to type
     tenant_contact_full_name?: string,
     tenant_contact_phone?: string,
     tenant_contact_email?: string,
@@ -151,7 +151,7 @@ export function KanbanItemFormDialog({ // Changed export name
         due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
         event_time: itemEventTime || undefined,
         // Tenant Lead Information fields
-        client_category: clientCategory === 'none' ? undefined : clientCategory,
+        client_category: clientCategory, // Pass clientCategory directly
         tenant_contact_full_name: tenantContactFullName || undefined,
         tenant_contact_phone: tenantContactPhone || undefined,
         tenant_contact_email: tenantContactEmail || undefined,
