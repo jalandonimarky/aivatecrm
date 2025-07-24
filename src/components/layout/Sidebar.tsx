@@ -36,10 +36,6 @@ const mainNavItems = [
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
 ];
 
-const bottomNavItems = [
-  { title: "Settings", url: "/settings", icon: Settings },
-];
-
 export function AppSidebar() {
   const { state, setState, isPinned } = useSidebar();
   const location = useLocation();
@@ -82,23 +78,6 @@ export function AppSidebar() {
       ? "bg-gradient-primary text-primary-foreground font-medium shadow-glow" 
       : "hover:bg-sidebar-accent hover:text-sidebar-foreground transition-smooth"; // Changed hover styles
 
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error signing out",
-        description: "There was a problem signing out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleLogoClick = () => {
     window.location.reload(); // Force a full page reload
   };
@@ -119,7 +98,7 @@ export function AppSidebar() {
           state === "collapsed" ? "-translate-x-full" : "translate-x-0"
         )}
       >
-        <SidebarContent className="p-4">
+        <SidebarContent className="p-4 flex flex-col">
           {/* Logo */}
           <div className="mb-8">
             <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
@@ -135,7 +114,7 @@ export function AppSidebar() {
           </div>
 
           {/* Main Navigation */}
-          <SidebarGroup>
+          <SidebarGroup className="flex-1">
             <SidebarGroupLabel>
               Navigation
             </SidebarGroupLabel>
@@ -158,40 +137,6 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-
-          {/* Bottom Navigation */}
-          <div className="mt-auto space-y-2">
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-2">
-                  {bottomNavItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
-                        <NavLink 
-                          to={item.url}
-                          className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
-                        >
-                          <item.icon className="w-5 h-5" />
-                          <span>{item.title}</span>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                  
-                  <SidebarMenuItem>
-                    <Button
-                      variant="ghost"
-                      onClick={handleSignOut}
-                      className="w-full flex items-center justify-start space-x-3 px-3 py-2 h-auto text-left hover:bg-destructive/10 hover:text-destructive transition-smooth"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      <span>Sign Out</span>
-                    </Button>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </div>
         </SidebarContent>
       </Sidebar>
     </>
