@@ -184,6 +184,22 @@ export function KanbanItemFormDialog({
                   </Select>
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="client-category">Client Category</Label>
+                  <Select
+                    value={formData.client_category || "none"}
+                    onValueChange={(value) => handleInputChange('client_category', value === "none" ? undefined : value)}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select client category" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {clientCategories.map(cat => <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="item-due-date">Due Date</Label>
                   <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
@@ -197,31 +213,17 @@ export function KanbanItemFormDialog({
                     </PopoverContent>
                   </Popover>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="item-event-time">Time</Label>
-                <Input id="item-event-time" type="time" value={formData.event_time || ""} onChange={(e) => handleInputChange('event_time', e.target.value)} />
+                <div className="space-y-2">
+                  <Label htmlFor="item-event-time">Time</Label>
+                  <Input id="item-event-time" type="time" value={formData.event_time || ""} onChange={(e) => handleInputChange('event_time', e.target.value)} />
+                </div>
               </div>
 
               <Separator className="my-6" />
 
-              {/* Client Details */}
-              <h3 className="text-lg font-semibold">Client Details</h3>
+              {/* Tenant Information */}
+              <h3 className="text-lg font-semibold">Tenant Information</h3>
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="client-category">Client Category</Label>
-                  <Select
-                    value={formData.client_category || "none"}
-                    onValueChange={(value) => handleInputChange('client_category', value === "none" ? undefined : value)}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select client category" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {clientCategories.map(cat => <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="tenant-name">Tenant Full Name</Label>
