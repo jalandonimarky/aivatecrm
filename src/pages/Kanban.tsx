@@ -7,7 +7,7 @@ import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
 import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDialog";
-import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
+import { KanbanItemFormDrawer } from "@/components/kanban/KanbanItemFormDrawer"; // Changed import
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
@@ -47,7 +47,7 @@ export function Kanban() {
   const [editingColumn, setEditingColumn] = useState<KanbanColumn | null>(null);
   const [currentBoardIdForColumn, setCurrentBoardIdForColumn] = useState<string | null>(null);
 
-  const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
+  const [isItemFormDrawerOpen, setIsItemFormDrawerOpen] = useState(false); // Changed state name
   const [editingItem, setEditingItem] = useState<KanbanItem | null>(null);
   const [currentColumnIdForItem, setCurrentColumnIdForItem] = useState<string | null>(null);
 
@@ -112,7 +112,7 @@ export function Kanban() {
   const handleAddItemClick = (columnId: string) => {
     setEditingItem(null);
     setCurrentColumnIdForItem(columnId);
-    setIsItemFormDialogOpen(true);
+    setIsItemFormDrawerOpen(true); // Changed state name
   };
 
   const handleCreateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => {
@@ -122,7 +122,7 @@ export function Kanban() {
   const handleEditItemClick = (item: KanbanItem) => {
     setEditingItem(item);
     setCurrentColumnIdForItem(item.column_id);
-    setIsItemFormDialogOpen(true);
+    setIsItemFormDrawerOpen(true); // Changed state name
   };
 
   const handleUpdateItem = async (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string }) => {
@@ -208,11 +208,11 @@ export function Kanban() {
           />
         )}
 
-        {/* Item Form Dialog */}
+        {/* Item Form Drawer */}
         {currentColumnIdForItem && (
-          <KanbanItemFormDialog
-            isOpen={isItemFormDialogOpen}
-            onOpenChange={setIsItemFormDialogOpen}
+          <KanbanItemFormDrawer // Changed component name
+            isOpen={isItemFormDrawerOpen} // Changed state name
+            onOpenChange={setIsItemFormDrawerOpen} // Changed state name
             initialData={editingItem}
             columnId={currentColumnIdForItem}
             onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
