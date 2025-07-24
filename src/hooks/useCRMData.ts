@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemNote } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -72,7 +72,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for KanbanItem upsert
   const getKanbanItemDbPayload = (item: KanbanItem) => {
-    const { creator, assigned_user, column, ...dbPayload } = item; // Added 'column' to destructuring
+    const { creator, assigned_user, column, notes, ...dbPayload } = item; // Added 'notes' to destructuring
     return dbPayload;
   };
 
@@ -164,7 +164,8 @@ export function useCRMData() {
               *,
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-              column:kanban_columns(name)
+              column:kanban_columns(name),
+              notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
             )
           )
         `)
@@ -184,6 +185,10 @@ export function useCRMData() {
             creator: item.creator ? (item.creator as Profile) : null,
             assigned_user: item.assigned_user ? (item.assigned_user as Profile) : null, // Cast assigned_user
             column: item.column ? (item.column as { name: string }) : null, // Cast column
+            notes: (item.notes || []).map(note => ({ // Cast notes
+              ...note,
+              creator: note.creator ? (note.creator as Profile) : null,
+            })),
           })),
         })),
       })) as KanbanBoard[];
@@ -882,6 +887,119 @@ export function useCRMData() {
     }
   };
 
+  // CRUD operations for Kanban item notes
+  const createKanbanItemNote = async (kanbanItemId: string, content: string) => {
+    try {
+      const creatorProfileId = await getOrCreateUserProfileId();
+
+      const { data, error } = await supabase
+        .from("kanban_item_notes")
+        .insert([{ kanban_item_id: kanbanItemId, content, created_by: creatorProfileId }])
+        .select(`
+          *,
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Kanban item note added",
+        description: "Your Kanban item note has been added successfully.",
+      });
+      await fetchData(); // Re-fetch all data
+      return data as any as KanbanItemNote;
+    } catch (error: any) {
+      console.error("Error adding Kanban item note:", error);
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error adding Kanban item note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const updateKanbanItemNote = async (noteId: string, kanbanItemId: string, updates: Partial<Omit<KanbanItemNote, 'id' | 'kanban_item_id' | 'created_at' | 'created_by' | 'creator'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from("kanban_item_notes")
+        .update(updates)
+        .eq("id", noteId)
+        .select(`
+          *,
+          creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Kanban item note updated",
+        description: "Your Kanban item note has been updated successfully.",
+      });
+      await fetchData(); // Re-fetch all data
+      return data as any as KanbanItemNote;
+    } catch (error: any) {
+      console.error("Error updating Kanban item note:", error);
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error updating Kanban item note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteKanbanItemNote = async (noteId: string, kanbanItemId: string) => {
+    try {
+      const { error } = await supabase
+        .from("kanban_item_notes")
+        .delete()
+        .eq("id", noteId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Kanban item note deleted",
+        description: "Your Kanban item note has been deleted successfully.",
+      });
+      await fetchData(); // Re-fetch all data
+    } catch (error: any) {
+      console.error("Error deleting Kanban item note:", error);
+      let errorMessage = "An unexpected error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast({
+        title: "Error deleting Kanban item note",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   // CRUD operations for deal attachments
   const createDealAttachment = async (dealId: string, file: File, attachmentType: 'contract' | 'receipt' | 'other') => {
     try {
@@ -1048,7 +1166,8 @@ export function useCRMData() {
             *,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-            column:kanban_columns(name)
+            column:kanban_columns(name),
+            notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
           )
         `)
         .single();
@@ -1076,7 +1195,8 @@ export function useCRMData() {
             *,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-            column:kanban_columns(name)
+            column:kanban_columns(name),
+            notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
           )
         `)
         .single();
@@ -1110,7 +1230,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'column'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'column' | 'notes'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
@@ -1125,7 +1245,8 @@ export function useCRMData() {
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          column:kanban_columns(name)
+          column:kanban_columns(name),
+          notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -1140,7 +1261,7 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column' | 'notes'>>) => {
     try {
       // The form sends all fields, so we can safely convert undefined/empty to null for nullable fields.
       const dataToUpdate = {
@@ -1161,7 +1282,8 @@ export function useCRMData() {
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          column:kanban_columns(name)
+          column:kanban_columns(name),
+          notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -1410,6 +1532,9 @@ export function useCRMData() {
     createTaskNote, // Export new task note functions
     updateTaskNote,
     deleteTaskNote,
+    createKanbanItemNote, // Export new Kanban item note functions
+    updateKanbanItemNote,
+    deleteKanbanItemNote,
     createDealAttachment, // Export new deal attachment functions
     deleteDealAttachment,
     createKanbanBoard,

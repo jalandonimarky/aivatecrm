@@ -343,6 +343,45 @@ export type Database = {
           },
         ]
       }
+      kanban_item_notes: {
+        Row: {
+          id: string
+          kanban_item_id: string
+          content: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          kanban_item_id: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          kanban_item_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_item_notes_kanban_item_id_fkey"
+            columns: ["kanban_item_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_item_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           id: string

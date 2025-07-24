@@ -43,6 +43,15 @@ export interface TaskNote { // New interface for task notes
   creator?: Profile; // To store the profile of the note creator
 }
 
+export interface KanbanItemNote { // New interface for Kanban item notes
+  id: string;
+  kanban_item_id: string;
+  content: string;
+  created_at: string;
+  created_by?: string;
+  creator?: Profile; // To store the profile of the note creator
+}
+
 export interface DealAttachment { // New interface for deal attachments
   id: string;
   deal_id: string;
@@ -109,6 +118,7 @@ export interface KanbanItem {
   due_date?: string; // New: Due date for the item
   event_time?: string | null;
   column?: { name: string }; // Added column name for display
+  notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
 }
 
 export interface KanbanColumn {
