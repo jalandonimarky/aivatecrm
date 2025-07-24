@@ -17,27 +17,7 @@ interface KanbanItemFormDialogProps { // Changed interface name
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
   columnId: string;
-  onSubmit: (data: {
-    title: string;
-    description?: string;
-    column_id: string;
-    order_index: number;
-    category?: string;
-    priority_level?: KanbanItem['priority_level'];
-    assigned_to?: string;
-    due_date?: string;
-    event_time?: string;
-    client_category?: string;
-    primary_contact_full_name?: string;
-    contact_phone_number?: string;
-    contact_email_address?: string;
-    household_composition?: string;
-    pets?: string;
-    bedrooms_needed?: number;
-    bathrooms_needed?: number;
-    preferred_locations_zip_codes?: string;
-    desired_move_in_date?: string;
-  }) => Promise<void>;
+  onSubmit: (data: { title: string, description?: string, column_id: string, order_index: number, category?: string, priority_level?: KanbanItem['priority_level'], assigned_to?: string, due_date?: string, event_time?: string }) => Promise<void>;
   nextOrderIndex: number;
   profiles: Profile[];
   getFullName: (profile: Profile) => string;
@@ -61,21 +41,7 @@ export function KanbanItemFormDialog({ // Changed export name
   const [itemAssignedTo, setItemAssignedTo] = useState<string | undefined>(undefined);
   const [itemDueDate, setItemDueDate] = useState<Date | undefined>(undefined);
   const [itemEventTime, setItemEventTime] = useState<string | undefined>(undefined);
-  
-  // New state for Tenant Lead Form Fields
-  const [clientCategory, setClientCategory] = useState<string | undefined>(undefined);
-  const [primaryContactFullName, setPrimaryContactFullName] = useState("");
-  const [contactPhoneNumber, setContactPhoneNumber] = useState("");
-  const [contactEmailAddress, setContactEmailAddress] = useState("");
-  const [householdComposition, setHouseholdComposition] = useState("");
-  const [pets, setPets] = useState("");
-  const [bedroomsNeeded, setBedroomsNeeded] = useState<number | undefined>(undefined);
-  const [bathroomsNeeded, setBathroomsNeeded] = useState<number | undefined>(undefined);
-  const [preferredLocationsZipCodes, setPreferredLocationsZipCodes] = useState("");
-  const [desiredMoveInDate, setDesiredMoveInDate] = useState<Date | undefined>(undefined);
-
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isMoveInDateCalendarOpen, setIsMoveInDateCalendarOpen] = useState(false); // New calendar state
   const [loading, setLoading] = useState(false);
 
   const itemCategories: { value: string, label: string }[] = [
@@ -93,12 +59,6 @@ export function KanbanItemFormDialog({ // Changed export name
     { value: "p3", label: "P3 - Low" },
   ];
 
-  const clientCategories: { value: string, label: string }[] = [
-    { value: "insurance_company", label: "Insurance Company" },
-    { value: "corporate_relocation", label: "Corporate Relocation" },
-    { value: "private_individual", label: "Private Individual" },
-  ];
-
   useEffect(() => {
     if (isOpen) {
       setItemTitle(initialData?.title || "");
@@ -107,19 +67,6 @@ export function KanbanItemFormDialog({ // Changed export name
       setItemAssignedTo(initialData?.assigned_to || "unassigned");
       setItemDueDate(initialData?.due_date ? new Date(initialData.due_date) : undefined);
       setItemEventTime(initialData?.event_time || undefined);
-      
-      // Set new Tenant Lead Form Fields
-      setClientCategory(initialData?.client_category || undefined);
-      setPrimaryContactFullName(initialData?.primary_contact_full_name || "");
-      setContactPhoneNumber(initialData?.contact_phone_number || "");
-      setContactEmailAddress(initialData?.contact_email_address || "");
-      setHouseholdComposition(initialData?.household_composition || "");
-      setPets(initialData?.pets || "");
-      setBedroomsNeeded(initialData?.bedrooms_needed || undefined);
-      setBathroomsNeeded(initialData?.bathrooms_needed || undefined);
-      setPreferredLocationsZipCodes(initialData?.preferred_locations_zip_codes || "");
-      setDesiredMoveInDate(initialData?.desired_move_in_date ? new Date(initialData.desired_move_in_date) : undefined);
-
       setLoading(false);
 
       const predefinedCategories = itemCategories.map(c => c.value);
@@ -150,17 +97,6 @@ export function KanbanItemFormDialog({ // Changed export name
         assigned_to: itemAssignedTo === "unassigned" ? undefined : itemAssignedTo,
         due_date: itemDueDate ? format(itemDueDate, "yyyy-MM-dd") : undefined,
         event_time: itemEventTime || undefined,
-        // New Tenant Lead Form Fields
-        client_category: clientCategory,
-        primary_contact_full_name: primaryContactFullName,
-        contact_phone_number: contactPhoneNumber,
-        contact_email_address: contactEmailAddress,
-        household_composition: householdComposition,
-        pets: pets,
-        bedrooms_needed: bedroomsNeeded,
-        bathrooms_needed: bathroomsNeeded,
-        preferred_locations_zip_codes: preferredLocationsZipCodes,
-        desired_move_in_date: desiredMoveInDate ? format(desiredMoveInDate, "yyyy-MM-dd") : undefined,
       });
       onOpenChange(false);
     } finally {
@@ -170,7 +106,7 @@ export function KanbanItemFormDialog({ // Changed export name
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}> {/* Changed from Drawer */}
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"> {/* Changed from DrawerContent, added max-h and overflow */}
+      <DialogContent className="sm:max-w-[425px]"> {/* Changed from DrawerContent */}
         <DialogHeader> {/* Changed from DrawerHeader */}
           <DialogTitle>{initialData ? "Edit Item" : "Add New Item"}</DialogTitle> {/* Changed from DrawerTitle */}
         </DialogHeader>
@@ -305,141 +241,6 @@ export function KanbanItemFormDialog({ // Changed export name
               value={itemEventTime || ""}
               onChange={(e) => setItemEventTime(e.target.value)}
             />
-          </div>
-
-          {/* TENANT LEAD FORM FIELDS */}
-          <h3 className="text-lg font-semibold mt-6 mb-4">Tenant Lead Form Fields</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="client-category">Client Category</Label>
-              <Select
-                value={clientCategory || "none"}
-                onValueChange={(value) => setClientCategory(value === "none" ? undefined : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {clientCategories.map(cat => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="primary-contact-full-name">Primary Contact Full Name</Label>
-              <Input
-                id="primary-contact-full-name"
-                value={primaryContactFullName}
-                onChange={(e) => setPrimaryContactFullName(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="contact-phone-number">Contact Phone Number</Label>
-              <Input
-                id="contact-phone-number"
-                type="tel"
-                value={contactPhoneNumber}
-                onChange={(e) => setContactPhoneNumber(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contact-email-address">Contact Email Address</Label>
-              <Input
-                id="contact-email-address"
-                type="email"
-                value={contactEmailAddress}
-                onChange={(e) => setContactEmailAddress(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="household-composition">Household Composition</Label>
-            <Input
-              id="household-composition"
-              value={householdComposition}
-              onChange={(e) => setHouseholdComposition(e.target.value)}
-              placeholder="e.g., 2 adults, 2 children (ages 8 & 12)"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="pets">Pets</Label>
-            <Input
-              id="pets"
-              value={pets}
-              onChange={(e) => setPets(e.target.value)}
-              placeholder="e.g., 1 small dog (10 lbs)"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="bedrooms-needed">Bedrooms Needed</Label>
-              <Input
-                id="bedrooms-needed"
-                type="number"
-                value={bedroomsNeeded === undefined ? "" : bedroomsNeeded}
-                onChange={(e) => setBedroomsNeeded(e.target.value === "" ? undefined : Number(e.target.value))}
-                min="0"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bathrooms-needed">Bathrooms Needed</Label>
-              <Input
-                id="bathrooms-needed"
-                type="number"
-                value={bathroomsNeeded === undefined ? "" : bathroomsNeeded}
-                onChange={(e) => setBathroomsNeeded(e.target.value === "" ? undefined : Number(e.target.value))}
-                min="0"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="preferred-locations">Preferred Locations / Zip Codes</Label>
-            <Input
-              id="preferred-locations"
-              value={preferredLocationsZipCodes}
-              onChange={(e) => setPreferredLocationsZipCodes(e.target.value)}
-              placeholder="e.g., Santa Monica, 90210"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="desired-move-in-date">Desired Move-In Date</Label>
-            <Popover open={isMoveInDateCalendarOpen} onOpenChange={setIsMoveInDateCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !desiredMoveInDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {desiredMoveInDate ? format(desiredMoveInDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={desiredMoveInDate}
-                  onSelect={(date) => {
-                    setDesiredMoveInDate(date || undefined);
-                    setIsMoveInDateCalendarOpen(false);
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
           </div>
 
           <DialogFooter> {/* Changed from DrawerFooter */}

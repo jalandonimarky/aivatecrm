@@ -122,17 +122,6 @@ export interface KanbanItem {
   column?: { name: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
   tasks?: Task[]; // New: Added tasks array for Kanban items
-  // New Tenant Lead Form Fields
-  client_category?: string;
-  primary_contact_full_name?: string;
-  contact_phone_number?: string;
-  contact_email_address?: string;
-  household_composition?: string;
-  pets?: string;
-  bedrooms_needed?: number;
-  bathrooms_needed?: number;
-  preferred_locations_zip_codes?: string;
-  desired_move_in_date?: string;
 }
 
 export interface KanbanColumn {
