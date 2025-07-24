@@ -15,10 +15,10 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
-import { Calendar } from "@/components/ui/calendar"; // Import Calendar
-import { Input } from "@/components/ui/input"; // Import Input
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -26,16 +26,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"; // Import Table components
+} from "@/components/ui/table";
 import { format, parseISO, parse } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
+import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
-import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge"; // Import TaskStatusBadge
-import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge"; // Import TaskPriorityBadge
+import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
+import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -54,17 +55,17 @@ export function KanbanItemDetails() {
   const {
     kanbanItems,
     profiles,
-    contacts, // Added contacts
-    deals, // Added deals
+    contacts,
+    deals,
     loading,
     updateKanbanItem,
     deleteKanbanItem,
     createKanbanItemNote,
     updateKanbanItemNote,
     deleteKanbanItemNote,
-    createTask, // Added createTask
-    updateTask, // Added updateTask
-    deleteTask, // Added deleteTask
+    createTask,
+    updateTask,
+    deleteTask,
     getFullName,
   } = useCRMData();
   const { id } = useParams<{ id: string }>();
@@ -73,15 +74,16 @@ export function KanbanItemDetails() {
   const item = kanbanItems.find((i) => i.id === id);
 
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
+  const [isTenantInfoDialogOpen, setIsTenantInfoDialogOpen] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<KanbanItemNote | null>(null);
   const [editNoteContent, setEditNoteContent] = useState("");
 
-  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false); // State for task dialog
-  const [editingTask, setEditingTask] = useState<Task | null>(null); // State for task being edited
-  const [taskFormData, setTaskFormData] = useState<TaskFormData>({ // State for task form data
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskFormData, setTaskFormData] = useState<TaskFormData>({
     title: "",
     description: "",
     status: "pending",
@@ -89,10 +91,10 @@ export function KanbanItemDetails() {
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: "unassigned",
-    related_kanban_item_id: id || "unassigned", // Pre-fill with current Kanban item ID
+    related_kanban_item_id: id || "unassigned",
     due_date: undefined,
   });
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // State for task due date calendar
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -110,7 +112,7 @@ export function KanbanItemDetails() {
 
   useEffect(() => {
     if (!loading && id && !kanbanItems.find((i) => i.id === id)) {
-      navigate("/kanban"); // Redirect if item not found
+      navigate("/kanban");
     }
   }, [kanbanItems, id, loading, navigate]);
 
@@ -130,6 +132,12 @@ export function KanbanItemDetails() {
     setIsItemFormDialogOpen(false);
   };
 
+  const handleUpdateTenantInfoSubmit = async (data: Partial<KanbanItem>) => {
+    if (!item) return;
+    await updateKanbanItem(item.id, data);
+    setIsTenantInfoDialogOpen(false);
+  };
+
   const handleDeleteItem = async () => {
     if (confirm("Are you sure you want to delete this Kanban item? This action cannot be undone.")) {
       try {
@@ -145,7 +153,6 @@ export function KanbanItemDetails() {
 
   const handleAddNote = async () => {
     if (!id || !newNoteContent.trim()) return;
-
     try {
       await createKanbanItemNote(id, newNoteContent);
       setNewNoteContent("");
@@ -163,7 +170,6 @@ export function KanbanItemDetails() {
 
   const handleUpdateNoteSubmit = async () => {
     if (!editingNote || !editNoteContent.trim()) return;
-
     try {
       await updateKanbanItemNote(editingNote.id, editingNote.kanban_item_id, { content: editNoteContent });
       setIsEditNoteDialogOpen(false);
@@ -193,7 +199,7 @@ export function KanbanItemDetails() {
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
       related_deal_id: "unassigned",
-      related_kanban_item_id: id || "unassigned", // Always pre-fill with current Kanban item ID
+      related_kanban_item_id: id || "unassigned",
       due_date: undefined,
     });
     setEditingTask(null);
@@ -214,7 +220,7 @@ export function KanbanItemDetails() {
       assigned_to: task.assigned_to || "unassigned",
       related_contact_id: task.related_contact_id || "unassigned",
       related_deal_id: task.related_deal_id || "unassigned",
-      related_kanban_item_id: task.related_kanban_item_id || id || "unassigned", // Set for editing, default to current Kanban item
+      related_kanban_item_id: task.related_kanban_item_id || id || "unassigned",
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setIsTaskDialogOpen(true);
@@ -223,7 +229,6 @@ export function KanbanItemDetails() {
   const handleTaskSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
-
     try {
       const dataToSubmit = {
         ...taskFormData,
@@ -231,9 +236,8 @@ export function KanbanItemDetails() {
         assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
         related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
         related_deal_id: taskFormData.related_deal_id === "unassigned" ? null : taskFormData.related_deal_id,
-        related_kanban_item_id: id, // Ensure it's linked to the current Kanban item
+        related_kanban_item_id: id,
       };
-
       if (editingTask) {
         await updateTask(editingTask.id, dataToSubmit);
       } else {
@@ -292,8 +296,8 @@ export function KanbanItemDetails() {
 
   return (
     <div className="space-y-6">
-      <Button variant="outline" onClick={() => navigate("/kanban")}>
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Kanban
+      <Button variant="outline" onClick={() => navigate(`/kanban?boardId=${item.column?.board_id || ''}`)}>
+        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Board
       </Button>
 
       <Card className="bg-gradient-card border-border/50">
@@ -324,103 +328,134 @@ export function KanbanItemDetails() {
             </DropdownMenu>
           </div>
           <p className="text-muted-foreground text-sm">
-            Created: {format(parseISO(item.created_at), "PPP")}
+            In column <span className="font-semibold">{item.column?.name || "N/A"}</span> | Created: {format(parseISO(item.created_at), "PPP")}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Column</p>
-              <p className="text-lg font-semibold">{item.column?.name || "N/A"}</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Priority</p>
-              {item.priority_level ? (
-                <KanbanPriorityBadge priority={item.priority_level} />
-              ) : (
-                <p className="text-lg font-semibold">N/A</p>
-              )}
+              {item.priority_level ? <KanbanPriorityBadge priority={item.priority_level} /> : <p className="font-semibold">N/A</p>}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Category</p>
-              {item.category ? (
-                <Badge variant="outline" className={cn("text-sm px-2 py-0.5", getCategoryColorClass(item.category))}>
-                  {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-                </Badge>
-              ) : (
-                <p className="text-lg font-semibold">N/A</p>
-              )}
+              {item.category ? <Badge variant="outline" className={cn("text-sm px-2 py-0.5", getCategoryColorClass(item.category))}>{item.category.charAt(0).toUpperCase() + item.category.slice(1)}</Badge> : <p className="font-semibold">N/A</p>}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Assigned To</p>
-              {item.assigned_user ? (
-                <UserProfileCard profile={item.assigned_user} />
-              ) : (
-                <p className="text-lg font-semibold">N/A</p>
-              )}
+              {item.assigned_user ? <UserProfileCard profile={item.assigned_user} /> : <p className="font-semibold">N/A</p>}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Due Date</p>
-              <p className="text-lg font-semibold">
-                {item.due_date ? format(parseISO(item.due_date), "PPP") : "N/A"}
-              </p>
+              <p className="font-semibold">{item.due_date ? format(parseISO(item.due_date), "PPP") : "N/A"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Event Time</p>
-              <p className="text-lg font-semibold">
-                {item.event_time ? format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p') : "N/A"}
-              </p>
+              <p className="font-semibold">{item.event_time ? format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p') : "N/A"}</p>
             </div>
           </div>
-
           {item.description && (
             <>
               <Separator />
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Description</p>
-                <p className="text-foreground">{item.description}</p>
+                <p className="text-foreground whitespace-pre-wrap">{item.description}</p>
               </div>
             </>
           )}
         </CardContent>
       </Card>
 
-      {/* Kanban Data Hygiene Card */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold">Tenant Lead Information</CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setIsTenantInfoDialogOpen(true)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Tenant Info
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Client Category</p>
+              <p className="font-semibold">{item.client_category || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Tenant Name</p>
+              <p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Tenant Phone</p>
+              <p className="font-semibold">{item.tenant_contact_phone || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Tenant Email</p>
+              <p className="font-semibold">{item.tenant_contact_email || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Bedrooms Needed</p>
+              <p className="font-semibold">{item.bedrooms_needed || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Bathrooms Needed</p>
+              <p className="font-semibold">{item.bathrooms_needed || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Desired Move-in Date</p>
+              <p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Pets Info</p>
+              <p className="font-semibold">{item.pets_info || "N/A"}</p>
+            </div>
+          </div>
+          <Separator />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Household Composition</p>
+              <p className="font-semibold whitespace-pre-wrap">{item.household_composition || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Preferred Locations</p>
+              <p className="font-semibold whitespace-pre-wrap">{item.preferred_locations || "N/A"}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {item && <KanbanDataHygieneCard item={item} />}
 
-      {/* Kanban Item Notes Section */}
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Notes ({sortedNotes.length})</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {sortedNotes.length === 0 && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
           {sortedNotes.map((note: KanbanItemNote) => (
             <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
               <div>
-                <p className="text-sm text-foreground">{note.content}</p>
+                <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
                 </p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleDeleteNote(note.id, note.kanban_item_id)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEditNoteClick(note)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDeleteNote(note.id, note.kanban_item_id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -429,13 +464,7 @@ export function KanbanItemDetails() {
             {isAddingNote ? (
               <div className="space-y-2">
                 <Label htmlFor="new-note-content">Add New Note</Label>
-                <Textarea
-                  id="new-note-content"
-                  value={newNoteContent}
-                  onChange={(e) => setNewNoteContent(e.target.value)}
-                  placeholder="Type your note here..."
-                  rows={3}
-                />
+                <Textarea id="new-note-content" value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)} placeholder="Type your note here..." rows={3} />
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
                   <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
@@ -450,16 +479,10 @@ export function KanbanItemDetails() {
         </CardContent>
       </Card>
 
-      {/* Related Tasks Section */}
       <Card className="bg-gradient-card border-border/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-lg font-semibold">Related Tasks ({relatedTasks.length})</CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleAddTaskClick}
-            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-          >
+          <Button variant="outline" size="sm" onClick={handleAddTaskClick} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
             <Plus className="w-4 h-4 mr-2" /> Add Task
           </Button>
         </CardHeader>
@@ -478,46 +501,21 @@ export function KanbanItemDetails() {
               </TableHeader>
               <TableBody>
                 {relatedTasks.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      No tasks related to this Kanban item yet.
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No tasks related to this Kanban item yet.</TableCell></TableRow>
                 ) : (
                   relatedTasks.map((task) => (
                     <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                      <TableCell className="font-medium">
-                        <NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">
-                          {task.title}
-                        </NavLink>
-                      </TableCell>
-                      <TableCell>
-                        <TaskStatusBadge status={task.status} />
-                      </TableCell>
-                      <TableCell>
-                        <TaskPriorityBadge priority={task.priority} />
-                      </TableCell>
+                      <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">{task.title}</NavLink></TableCell>
+                      <TableCell><TaskStatusBadge status={task.status} /></TableCell>
+                      <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
                       <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
                       <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
                       <TableCell>
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => handleEditTaskClick(task)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteTask(task.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditTaskClick(task)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -530,21 +528,13 @@ export function KanbanItemDetails() {
         </CardContent>
       </Card>
 
-      {/* Edit Note Dialog */}
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Note</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Edit Note</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-note-content">Note Content</Label>
-              <Textarea
-                id="edit-note-content"
-                value={editNoteContent}
-                onChange={(e) => setEditNoteContent(e.target.value)}
-                rows={5}
-              />
+              <Textarea id="edit-note-content" value={editNoteContent} onChange={(e) => setEditNoteContent(e.target.value)} rows={5} />
             </div>
           </div>
           <DialogFooter>
@@ -554,7 +544,6 @@ export function KanbanItemDetails() {
         </DialogContent>
       </Dialog>
 
-      {/* Kanban Item Form Dialog for editing */}
       {item && (
         <KanbanItemFormDialog
           isOpen={isItemFormDialogOpen}
@@ -568,198 +557,98 @@ export function KanbanItemDetails() {
         />
       )}
 
-      {/* Add/Edit Task Dialog */}
+      {item && (
+        <TenantInfoFormDialog
+          isOpen={isTenantInfoDialogOpen}
+          onOpenChange={setIsTenantInfoDialogOpen}
+          initialData={item}
+          onSubmit={handleUpdateTenantInfoSubmit}
+        />
+      )}
+
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>
-              {editingTask ? "Edit Task" : "Add New Task"}
-            </DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{editingTask ? "Edit Task" : "Add New Task"}</DialogTitle></DialogHeader>
           <form onSubmit={handleTaskSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="task-title">Title *</Label>
-              <Input
-                id="task-title"
-                value={taskFormData.title}
-                onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))}
-                required
-              />
+              <Input id="task-title" value={taskFormData.title} onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))} required />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="task-description">Description</Label>
-              <Textarea
-                id="task-description"
-                value={taskFormData.description}
-                onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))}
-                rows={3}
-              />
+              <Textarea id="task-description" value={taskFormData.description} onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} />
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="task-status">Status *</Label>
-                <Select
-                  value={taskFormData.status}
-                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as Task['status'] }))}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {taskStatuses.map(status => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                <Select value={taskFormData.status} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as Task['status'] }))} required>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>{taskStatuses.map(status => <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-priority">Priority *</Label>
-                <Select
-                  value={taskFormData.priority}
-                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as Task['priority'] }))}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {taskPriorities.map(priority => (
-                      <SelectItem key={priority.value} value={priority.value}>
-                        {priority.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                <Select value={taskFormData.priority} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as Task['priority'] }))} required>
+                  <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
+                  <SelectContent>{taskPriorities.map(priority => <SelectItem key={priority.value} value={priority.value}>{priority.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="task-assigned_to">Assigned To</Label>
-                <Select
-                  value={taskFormData.assigned_to}
-                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, assigned_to: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a user" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {profiles.map(profile => (
-                      <SelectItem key={profile.id} value={profile.id}>
-                        {getFullName(profile)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                <Select value={taskFormData.assigned_to} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, assigned_to: value }))}>
+                  <SelectTrigger><SelectValue placeholder="Select a user" /></SelectTrigger>
+                  <SelectContent>{profiles.map(profile => <SelectItem key={profile.id} value={profile.id}>{getFullName(profile)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-due_date">Due Date</Label>
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !taskFormData.due_date && "text-muted-foreground"
-                      )}
-                    >
+                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !taskFormData.due_date && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {taskFormData.due_date ? format(taskFormData.due_date, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={taskFormData.due_date}
-                      onSelect={(date) => {
-                        setTaskFormData(prev => ({ ...prev, due_date: date || undefined }));
-                        setIsCalendarOpen(false);
-                      }}
-                      initialFocus
-                    />
+                    <Calendar mode="single" selected={taskFormData.due_date} onSelect={(date) => { setTaskFormData(prev => ({ ...prev, due_date: date || undefined })); setIsCalendarOpen(false); }} initialFocus />
                   </PopoverContent>
                 </Popover>
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="task-related_contact_id">Related Contact</Label>
-                <Select
-                  value={taskFormData.related_contact_id}
-                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_contact_id: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a contact" />
-                  </SelectTrigger>
+                <Select value={taskFormData.related_contact_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_contact_id: value }))}>
+                  <SelectTrigger><SelectValue placeholder="Select a contact" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">None</SelectItem>
-                    {contacts.map(contact => (
-                      <SelectItem key={contact.id} value={contact.id}>
-                        {contact.name} ({contact.company})
-                      </SelectItem>
-                    ))}
+                    {contacts.map(contact => <SelectItem key={contact.id} value={contact.id}>{contact.name} ({contact.company})</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-related_deal_id">Related Deal</Label>
-                <Select
-                  value={taskFormData.related_deal_id}
-                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a deal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {deals.map(d => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.title} (${d.value.toLocaleString()})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                <Select value={taskFormData.related_deal_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}>
+                  <SelectTrigger><SelectValue placeholder="Select a deal" /></SelectTrigger>
+                  <SelectContent>{deals.map(d => <SelectItem key={d.id} value={d.id}>{d.title} (${d.value.toLocaleString()})</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-
-            {/* New: Related Kanban Item */}
             <div className="space-y-2">
               <Label htmlFor="task-related_kanban_item_id">Related Kanban Item</Label>
-              <Select
-                value={taskFormData.related_kanban_item_id}
-                onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
-                disabled // Disable if pre-filled from Kanban item details
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a Kanban item" />
-                </SelectTrigger>
+              <Select value={taskFormData.related_kanban_item_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))} disabled>
+                <SelectTrigger><SelectValue placeholder="Select a Kanban item" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">None</SelectItem>
-                  {kanbanItems.map(item => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.title} ({item.column?.name || 'No Column'})
-                    </SelectItem>
-                  ))}
+                  {kanbanItems.map(item => <SelectItem key={item.id} value={item.id}>{item.title} ({item.column?.name || 'No Column'})</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsTaskDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-gradient-primary active:scale-95">
-                {editingTask ? "Update" : "Create"} Task
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setIsTaskDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" className="bg-gradient-primary active:scale-95">{editingTask ? "Update" : "Create"} Task</Button>
             </DialogFooter>
           </form>
         </DialogContent>

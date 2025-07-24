@@ -119,7 +119,7 @@ export interface KanbanItem {
   assigned_user?: Profile; // New: Assigned user profile
   due_date?: string; // New: Due date for the item
   event_time?: string | null;
-  column?: { name: string }; // Added column name for display
+  column?: { name: string; board_id: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
   tasks?: Task[]; // New: Added tasks array for Kanban items
   client_category?: string;
