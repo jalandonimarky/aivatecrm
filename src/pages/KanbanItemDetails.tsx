@@ -271,9 +271,9 @@ export function KanbanItemDetails() {
 
   const getCategoryColorClass = (category?: KanbanItem['category']) => {
     switch (category?.toLowerCase()) {
-      case 'real estate': return "bg-primary/20 text-primary border-primary";
-      case 'tech solutions': return "bg-accent/20 text-accent border-accent";
-      default: return "bg-secondary/20 text-secondary-foreground border-secondary";
+      case 'real estate': return "bg-primary text-primary-foreground border-primary";
+      case 'tech solutions': return "bg-accent text-accent-foreground border-accent";
+      default: return "bg-secondary text-secondary-foreground border-secondary";
     }
   };
 
