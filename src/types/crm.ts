@@ -81,6 +81,17 @@ export interface Deal {
   notes?: DealNote[]; // Added notes array
   tasks?: Task[]; // Added tasks array
   attachments?: DealAttachment[]; // Added attachments array
+  // New Tenant Lead Information fields
+  client_category?: 'Insurance Company' | 'Corporate Relocation' | 'Private Individual' | null;
+  tenant_contact_full_name?: string | null;
+  tenant_contact_phone?: string | null;
+  tenant_contact_email?: string | null;
+  household_composition?: string | null;
+  pets_info?: string | null;
+  bedrooms_needed?: number | null;
+  bathrooms_needed?: number | null;
+  preferred_locations?: string | null;
+  desired_move_in_date?: string | null;
 }
 
 export interface Task {

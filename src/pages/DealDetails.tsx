@@ -39,7 +39,7 @@ import { RallyDialog } from "@/components/deals/RallyDialog";
 import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { DealNote, Task, DealAttachment } from "@/types/crm";
+import type { DealNote, Task, DealAttachment, Deal } from "@/types/crm";
 
 interface TaskFormData {
   title: string;
@@ -51,6 +51,28 @@ interface TaskFormData {
   related_deal_id: string;
   related_kanban_item_id: string; // New: related_kanban_item_id
   due_date: Date | undefined;
+}
+
+interface DealDetailsFormData {
+  title: string;
+  description: string;
+  value: number;
+  stage: Deal['stage'];
+  tier: string | null;
+  contact_id: string;
+  assigned_to: string;
+  expected_close_date: Date | undefined;
+  // New Tenant Lead Information fields
+  client_category: Deal['client_category'] | 'none';
+  tenant_contact_full_name: string;
+  tenant_contact_phone: string;
+  tenant_contact_email: string;
+  household_composition: string;
+  pets_info: string;
+  bedrooms_needed: number | undefined;
+  bathrooms_needed: number | undefined;
+  preferred_locations: string;
+  desired_move_in_date: Date | undefined;
 }
 
 export function DealDetails() {
@@ -84,7 +106,7 @@ export function DealDetails() {
     related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isTaskCalendarOpen, setIsTaskCalendarOpen] = useState(false); // Renamed to avoid conflict
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
@@ -94,6 +116,35 @@ export function DealDetails() {
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
+  // State for Tenant Lead Information form
+  const [tenantLeadFormData, setTenantLeadFormData] = useState<DealDetailsFormData>({
+    title: "", // These are from the main deal, but needed for the form dialog
+    description: "",
+    value: 0,
+    stage: "lead",
+    tier: null,
+    contact_id: "unassigned",
+    assigned_to: "unassigned",
+    expected_close_date: undefined,
+    client_category: 'none',
+    tenant_contact_full_name: "",
+    tenant_contact_phone: "",
+    tenant_contact_email: "",
+    household_composition: "",
+    pets_info: "",
+    bedrooms_needed: undefined,
+    bathrooms_needed: undefined,
+    preferred_locations: "",
+    desired_move_in_date: undefined,
+  });
+  const [isTenantLeadCalendarOpen, setIsTenantLeadCalendarOpen] = useState(false); // New calendar state
+
+  const clientCategories: { value: Deal['client_category'] | 'none', label: string }[] = [
+    { value: 'none', label: 'Select Category' },
+    { value: 'Insurance Company', label: 'Insurance Company' },
+    { value: 'Corporate Relocation', label: 'Corporate Relocation' },
+    { value: 'Private Individual', label: 'Private Individual' },
+  ];
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -118,8 +169,28 @@ export function DealDetails() {
   useEffect(() => {
     if (deal) {
       setTaskFormData(prev => ({ ...prev, related_deal_id: deal.id }));
+      setTenantLeadFormData({
+        title: deal.title,
+        description: deal.description || "",
+        value: deal.value,
+        stage: deal.stage,
+        tier: deal.tier || null,
+        contact_id: deal.contact_id || "unassigned",
+        assigned_to: deal.assigned_to || "unassigned",
+        expected_close_date: deal.expected_close_date ? new Date(deal.expected_close_date) : undefined,
+        client_category: deal.client_category || 'none',
+        tenant_contact_full_name: deal.tenant_contact_full_name || "",
+        tenant_contact_phone: deal.tenant_contact_phone || "",
+        tenant_contact_email: deal.tenant_contact_email || "",
+        household_composition: deal.household_composition || "",
+        pets_info: deal.pets_info || "",
+        bedrooms_needed: deal.bedrooms_needed || undefined,
+        bathrooms_needed: deal.bathrooms_needed || undefined,
+        preferred_locations: deal.preferred_locations || "",
+        desired_move_in_date: deal.desired_move_in_date ? new Date(deal.desired_move_in_date) : undefined,
+      });
     }
-  }, [deal]);
+  }, [deal, loading]);
 
 
   const handleAddNote = async (noteType: 'business' | 'development', content: string) => {
@@ -497,6 +568,59 @@ export function DealDetails() {
       {/* Project Timeline Section */}
       <DealTimeline deal={deal} />
 
+      {/* Tenant Lead Information Section */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Tenant Lead Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Client Category</p>
+              <p className="text-lg font-semibold">{deal.client_category || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Primary Contact Full Name</p>
+              <p className="text-lg font-semibold">{deal.tenant_contact_full_name || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Contact Phone Number</p>
+              <p className="text-lg font-semibold">{deal.tenant_contact_phone || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Contact Email Address</p>
+              <p className="text-lg font-semibold">{deal.tenant_contact_email || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Household Composition</p>
+              <p className="text-lg font-semibold">{deal.household_composition || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Pets</p>
+              <p className="text-lg font-semibold">{deal.pets_info || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Bedrooms Needed</p>
+              <p className="text-lg font-semibold">{deal.bedrooms_needed ?? "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Bathrooms Needed</p>
+              <p className="text-lg font-semibold">{deal.bathrooms_needed ?? "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Preferred Locations / Zip Codes</p>
+              <p className="text-lg font-semibold">{deal.preferred_locations || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Desired Move-In Date</p>
+              <p className="text-lg font-semibold">
+                {deal.desired_move_in_date ? format(parseISO(deal.desired_move_in_date), "PPP") : "N/A"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Attachments Section */}
       <Card className="bg-gradient-card border-border/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -639,7 +763,7 @@ export function DealDetails() {
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingBusinessNote(true)} className="w-full active:scale-95">
+                <Button variant="outline" onClick={() => setIsAddingBusinessNote(true)} className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Add Business Note
                 </Button>
               )}
@@ -701,7 +825,7 @@ export function DealDetails() {
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full active:scale-95">
+                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Add Development Note
                 </Button>
               )}
@@ -918,7 +1042,7 @@ export function DealDetails() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-due_date">Due Date</Label>
-                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <Popover open={isTaskCalendarOpen} onOpenChange={setIsTaskCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -937,7 +1061,7 @@ export function DealDetails() {
                       selected={taskFormData.due_date}
                       onSelect={(date) => {
                         setTaskFormData(prev => ({ ...prev, due_date: date || undefined }));
-                        setIsCalendarOpen(false);
+                        setIsTaskCalendarOpen(false);
                       }}
                       initialFocus
                     />

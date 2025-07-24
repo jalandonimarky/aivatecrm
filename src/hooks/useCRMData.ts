@@ -130,7 +130,17 @@ export function useCRMData() {
           assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
           tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          client_category,
+          tenant_contact_full_name,
+          tenant_contact_phone,
+          tenant_contact_email,
+          household_composition,
+          pets_info,
+          bedrooms_needed,
+          bathrooms_needed,
+          preferred_locations,
+          desired_move_in_date
         `)
         .order("created_at", { ascending: false });
 
@@ -446,7 +456,17 @@ export function useCRMData() {
           assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
           tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          client_category,
+          tenant_contact_full_name,
+          tenant_contact_phone,
+          tenant_contact_email,
+          household_composition,
+          pets_info,
+          bedrooms_needed,
+          bathrooms_needed,
+          preferred_locations,
+          desired_move_in_date
         `)
         .single();
 
@@ -489,7 +509,17 @@ export function useCRMData() {
           assigned_user:profiles!deals_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           notes:deal_notes(id, deal_id, note_type, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
           tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
-          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          attachments:deal_attachments(id, deal_id, file_name, file_url, attachment_type, uploaded_by, created_at, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          client_category,
+          tenant_contact_full_name,
+          tenant_contact_phone,
+          tenant_contact_email,
+          household_composition,
+          pets_info,
+          bedrooms_needed,
+          bathrooms_needed,
+          preferred_locations,
+          desired_move_in_date
         `)
         .single();
 
