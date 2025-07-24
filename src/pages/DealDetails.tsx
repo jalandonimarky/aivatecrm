@@ -49,11 +49,12 @@ interface TaskFormData {
   assigned_to: string;
   related_contact_id: string;
   related_deal_id: string;
+  related_kanban_item_id: string; // New: related_kanban_item_id
   due_date: Date | undefined;
 }
 
 export function DealDetails() {
-  const { deals, contacts, profiles, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, createDealAttachment, deleteDealAttachment } = useCRMData(); // Removed dataHygieneInsights
+  const { deals, contacts, profiles, kanbanItems, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, createDealAttachment, deleteDealAttachment } = useCRMData(); // Removed dataHygieneInsights
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -80,6 +81,7 @@ export function DealDetails() {
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: id || "unassigned",
+    related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -177,6 +179,7 @@ export function DealDetails() {
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
       related_deal_id: id || "unassigned",
+      related_kanban_item_id: "unassigned", // Reset new field
       due_date: undefined,
     });
     setEditingTask(null);
@@ -197,6 +200,7 @@ export function DealDetails() {
       assigned_to: task.assigned_to || "unassigned",
       related_contact_id: task.related_contact_id || "unassigned",
       related_deal_id: task.related_deal_id || id || "unassigned",
+      related_kanban_item_id: task.related_kanban_item_id || "unassigned", // Set new field for editing
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setIsTaskDialogOpen(true);
@@ -213,6 +217,7 @@ export function DealDetails() {
         assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
         related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
         related_deal_id: id,
+        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id, // Handle new field
       };
 
       if (editingTask) {
@@ -980,6 +985,27 @@ export function DealDetails() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* New: Related Kanban Item */}
+            <div className="space-y-2">
+              <Label htmlFor="task-related_kanban_item_id">Related Kanban Item</Label>
+              <Select
+                value={taskFormData.related_kanban_item_id}
+                onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a Kanban item" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">None</SelectItem>
+                  {kanbanItems.map(item => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.title} ({item.column?.name || 'No Column'})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <DialogFooter>

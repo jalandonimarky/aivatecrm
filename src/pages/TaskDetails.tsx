@@ -35,11 +35,12 @@ interface TaskFormData {
   assigned_to: string;
   related_contact_id: string;
   related_deal_id: string;
+  related_kanban_item_id: string; // New: related_kanban_item_id
   due_date: Date | undefined;
 }
 
 export function TaskDetails() {
-  const { tasks, contacts, deals, profiles, loading, updateTask, deleteTask, createTaskNote, updateTaskNote, deleteTaskNote, getFullName } = useCRMData(); // Destructure all needed properties
+  const { tasks, contacts, deals, profiles, kanbanItems, loading, updateTask, deleteTask, createTaskNote, updateTaskNote, deleteTaskNote, getFullName } = useCRMData(); // Destructure all needed properties
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -54,6 +55,7 @@ export function TaskDetails() {
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: "unassigned",
+    related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -91,6 +93,7 @@ export function TaskDetails() {
         assigned_to: task.assigned_to || "unassigned",
         related_contact_id: task.related_contact_id || "unassigned",
         related_deal_id: task.related_deal_id || "unassigned",
+        related_kanban_item_id: task.related_kanban_item_id || "unassigned", // Set new field for editing
         due_date: task.due_date ? new Date(task.due_date) : undefined,
       });
     }
@@ -111,6 +114,7 @@ export function TaskDetails() {
         assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
         related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
         related_deal_id: taskFormData.related_deal_id === "unassigned" ? null : taskFormData.related_deal_id,
+        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id, // Handle new field
       };
       await updateTask(task.id, dataToSubmit);
       setIsTaskFormDialogOpen(false);
@@ -269,6 +273,17 @@ export function TaskDetails() {
                 {task.related_deal ? (
                   <NavLink to={`/deals/${task.related_deal.id}`} className="text-primary hover:underline">
                     {task.related_deal.title}
+                  </NavLink>
+                ) : "N/A"}
+              </p>
+            </div>
+            {/* New: Related Kanban Item */}
+            <div>
+              <p className="text-sm text-muted-foreground">Related Kanban Item</p>
+              <p className="text-lg font-semibold">
+                {task.related_kanban_item ? (
+                  <NavLink to={`/kanban/items/${task.related_kanban_item.id}`} className="text-primary hover:underline">
+                    {task.related_kanban_item.title}
                   </NavLink>
                 ) : "N/A"}
               </p>
@@ -529,6 +544,27 @@ export function TaskDetails() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* New: Related Kanban Item */}
+            <div className="space-y-2">
+              <Label htmlFor="task-related_kanban_item_id">Related Kanban Item</Label>
+              <Select
+                value={taskFormData.related_kanban_item_id}
+                onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a Kanban item" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">None</SelectItem>
+                  {kanbanItems.map(item => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.title} ({item.column?.name || 'No Column'})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <DialogFooter>

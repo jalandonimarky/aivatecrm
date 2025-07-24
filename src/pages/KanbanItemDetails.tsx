@@ -15,6 +15,18 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
+import { Calendar } from "@/components/ui/calendar"; // Import Calendar
+import { Input } from "@/components/ui/input"; // Import Input
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"; // Import Table components
 import { format, parseISO, parse } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
@@ -22,18 +34,37 @@ import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
-import type { KanbanItem, KanbanItemNote } from "@/types/crm";
+import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge"; // Import TaskStatusBadge
+import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge"; // Import TaskPriorityBadge
+import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
+
+interface TaskFormData {
+  title: string;
+  description: string;
+  status: Task['status'];
+  priority: Task['priority'];
+  assigned_to: string;
+  related_contact_id: string;
+  related_deal_id: string;
+  related_kanban_item_id: string;
+  due_date: Date | undefined;
+}
 
 export function KanbanItemDetails() {
   const {
     kanbanItems,
     profiles,
+    contacts, // Added contacts
+    deals, // Added deals
     loading,
     updateKanbanItem,
     deleteKanbanItem,
-    createKanbanItemNote, // New: create note function
-    updateKanbanItemNote, // New: update note function
-    deleteKanbanItemNote, // New: delete note function
+    createKanbanItemNote,
+    updateKanbanItemNote,
+    deleteKanbanItemNote,
+    createTask, // Added createTask
+    updateTask, // Added updateTask
+    deleteTask, // Added deleteTask
     getFullName,
   } = useCRMData();
   const { id } = useParams<{ id: string }>();
@@ -42,17 +73,52 @@ export function KanbanItemDetails() {
   const item = kanbanItems.find((i) => i.id === id);
 
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
-  const [isAddingNote, setIsAddingNote] = useState(false); // State for adding new note
-  const [newNoteContent, setNewNoteContent] = useState(""); // State for new note content
-  const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false); // State for edit note dialog
-  const [editingNote, setEditingNote] = useState<KanbanItemNote | null>(null); // State for note being edited
-  const [editNoteContent, setEditNoteContent] = useState(""); // State for edited note content
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteContent, setNewNoteContent] = useState("");
+  const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<KanbanItemNote | null>(null);
+  const [editNoteContent, setEditNoteContent] = useState("");
+
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false); // State for task dialog
+  const [editingTask, setEditingTask] = useState<Task | null>(null); // State for task being edited
+  const [taskFormData, setTaskFormData] = useState<TaskFormData>({ // State for task form data
+    title: "",
+    description: "",
+    status: "pending",
+    priority: "medium",
+    assigned_to: "unassigned",
+    related_contact_id: "unassigned",
+    related_deal_id: "unassigned",
+    related_kanban_item_id: id || "unassigned", // Pre-fill with current Kanban item ID
+    due_date: undefined,
+  });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // State for task due date calendar
+
+  const taskStatuses: { value: Task['status'], label: string }[] = [
+    { value: "pending", label: "Pending" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
+
+  const taskPriorities: { value: Task['priority'], label: string }[] = [
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
+    { value: "urgent", label: "Urgent" },
+  ];
 
   useEffect(() => {
     if (!loading && id && !kanbanItems.find((i) => i.id === id)) {
       navigate("/kanban"); // Redirect if item not found
     }
   }, [kanbanItems, id, loading, navigate]);
+
+  useEffect(() => {
+    if (item) {
+      setTaskFormData(prev => ({ ...prev, related_kanban_item_id: item.id }));
+    }
+  }, [item]);
 
   const handleEditItemClick = () => {
     setIsItemFormDialogOpen(true);
@@ -118,6 +184,78 @@ export function KanbanItemDetails() {
     }
   };
 
+  const resetTaskForm = () => {
+    setTaskFormData({
+      title: "",
+      description: "",
+      status: "pending",
+      priority: "medium",
+      assigned_to: "unassigned",
+      related_contact_id: "unassigned",
+      related_deal_id: "unassigned",
+      related_kanban_item_id: id || "unassigned", // Always pre-fill with current Kanban item ID
+      due_date: undefined,
+    });
+    setEditingTask(null);
+  };
+
+  const handleAddTaskClick = () => {
+    resetTaskForm();
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleEditTaskClick = (task: Task) => {
+    setEditingTask(task);
+    setTaskFormData({
+      title: task.title,
+      description: task.description || "",
+      status: task.status,
+      priority: task.priority,
+      assigned_to: task.assigned_to || "unassigned",
+      related_contact_id: task.related_contact_id || "unassigned",
+      related_deal_id: task.related_deal_id || "unassigned",
+      related_kanban_item_id: task.related_kanban_item_id || id || "unassigned", // Set for editing, default to current Kanban item
+      due_date: task.due_date ? new Date(task.due_date) : undefined,
+    });
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleTaskSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    try {
+      const dataToSubmit = {
+        ...taskFormData,
+        due_date: taskFormData.due_date ? format(taskFormData.due_date, "yyyy-MM-dd") : null,
+        assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
+        related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
+        related_deal_id: taskFormData.related_deal_id === "unassigned" ? null : taskFormData.related_deal_id,
+        related_kanban_item_id: id, // Ensure it's linked to the current Kanban item
+      };
+
+      if (editingTask) {
+        await updateTask(editingTask.id, dataToSubmit);
+      } else {
+        await createTask(dataToSubmit);
+      }
+      resetTaskForm();
+      setIsTaskDialogOpen(false);
+    } catch (error) {
+      // Error handled in the hook
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (confirm("Are you sure you want to delete this task?")) {
+      try {
+        await deleteTask(taskId);
+      } catch (error) {
+        // Error handled in the hook
+      }
+    }
+  };
+
   const getCategoryColorClass = (category?: KanbanItem['category']) => {
     switch (category?.toLowerCase()) {
       case 'design': return "bg-primary/20 text-primary border-primary";
@@ -146,6 +284,10 @@ export function KanbanItemDetails() {
 
   const sortedNotes = (item.notes || []).sort((a: KanbanItemNote, b: KanbanItemNote) => 
     parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime()
+  );
+
+  const relatedTasks = (item.tasks || []).sort((a: Task, b: Task) => 
+    (a.due_date ? parseISO(a.due_date).getTime() : Infinity) - (b.due_date ? parseISO(b.due_date).getTime() : Infinity)
   );
 
   return (
@@ -308,6 +450,86 @@ export function KanbanItemDetails() {
         </CardContent>
       </Card>
 
+      {/* Related Tasks Section */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-lg font-semibold">Related Tasks ({relatedTasks.length})</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddTaskClick}
+            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+          >
+            <Plus className="w-4 h-4 mr-2" /> Add Task
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Assigned To</TableHead>
+                  <TableHead>Due Date</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {relatedTasks.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      No tasks related to this Kanban item yet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  relatedTasks.map((task) => (
+                    <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
+                      <TableCell className="font-medium">
+                        <NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">
+                          {task.title}
+                        </NavLink>
+                      </TableCell>
+                      <TableCell>
+                        <TaskStatusBadge status={task.status} />
+                      </TableCell>
+                      <TableCell>
+                        <TaskPriorityBadge priority={task.priority} />
+                      </TableCell>
+                      <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
+                      <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => handleEditTaskClick(task)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteTask(task.id)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Edit Note Dialog */}
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -345,6 +567,204 @@ export function KanbanItemDetails() {
           getFullName={getFullName}
         />
       )}
+
+      {/* Add/Edit Task Dialog */}
+      <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editingTask ? "Edit Task" : "Add New Task"}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleTaskSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="task-title">Title *</Label>
+              <Input
+                id="task-title"
+                value={taskFormData.title}
+                onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="task-description">Description</Label>
+              <Textarea
+                id="task-description"
+                value={taskFormData.description}
+                onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))}
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="task-status">Status *</Label>
+                <Select
+                  value={taskFormData.status}
+                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as Task['status'] }))}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {taskStatuses.map(status => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="task-priority">Priority *</Label>
+                <Select
+                  value={taskFormData.priority}
+                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as Task['priority'] }))}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {taskPriorities.map(priority => (
+                      <SelectItem key={priority.value} value={priority.value}>
+                        {priority.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="task-assigned_to">Assigned To</Label>
+                <Select
+                  value={taskFormData.assigned_to}
+                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, assigned_to: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a user" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">None</SelectItem>
+                    {profiles.map(profile => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {getFullName(profile)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="task-due_date">Due Date</Label>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !taskFormData.due_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {taskFormData.due_date ? format(taskFormData.due_date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={taskFormData.due_date}
+                      onSelect={(date) => {
+                        setTaskFormData(prev => ({ ...prev, due_date: date || undefined }));
+                        setIsCalendarOpen(false);
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="task-related_contact_id">Related Contact</Label>
+                <Select
+                  value={taskFormData.related_contact_id}
+                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_contact_id: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a contact" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">None</SelectItem>
+                    {contacts.map(contact => (
+                      <SelectItem key={contact.id} value={contact.id}>
+                        {contact.name} ({contact.company})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="task-related_deal_id">Related Deal</Label>
+                <Select
+                  value={taskFormData.related_deal_id}
+                  onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a deal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deals.map(d => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.title} (${d.value.toLocaleString()})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* New: Related Kanban Item */}
+            <div className="space-y-2">
+              <Label htmlFor="task-related_kanban_item_id">Related Kanban Item</Label>
+              <Select
+                value={taskFormData.related_kanban_item_id}
+                onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
+                disabled // Disable if pre-filled from Kanban item details
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a Kanban item" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">None</SelectItem>
+                  {kanbanItems.map(item => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.title} ({item.column?.name || 'No Column'})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsTaskDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-primary active:scale-95">
+                {editingTask ? "Update" : "Create"} Task
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

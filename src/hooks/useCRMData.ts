@@ -72,7 +72,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for KanbanItem upsert
   const getKanbanItemDbPayload = (item: KanbanItem) => {
-    const { creator, assigned_user, column, notes, ...dbPayload } = item; // Added 'notes' to destructuring
+    const { creator, assigned_user, column, notes, tasks, ...dbPayload } = item; // Added 'tasks' to destructuring
     return dbPayload;
   };
 
@@ -145,6 +145,7 @@ export function useCRMData() {
           assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value, stage, created_at, updated_at),
+          related_kanban_item:kanban_items(id, title, column_id, order_index, created_at),
           notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .order("created_at", { ascending: false });
@@ -165,7 +166,8 @@ export function useCRMData() {
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               column:kanban_columns(name),
-              notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+              notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+              tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
             )
           )
         `)
@@ -174,24 +176,32 @@ export function useCRMData() {
         .order("order_index", { foreignTable: "columns.items", ascending: true });
 
       if (boardsError) throw boardsError;
-      // Explicitly cast nested profiles to ensure correct type for 'role'
-      const typedBoardsData = (boardsData || []).map(board => ({
+      
+      // Explicitly cast boardsData to any[] before mapping to resolve deep type inference issues
+      const typedBoardsData = (boardsData as any[] || []).map((board: any) => ({
         ...board,
         creator: board.creator ? (board.creator as Profile) : null,
-        columns: (board.columns || []).map(column => ({
+        columns: (board.columns as any[] || []).map((column: any) => ({
           ...column,
-          items: (column.items || []).map(item => ({
+          items: (column.items as any[] || []).map((item: any) => ({
             ...item,
             creator: item.creator ? (item.creator as Profile) : null,
-            assigned_user: item.assigned_user ? (item.assigned_user as Profile) : null, // Cast assigned_user
-            column: item.column ? (item.column as { name: string }) : null, // Cast column
-            notes: (item.notes || []).map(note => ({ // Cast notes
+            assigned_user: item.assigned_user ? (item.assigned_user as Profile) : null,
+            column: item.column ? (item.column as { name: string }) : null,
+            notes: (item.notes as any[] || []).map((note: any) => ({
               ...note,
               creator: note.creator ? (note.creator as Profile) : null,
             })),
+            tasks: (item.tasks as any[] || []).map((task: any) => ({
+              ...task,
+              assigned_user: task.assigned_user ? (task.assigned_user as Profile) : null,
+              related_contact: task.related_contact ? (task.related_contact as Contact) : null,
+              related_deal: task.related_deal ? (task.related_deal as Deal) : null,
+              related_kanban_item: task.related_kanban_item ? (task.related_kanban_item as KanbanItem) : null,
+            })),
           })),
         })),
-      })) as KanbanBoard[];
+      })) as unknown as KanbanBoard[]; // Added 'unknown' cast here
       setKanbanBoards(typedBoardsData);
 
       // Extract all columns and items for flat state if needed elsewhere, or just use nested structure
@@ -545,7 +555,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for tasks
-  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>) => {
+  const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'assigned_user' | 'related_contact' | 'related_deal' | 'related_kanban_item' | 'notes'>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -555,6 +565,7 @@ export function useCRMData() {
           assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value, stage, created_at, updated_at),
+          related_kanban_item:kanban_items(id, title, column_id, order_index, created_at),
           notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
@@ -586,7 +597,7 @@ export function useCRMData() {
     }
   };
 
-  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal' | 'notes'>>) => {
+  const updateTask = async (id: string, updates: Partial<Omit<Task, 'assigned_user' | 'related_contact' | 'related_deal' | 'related_kanban_item' | 'notes'>>) => {
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -597,6 +608,7 @@ export function useCRMData() {
           assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           related_contact:contacts(id, name, email, company, created_at, updated_at),
           related_deal:deals(id, title, value, stage, created_at, updated_at),
+          related_kanban_item:kanban_items(id, title, column_id, order_index, created_at),
           notes:task_notes(id, task_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
@@ -1167,7 +1179,8 @@ export function useCRMData() {
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name),
-            notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+            notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+            tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
           )
         `)
         .single();
@@ -1196,7 +1209,8 @@ export function useCRMData() {
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name),
-            notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+            notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+            tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
           )
         `)
         .single();
@@ -1230,7 +1244,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'column' | 'notes'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'column' | 'notes' | 'tasks'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
@@ -1246,7 +1260,8 @@ export function useCRMData() {
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name),
-          notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
         `)
         .single();
 
@@ -1261,7 +1276,7 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column' | 'notes'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column' | 'notes' | 'tasks'>>) => {
     try {
       // The form sends all fields, so we can safely convert undefined/empty to null for nullable fields.
       const dataToUpdate = {
@@ -1283,7 +1298,8 @@ export function useCRMData() {
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name),
-          notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
+          notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
         `)
         .single();
 
@@ -1396,7 +1412,7 @@ export function useCRMData() {
 
               // Recalculate order_index for destination column
               const updatedDestinationItems = newDestinationItems.map((item, index) => ({ ...item, order_index: index }));
-              return { ...col, items: updatedDestinationItems };
+              return { ...col, items: updatedDestinationulators.
             }
             return col;
           });

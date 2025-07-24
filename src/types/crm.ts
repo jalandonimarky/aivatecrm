@@ -92,6 +92,7 @@ export interface Task {
   assigned_to?: string;
   related_contact_id?: string;
   related_deal_id?: string;
+  related_kanban_item_id?: string; // New: Added related_kanban_item_id
   due_date?: string;
   created_by?: string;
   created_at: string;
@@ -99,6 +100,7 @@ export interface Task {
   assigned_user?: Profile;
   related_contact?: Contact;
   related_deal?: Deal;
+  related_kanban_item?: KanbanItem; // New: To store the related Kanban item
   notes?: TaskNote[]; // Added notes array for tasks
 }
 
@@ -119,6 +121,7 @@ export interface KanbanItem {
   event_time?: string | null;
   column?: { name: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
+  tasks?: Task[]; // New: Added tasks array for Kanban items
 }
 
 export interface KanbanColumn {

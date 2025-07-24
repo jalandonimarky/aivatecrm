@@ -39,11 +39,12 @@ interface TaskFormData {
   assigned_to: string;
   related_contact_id: string;
   related_deal_id: string;
+  related_kanban_item_id: string; // New: related_kanban_item_id
   due_date: Date | undefined;
 }
 
 export function Tasks() {
-  const { tasks, contacts, deals, profiles, loading, createTask, updateTask, deleteTask, getFullName } = useCRMData(); // Destructure all needed properties
+  const { tasks, contacts, deals, profiles, kanbanItems, loading, createTask, updateTask, deleteTask, getFullName } = useCRMData(); // Destructure all needed properties
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -55,6 +56,7 @@ export function Tasks() {
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: "unassigned",
+    related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -64,6 +66,7 @@ export function Tasks() {
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
   const [selectedAssignedTo, setSelectedAssignedTo] = useState<string>("all");
   const [selectedRelatedDeal, setSelectedRelatedDeal] = useState<string>("all");
+  const [selectedRelatedKanbanItem, setSelectedRelatedKanbanItem] = useState<string>("all"); // New filter state
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -85,14 +88,16 @@ export function Tasks() {
       task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (task.assigned_user && getFullName(task.assigned_user).toLowerCase().includes(searchTerm.toLowerCase())) ||
       task.related_contact?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.related_deal?.title?.toLowerCase().includes(searchTerm.toLowerCase());
+      task.related_deal?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.related_kanban_item?.title?.toLowerCase().includes(searchTerm.toLowerCase()); // New search filter
 
     const matchesStatus = selectedStatus === "all" || task.status === selectedStatus;
     const matchesPriority = selectedPriority === "all" || task.priority === selectedPriority;
     const matchesAssignedTo = selectedAssignedTo === "all" || task.assigned_to === selectedAssignedTo;
     const matchesRelatedDeal = selectedRelatedDeal === "all" || task.related_deal_id === selectedRelatedDeal;
+    const matchesRelatedKanbanItem = selectedRelatedKanbanItem === "all" || task.related_kanban_item_id === selectedRelatedKanbanItem; // New filter logic
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesAssignedTo && matchesRelatedDeal;
+    return matchesSearch && matchesStatus && matchesPriority && matchesAssignedTo && matchesRelatedDeal && matchesRelatedKanbanItem;
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,6 +109,7 @@ export function Tasks() {
         assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to,
         related_contact_id: formData.related_contact_id === "unassigned" ? null : formData.related_contact_id,
         related_deal_id: formData.related_deal_id === "unassigned" ? null : formData.related_deal_id,
+        related_kanban_item_id: formData.related_kanban_item_id === "unassigned" ? null : formData.related_kanban_item_id, // Handle new field
       };
 
       if (editingTask) {
@@ -127,6 +133,7 @@ export function Tasks() {
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
       related_deal_id: "unassigned",
+      related_kanban_item_id: "unassigned", // Reset new field
       due_date: undefined,
     });
     setEditingTask(null);
@@ -142,6 +149,7 @@ export function Tasks() {
       assigned_to: task.assigned_to || "unassigned",
       related_contact_id: task.related_contact_id || "unassigned",
       related_deal_id: task.related_deal_id || "unassigned",
+      related_kanban_item_id: task.related_kanban_item_id || "unassigned", // Set new field for editing
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setDialogOpen(true);
@@ -159,6 +167,7 @@ export function Tasks() {
     setSelectedPriority("all");
     setSelectedAssignedTo("all");
     setSelectedRelatedDeal("all");
+    setSelectedRelatedKanbanItem("all"); // Clear new filter
   };
 
   return (
@@ -343,6 +352,27 @@ export function Tasks() {
                 </div>
               </div>
 
+              {/* New: Related Kanban Item */}
+              <div className="space-y-2">
+                <Label htmlFor="related_kanban_item_id">Related Kanban Item</Label>
+                <Select
+                  value={formData.related_kanban_item_id}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a Kanban item" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">None</SelectItem>
+                    {kanbanItems.map(item => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.title} ({item.column?.name || 'No Column'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex justify-end space-x-2">
                 <Button
                   type="button"
@@ -428,7 +458,22 @@ export function Tasks() {
           </SelectContent>
         </Select>
 
-        {(searchTerm !== "" || selectedStatus !== "all" || selectedPriority !== "all" || selectedAssignedTo !== "all" || selectedRelatedDeal !== "all") && (
+        {/* New: Filter by Related Kanban Item */}
+        <Select value={selectedRelatedKanbanItem} onValueChange={setSelectedRelatedKanbanItem}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Kanban Item" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Kanban Items</SelectItem>
+            {kanbanItems.map(item => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {(searchTerm !== "" || selectedStatus !== "all" || selectedPriority !== "all" || selectedAssignedTo !== "all" || selectedRelatedDeal !== "all" || selectedRelatedKanbanItem !== "all") && (
           <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
             <Filter className="w-4 h-4 mr-2" /> Clear Filters
           </Button>
@@ -451,6 +496,7 @@ export function Tasks() {
                   <TableHead>Assigned To</TableHead>
                   <TableHead>Related Contact</TableHead>
                   <TableHead>Related Deal</TableHead>
+                  <TableHead>Related Kanban Item</TableHead> {/* New column */}
                   <TableHead>Due Date</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
@@ -472,6 +518,7 @@ export function Tasks() {
                     <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
                     <TableCell>{task.related_contact?.name || "-"}</TableCell>
                     <TableCell>{task.related_deal?.title || "-"}</TableCell>
+                    <TableCell>{task.related_kanban_item?.title || "-"}</TableCell> {/* Display related Kanban item */}
                     <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -504,7 +551,7 @@ export function Tasks() {
           {filteredTasks.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchTerm || selectedStatus !== "all" || selectedPriority !== "all" || selectedAssignedTo !== "all" || selectedRelatedDeal !== "all"
+                {searchTerm || selectedStatus !== "all" || selectedPriority !== "all" || selectedAssignedTo !== "all" || selectedRelatedDeal !== "all" || selectedRelatedKanbanItem !== "all"
                   ? "No tasks found matching your filters."
                   : "No tasks yet. Create your first task!"}
               </p>
