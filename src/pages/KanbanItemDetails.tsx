@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format, parseISO, parse, formatDistanceToNowStrict } from "date-fns"; // Import formatDistanceToNowStrict
+import { format, parseISO, parse } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
@@ -37,7 +37,7 @@ import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import { CollapsibleCard } from "@/components/CollapsibleCard";
+import { CollapsibleCard } from "@/components/CollapsibleCard"; // Import the new component
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -354,12 +354,6 @@ export function KanbanItemDetails() {
               <p className="text-sm text-muted-foreground">Event Time</p>
               <p className="font-semibold">{item.event_time ? format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p') : "N/A"}</p>
             </div>
-            {item.created_at && (
-              <div>
-                <p className="text-sm text-muted-foreground">SLA (Time Since Creation)</p>
-                <p className="font-semibold">{formatDistanceToNowStrict(parseISO(item.created_at), { addSuffix: true })}</p>
-              </div>
-            )}
           </div>
           {item.description && (
             <>
@@ -443,7 +437,7 @@ export function KanbanItemDetails() {
         <CollapsibleCard
           title="Data Hygiene Check"
           storageKey="kanban-data-hygiene-collapsed"
-          defaultOpen={true}
+          defaultOpen={true} // Keep this open by default as it's important
         >
           <KanbanDataHygieneCard item={item} />
         </CollapsibleCard>
