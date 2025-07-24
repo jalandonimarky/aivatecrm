@@ -150,6 +150,7 @@ export interface KanbanBoard {
   created_at: string;
   columns?: KanbanColumn[]; // Nested columns
   creator?: Profile; // To store the profile of the board creator
+  background_color?: string; // New: Background color for the board card
 }
 
 export interface Notification {

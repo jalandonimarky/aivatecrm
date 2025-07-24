@@ -700,7 +700,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -739,7 +739,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -772,7 +772,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -813,7 +813,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -852,7 +852,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -885,7 +885,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -926,7 +926,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -965,7 +965,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -998,7 +998,7 @@ export function useCRMData() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        errorMessage = (error as { message }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
@@ -1144,6 +1144,23 @@ export function useCRMData() {
     } catch (error: any) {
       console.error("Error updating Kanban board:", error);
       toast({ title: "Error updating board", description: error.message, variant: "destructive" });
+      throw error;
+    }
+  };
+
+  const updateKanbanBoardColor = async (id: string, color: string | null) => {
+    try {
+      const { error } = await supabase
+        .from("kanban_boards")
+        .update({ background_color: color })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ title: "Board color updated", description: "Kanban board color changed successfully." });
+      await fetchData(); // Re-fetch to update UI
+    } catch (error: any) {
+      console.error("Error updating Kanban board color:", error);
+      toast({ title: "Error updating board color", description: error.message, variant: "destructive" });
       throw error;
     }
   };
@@ -1555,6 +1572,7 @@ export function useCRMData() {
     createKanbanBoard,
     updateKanbanBoard,
     deleteKanbanBoard,
+    updateKanbanBoardColor, // Export new function
     createKanbanColumn,
     updateKanbanColumn,
     deleteKanbanColumn,

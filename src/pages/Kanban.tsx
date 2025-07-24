@@ -20,6 +20,7 @@ export function Kanban() {
     createKanbanBoard,
     updateKanbanBoard,
     deleteKanbanBoard,
+    updateKanbanBoardColor, // Destructure new function
     createKanbanColumn,
     updateKanbanColumn,
     deleteKanbanColumn,
@@ -257,6 +258,7 @@ export function Kanban() {
               onSelect={handleSelectBoard}
               onEdit={(b) => { setEditingBoard(b); setIsBoardFormDialogOpen(true); }}
               onDelete={handleDeleteBoard}
+              onColorChange={updateKanbanBoardColor} // Pass the new function
             />
           ))
         )}

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
+import { BoardColorPicker } from "./BoardColorPicker"; // Import the new component
 import type { KanbanBoard } from "@/types/crm";
 
 interface KanbanBoardCardProps {
@@ -11,11 +12,15 @@ interface KanbanBoardCardProps {
   onSelect: (boardId: string) => void;
   onEdit: (board: KanbanBoard) => void;
   onDelete: (boardId: string) => void;
+  onColorChange: (boardId: string, color: string | null) => void; // New prop
 }
 
-export function KanbanBoardCard({ board, onSelect, onEdit, onDelete }: KanbanBoardCardProps) {
+export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChange }: KanbanBoardCardProps) {
   return (
-    <Card className="bg-gradient-card border-border/50 hover:shadow-medium transition-smooth cursor-pointer">
+    <Card 
+      className="bg-gradient-card border-border/50 hover:shadow-medium transition-smooth cursor-pointer"
+      style={board.background_color ? { backgroundColor: board.background_color } : {}} // Apply background color
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold flex-1 min-w-0 pr-2 break-words" onClick={() => onSelect(board.id)}>
           {board.name}
@@ -30,6 +35,13 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete }: KanbanBoa
             <DropdownMenuItem onClick={() => onEdit(board)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit Board
+            </DropdownMenuItem>
+            <DropdownMenuItem className="p-0"> {/* Wrap color picker in DropdownMenuItem */}
+              <BoardColorPicker 
+                currentColor={board.background_color} 
+                onSelectColor={(color) => onColorChange(board.id, color)} 
+              />
+              <span className="ml-2 text-sm">Change Board Color</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onDelete(board.id)} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />

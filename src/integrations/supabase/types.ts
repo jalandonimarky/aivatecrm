@@ -221,18 +221,21 @@ export type Database = {
           name: string
           created_by: string | null
           created_at: string
+          background_color: string | null // Added background_color
         }
         Insert: {
           id?: string
           name: string
           created_by?: string | null
           created_at?: string
+          background_color?: string | null // Added background_color
         }
         Update: {
           id?: string
           name?: string
           created_by?: string | null
           created_at?: string
+          background_color?: string | null // Added background_color
         }
         Relationships: [
           {
