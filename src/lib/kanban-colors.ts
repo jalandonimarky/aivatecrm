@@ -5,37 +5,37 @@ export const kanbanBoardColors = [
     key: 'mint',
     name: 'Mint',
     light: 'linear-gradient(135deg, hsl(150, 100%, 96%) 0%, hsl(0, 0%, 100%) 100%)',
-    dark: 'linear-gradient(135deg, hsl(150, 42%, 15%) 0%, hsl(150, 42%, 10%) 100%)',
+    dark: 'linear-gradient(135deg, hsl(150, 42%, 20%) 0%, hsl(150, 42%, 12%) 100%)',
   },
   {
     key: 'sky',
     name: 'Sky',
     light: 'linear-gradient(135deg, hsl(210, 100%, 96%) 0%, hsl(0, 0%, 100%) 100%)',
-    dark: 'linear-gradient(135deg, hsl(210, 69%, 20%) 0%, hsl(210, 69%, 15%) 100%)',
+    dark: 'linear-gradient(135deg, hsl(210, 69%, 25%) 0%, hsl(210, 69%, 15%) 100%)',
   },
   {
     key: 'peach',
     name: 'Peach',
     light: 'linear-gradient(135deg, hsl(30, 100%, 96%) 0%, hsl(0, 0%, 100%) 100%)',
-    dark: 'linear-gradient(135deg, hsl(30, 42%, 20%) 0%, hsl(30, 42%, 15%) 100%)',
+    dark: 'linear-gradient(135deg, hsl(30, 42%, 25%) 0%, hsl(30, 42%, 15%) 100%)',
   },
   {
     key: 'lavender',
     name: 'Lavender',
     light: 'linear-gradient(135deg, hsl(250, 100%, 97%) 0%, hsl(0, 0%, 100%) 100%)',
-    dark: 'linear-gradient(135deg, hsl(250, 42%, 20%) 0%, hsl(250, 42%, 15%) 100%)',
+    dark: 'linear-gradient(135deg, hsl(250, 42%, 25%) 0%, hsl(250, 42%, 15%) 100%)',
   },
   {
     key: 'yellow',
     name: 'Soft Yellow',
     light: 'linear-gradient(135deg, hsl(50, 100%, 96%) 0%, hsl(0, 0%, 100%) 100%)',
-    dark: 'linear-gradient(135deg, hsl(50, 42%, 20%) 0%, hsl(50, 42%, 15%) 100%)',
+    dark: 'linear-gradient(135deg, hsl(50, 42%, 25%) 0%, hsl(50, 42%, 15%) 100%)',
   },
   {
     key: 'blush',
     name: 'Blush',
     light: 'linear-gradient(135deg, hsl(350, 100%, 97%) 0%, hsl(0, 0%, 100%) 100%)',
-    dark: 'linear-gradient(135deg, hsl(350, 42%, 20%) 0%, hsl(350, 42%, 15%) 100%)',
+    dark: 'linear-gradient(135deg, hsl(350, 42%, 25%) 0%, hsl(350, 42%, 15%) 100%)',
   },
 ];
 
