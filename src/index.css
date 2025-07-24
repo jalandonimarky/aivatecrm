@@ -43,7 +43,7 @@ All colors MUST be HSL.
 
     --border: 220 13% 85%; /* Slightly darker grey for better visibility in light mode */
     --input: 220 13% 91%; /* Light Grey */
-    --ring: 220 13% 85%; /* Changed from Purple to match --border */
+    --ring: 0 0% 100% / 0; /* Transparent to remove focus ring */
 
     --radius: 0.75rem;
 
@@ -107,7 +107,7 @@ All colors MUST be HSL.
 
     --border: 229 20% 20%; /* Lighter, more visible border for dark mode */
     --input: 229 30% 12%; /* Darker input for consistency */
-    --ring: 229 20% 20%; /* Changed from Purple to match --border */
+    --ring: 0 0% 100% / 0; /* Transparent to remove focus ring */
 
     --radius: 0.75rem;
 
