@@ -46,23 +46,11 @@ export function NotificationBell() {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-4">
           <h4 className="font-semibold">Notifications</h4>
-          <div className="flex space-x-2"> {/* Group buttons */}
-            {unreadCount > 0 && (
-              <Button variant="link" size="sm" onClick={markAllAsRead} className="h-auto p-0 text-xs">
-                Mark all as read
-              </Button>
-            )}
-            {notifications.length > 0 && (
-              <Button 
-                variant="link" 
-                size="sm" 
-                onClick={deleteAllNotifications} 
-                className="h-auto p-0 text-xs text-destructive"
-              >
-                <Trash2 className="h-3 w-3 mr-1" /> Clear All
-              </Button>
-            )}
-          </div>
+          {unreadCount > 0 && (
+            <Button variant="link" size="sm" onClick={markAllAsRead} className="h-auto p-0 text-xs">
+              Mark all as read
+            </Button>
+          )}
         </div>
         <Separator />
         <ScrollArea className="h-72">
@@ -100,6 +88,19 @@ export function NotificationBell() {
             )}
           </div>
         </ScrollArea>
+        {notifications.length > 0 && (
+          <div className="p-2 flex justify-end">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={deleteAllNotifications} 
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              title="Clear All Notifications"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
