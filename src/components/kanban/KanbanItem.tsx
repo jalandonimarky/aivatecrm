@@ -21,15 +21,16 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
   const [isExpanded, setIsExpanded] = useState(false); // New state for expansion
   const navigate = useNavigate();
 
-  const getCategoryColorClass = (category?: KanbanItemType['category']) => {
-    switch (category?.toLowerCase()) {
-      case 'design': return "border-l-4 border-primary"; // Mint
-      case 'development': return "border-l-4 border-accent"; // Purple
-      case 'marketing': return "border-l-4 border-warning"; // Orange
-      case 'business': return "border-l-4 border-success"; // Green
-      case 'other': return "border-l-4 border-muted-foreground"; // Grey
-      default: return category ? "border-l-4 border-secondary" : "border-l-4 border-transparent";
-    }
+  // Function to get the item's left border color based on its column name
+  const getItemBorderColorClass = (columnName?: string) => {
+    if (!columnName) return "border-l-4 border-transparent"; // Fallback
+
+    const lowerCaseName = columnName.toLowerCase();
+    if (lowerCaseName.includes("backlog")) return "border-l-4 border-primary"; // Mint
+    if (lowerCaseName.includes("in progress")) return "border-l-4 border-accent"; // Purple
+    if (lowerCaseName.includes("on hold")) return "border-l-4 border-warning"; // Orange
+    if (lowerCaseName.includes("done")) return "border-l-4 border-success"; // Green
+    return "border-l-4 border-muted-foreground"; // Default grey
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -70,7 +71,7 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
             }}
             className={cn(
               "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
-              getCategoryColorClass(item.category),
+              getItemBorderColorClass(item.column?.name), // Use the new function to set border color
               snapshot.isDragging
                 ? "z-50 shadow-lg ring-2 ring-primary"
                 : "hover:z-40 hover:-translate-y-1",
