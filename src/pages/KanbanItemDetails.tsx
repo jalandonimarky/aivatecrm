@@ -18,6 +18,7 @@ import { UserProfileCard } from "@/components/UserProfileCard";
 import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog"; // Updated import
+import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard"; // Import new component
 import type { KanbanItem } from "@/types/crm";
 
 export function KanbanItemDetails() {
@@ -185,6 +186,9 @@ export function KanbanItemDetails() {
           )}
         </CardContent>
       </Card>
+
+      {/* Kanban Data Hygiene Card */}
+      {item && <KanbanDataHygieneCard item={item} />}
 
       {/* Kanban Item Form Dialog for editing */}
       {item && (
