@@ -107,7 +107,7 @@ export function AppSidebar() {
                 alt="AiVate CRM Logo" 
                 className="w-12 h-12 object-contain"
               />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
+              <span className="font-cloud text-xl font-bold text-gray-900 dark:text-white">
                 AiVate CRM
               </span>
             </a>
