@@ -173,12 +173,11 @@ export function useCRMData() {
         `)
         .order("created_at", { ascending: false })
         .order("order_index", { foreignTable: "columns", ascending: true })
-        .order("order_index", { foreignTable: "columns.items", ascending: true });
+        .order("order_index", { foreignTable: "columns.items", ascending: true }) as { data: any[] | null, error: any }; // Explicitly cast data here
 
       if (boardsError) throw boardsError;
       
-      // Explicitly cast boardsData to any[] before mapping to resolve deep type inference issues
-      const typedBoardsData = (boardsData as any[] || []).map((board: any) => ({
+      const typedBoardsData = (boardsData || []).map((board: any) => ({
         ...board,
         creator: board.creator ? (board.creator as Profile) : null,
         columns: (board.columns as any[] || []).map((column: any) => ({
@@ -201,7 +200,7 @@ export function useCRMData() {
             })),
           })),
         })),
-      })) as unknown as KanbanBoard[]; // Added 'unknown' cast here
+      })) as KanbanBoard[];
       setKanbanBoards(typedBoardsData);
 
       // Extract all columns and items for flat state if needed elsewhere, or just use nested structure
