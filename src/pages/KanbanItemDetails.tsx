@@ -34,6 +34,7 @@ import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
+import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog"; // Import new dialog
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
@@ -76,6 +77,7 @@ export function KanbanItemDetails() {
 
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
   const [isTenantInfoDialogOpen, setIsTenantInfoDialogOpen] = useState(false);
+  const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false); // New state for housing dialog
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
@@ -137,6 +139,12 @@ export function KanbanItemDetails() {
     if (!item) return;
     await updateKanbanItem(item.id, data);
     setIsTenantInfoDialogOpen(false);
+  };
+
+  const handleUpdateHousingInfoSubmit = async (data: Partial<KanbanItem>) => {
+    if (!item) return;
+    await updateKanbanItem(item.id, data);
+    setIsHousingInfoDialogOpen(false);
   };
 
   const handleDeleteItem = async () => {
@@ -441,6 +449,62 @@ export function KanbanItemDetails() {
         </div>
       </CollapsibleCard>
 
+      <CollapsibleCard
+        title="Housing Lead Information"
+        storageKey="kanban-housing-info-collapsed"
+        optionsMenu={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setIsHousingInfoDialogOpen(true)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Housing Info
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Property Manager / Host</p>
+            <p className="font-semibold">{item.property_manager_name || "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Contact Phone</p>
+            <p className="font-semibold">{item.property_contact_phone || "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Contact Email</p>
+            <p className="font-semibold">{item.property_contact_email || "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Bedrooms</p>
+            <p className="font-semibold">{item.property_bedrooms ?? "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Bathrooms</p>
+            <p className="font-semibold">{item.property_bathrooms ?? "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Square Footage</p>
+            <p className="font-semibold">{item.property_sq_ft ? `${item.property_sq_ft} sq ft` : "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">MTR-Approved</p>
+            <p className="font-semibold">{typeof item.property_mtr_approved === 'boolean' ? (item.property_mtr_approved ? "Yes" : "No") : "N/A"}</p>
+          </div>
+        </div>
+        <Separator className="my-4" />
+        <div>
+          <p className="text-sm text-muted-foreground">Property Full Address</p>
+          <p className="font-semibold whitespace-pre-wrap">{item.property_full_address || "N/A"}</p>
+        </div>
+      </CollapsibleCard>
+
       {item && (
         <CollapsibleCard
           title="Data Hygiene Check"
@@ -579,6 +643,15 @@ export function KanbanItemDetails() {
           onOpenChange={setIsTenantInfoDialogOpen}
           initialData={item}
           onSubmit={handleUpdateTenantInfoSubmit}
+        />
+      )}
+
+      {item && (
+        <HousingInfoFormDialog
+          isOpen={isHousingInfoDialogOpen}
+          onOpenChange={setIsHousingInfoDialogOpen}
+          initialData={item}
+          onSubmit={handleUpdateHousingInfoSubmit}
         />
       )}
 

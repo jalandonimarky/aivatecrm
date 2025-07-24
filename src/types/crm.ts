@@ -122,6 +122,7 @@ export interface KanbanItem {
   column?: { name: string; board_id: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
   tasks?: Task[]; // New: Added tasks array for Kanban items
+  // Tenant Info
   client_category?: string;
   tenant_contact_full_name?: string;
   tenant_contact_phone?: string;
@@ -132,6 +133,15 @@ export interface KanbanItem {
   bathrooms_needed?: number;
   preferred_locations?: string;
   desired_move_in_date?: string;
+  // Housing Lead Info
+  property_manager_name?: string;
+  property_contact_phone?: string;
+  property_contact_email?: string;
+  property_full_address?: string;
+  property_bedrooms?: number;
+  property_bathrooms?: number;
+  property_sq_ft?: number;
+  property_mtr_approved?: boolean;
 }
 
 export interface KanbanColumn {
