@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,12 +14,13 @@ import { KanbanPriorityBadge } from "./KanbanPriorityBadge";
 interface KanbanItemProps {
   item: KanbanItemType;
   index: number;
-  onEdit: (item: KanbanItemType) => void;
+  onEdit: (item: KanbanItemType) => void; // This will now open the details drawer
   onDelete: (itemId: string) => void;
 }
 
 export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Removed isExpanded state as details are now in a separate drawer
+  // Removed toggleExpand function as the whole card click will open the drawer
 
   const getCategoryColorClass = (category?: KanbanItemType['category']) => {
     switch (category?.toLowerCase()) {
@@ -27,18 +28,10 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
       case 'development': return "border-l-4 border-accent"; // Purple
       case 'marketing': return "border-l-4 border-warning"; // Orange
       case 'business': return "border-l-4 border-success"; // Green
+      case 'done': return "border-l-4 border-success"; // Green for done items
       case 'other': return "border-l-4 border-muted-foreground"; // Grey
       default: return category ? "border-l-4 border-secondary" : "border-l-4 border-transparent";
     }
-  };
-
-  const toggleExpand = (e: React.MouseEvent) => {
-    // Prevent toggling if a dropdown menu or button within the card is clicked
-    const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('[data-radix-popper-content-wrapper]')) {
-      return;
-    }
-    setIsExpanded(!isExpanded);
   };
 
   return (
@@ -54,9 +47,9 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
             snapshot.isDragging
               ? "z-50 shadow-lg ring-2 ring-primary"
               : "hover:z-40 hover:-translate-y-1",
-            isExpanded ? "z-30" : ""
+            item.category === 'done' ? "opacity-70" : "" // Dim completed items
           )}
-          onClick={toggleExpand}
+          onClick={() => onEdit(item)} // Click on card opens details drawer
         >
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-1">
@@ -71,9 +64,9 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onClick={() => onEdit(item)}>
+                    <DropdownMenuItem onClick={() => onEdit(item)}> {/* Still use onEdit for dropdown */}
                       <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                      View/Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onDelete(item.id)} className="text-destructive">
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -88,39 +81,36 @@ export function KanbanItem({ item, index, onEdit, onDelete }: KanbanItemProps) {
               {item.priority_level && (
                 <KanbanPriorityBadge priority={item.priority_level} />
               )}
-              {item.category && (
+              {item.category && item.category !== 'done' && ( // Hide category badge if 'done'
                 <Badge variant="secondary" className="text-xs px-2 py-0.5">
                   {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
                 </Badge>
               )}
+              {item.category === 'done' && (
+                <Badge className="bg-success text-success-foreground text-xs px-2 py-0.5">
+                  Completed
+                </Badge>
+              )}
             </div>
 
-            {isExpanded && (
-              <div className="mt-3">
-                {item.description && (
-                  <p className="text-muted-foreground text-xs mb-3">
-                    {item.description}
-                  </p>
-                )}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                  {item.assigned_user && (
-                    <UserProfileCard profile={item.assigned_user} />
-                  )}
-                  {item.due_date && (
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <CalendarIcon className="w-3 h-3 mr-1" />
-                      {format(new Date(item.due_date), "MMM dd")}
-                    </div>
-                  )}
-                  {item.event_time && (
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p')}
-                    </div>
-                  )}
+            {/* Display basic details directly on the card */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              {item.assigned_user && (
+                <UserProfileCard profile={item.assigned_user} />
+              )}
+              {item.due_date && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <CalendarIcon className="w-3 h-3 mr-1" />
+                  {format(new Date(item.due_date), "MMM dd")}
                 </div>
-              </div>
-            )}
+              )}
+              {item.event_time && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p')}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
