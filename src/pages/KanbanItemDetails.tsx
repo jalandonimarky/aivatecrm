@@ -271,8 +271,8 @@ export function KanbanItemDetails() {
 
   const getCategoryColorClass = (category?: KanbanItem['category']) => {
     switch (category?.toLowerCase()) {
-      case 'real estate': return "bg-primary text-primary-foreground border-primary";
-      case 'tech solutions': return "bg-accent text-accent-foreground border-accent";
+      case 'real estate': return "bg-primary/20 text-foreground border-primary/40";
+      case 'tech solutions': return "bg-accent/20 text-foreground border-accent/40";
       default: return "bg-secondary text-secondary-foreground border-secondary";
     }
   };
@@ -347,23 +347,23 @@ export function KanbanItemDetails() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Priority</p>
               {item.priority_level ? <KanbanPriorityBadge priority={item.priority_level} /> : <p className="font-semibold">N/A</p>}
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Category</p>
               {item.category ? <Badge variant="outline" className={cn("text-sm px-2 py-0.5", getCategoryColorClass(item.category))}>{item.category.charAt(0).toUpperCase() + item.category.slice(1)}</Badge> : <p className="font-semibold">N/A</p>}
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Assigned To</p>
               {item.assigned_user ? <UserProfileCard profile={item.assigned_user} /> : <p className="font-semibold">N/A</p>}
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Due Date</p>
               <p className="font-semibold">{item.due_date ? format(parseISO(item.due_date), "PPP") : "N/A"}</p>
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Event Time</p>
               <p className="font-semibold">{item.event_time ? format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p') : "N/A"}</p>
             </div>
