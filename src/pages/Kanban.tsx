@@ -7,7 +7,7 @@ import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
 import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDialog";
-import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog"; // Updated import
+import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
@@ -20,19 +20,19 @@ export function Kanban() {
     createKanbanBoard,
     updateKanbanBoard,
     deleteKanbanBoard,
-    updateKanbanBoardColor, // Destructure new function
+    updateKanbanBoardColor, // Still available if needed for other direct color changes
     createKanbanColumn,
     updateKanbanColumn,
     deleteKanbanColumn,
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    reorderKanbanItemsInColumn, // Renamed
-    moveKanbanItem, // New function
+    reorderKanbanItemsInColumn,
+    moveKanbanItem,
     reorderKanbanColumns,
-    profiles, // Destructure profiles
-    getFullName, // Destructure getFullName
-    refetch, // To re-fetch data after changes
+    profiles,
+    getFullName,
+    refetch,
   } = useCRMData();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -53,11 +53,11 @@ export function Kanban() {
   const [currentColumnIdForItem, setCurrentColumnIdForItem] = useState<string | null>(null);
 
   // Handlers for Board operations
-  const handleCreateBoard = async (data: { name: string }) => {
+  const handleCreateBoard = async (data: { name: string, background_color: string | null }) => { // Updated signature
     await createKanbanBoard(data);
   };
 
-  const handleUpdateBoard = async (data: { name: string }) => {
+  const handleUpdateBoard = async (data: { name: string, background_color: string | null }) => { // Updated signature
     if (editingBoard) {
       await updateKanbanBoard(editingBoard.id, data);
     }
@@ -189,9 +189,8 @@ export function Kanban() {
             onEditColumn={handleEditColumnClick}
             onDeleteColumn={handleDeleteColumn}
             onAddItem={handleAddItemClick}
-            // Removed onEditItem and onDeleteItem props
-            onReorderItemsInColumn={handleReorderItems} // Pass renamed function
-            onMoveItem={handleMoveItem} // Pass new function
+            onReorderItemsInColumn={handleReorderItems}
+            onMoveItem={handleMoveItem}
             onReorderColumns={handleReorderColumns}
           />
         </div>
@@ -210,15 +209,15 @@ export function Kanban() {
 
         {/* Item Form Dialog */}
         {currentColumnIdForItem && (
-          <KanbanItemFormDialog // Updated component name
+          <KanbanItemFormDialog
             isOpen={isItemFormDialogOpen}
             onOpenChange={setIsItemFormDialogOpen}
             initialData={editingItem}
             columnId={currentColumnIdForItem}
             onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
             nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
-            profiles={profiles} // Pass profiles
-            getFullName={getFullName} // Pass getFullName
+            profiles={profiles}
+            getFullName={getFullName}
           />
         )}
       </div>
@@ -258,7 +257,7 @@ export function Kanban() {
               onSelect={handleSelectBoard}
               onEdit={(b) => { setEditingBoard(b); setIsBoardFormDialogOpen(true); }}
               onDelete={handleDeleteBoard}
-              onColorChange={updateKanbanBoardColor} // Pass the new function
+              onColorChange={updateKanbanBoardColor}
             />
           ))
         )}
