@@ -22,7 +22,8 @@ export function BoardColorPicker({ currentColor, onSelectColor }: BoardColorPick
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
+        {/* Add onClick to stop propagation */}
+        <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
           <Palette className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
