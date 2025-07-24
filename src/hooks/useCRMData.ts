@@ -1187,29 +1187,6 @@ export function useCRMData() {
     }
   };
 
-  const markKanbanItemComplete = async (itemId: string, isCompleted: boolean): Promise<void> => {
-    try {
-      const newCategory = isCompleted ? 'done' : null; // Set category to 'done' or null
-      const { error } = await supabase // Removed data destructuring as it's not returned
-        .from("kanban_items")
-        .update({ category: newCategory })
-        .eq("id", itemId);
-
-      if (error) throw error;
-
-      toast({
-        title: isCompleted ? "Item Completed" : "Item Marked Incomplete",
-        description: isCompleted ? "Kanban item marked as complete." : "Kanban item marked as incomplete.",
-      });
-      await fetchData(); // Re-fetch all data to update UI
-      // No explicit return of data here, so it implicitly returns Promise<void>
-    } catch (error: any) {
-      console.error("Error marking Kanban item complete:", error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-      throw error;
-    }
-  };
-
   // Reordering functions
   const reorderKanbanItemsInColumn = async (columnId: string, itemIds: string[]) => {
     try {
@@ -1331,7 +1308,7 @@ export function useCRMData() {
         ...item, // Include all existing properties
         order_index: index,
         column_id: destinationColumnId,
-      })); // Fixed: Added missing closing parenthesis
+      }));
       updates.push(...updatedDestinationOrder);
 
       // Filter out duplicates (if any, though logic should prevent most)
@@ -1438,7 +1415,6 @@ export function useCRMData() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    markKanbanItemComplete, // Export new function
     reorderKanbanItemsInColumn, // Renamed
     moveKanbanItem, // New function
     reorderKanbanColumns,
