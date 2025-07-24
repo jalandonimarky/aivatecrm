@@ -85,7 +85,7 @@ export function KanbanColumn({
         </Droppable>
         <Button
           variant="outline"
-          className="w-full mt-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+          className="w-full mt-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground border-[hsl(var(--foreground)/0.5)]"
           onClick={() => onAddItem(column.id)}
         >
           <Plus className="w-4 h-4 mr-2" /> Add Item
