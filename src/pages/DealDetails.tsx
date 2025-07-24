@@ -1,4 +1,4 @@
-import { useState, useEffect } => "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, NavLink } from "react-router-dom"; // Import NavLink
 import { useCRMData } from "@/hooks/useCRMData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +39,7 @@ import { RallyDialog } from "@/components/deals/RallyDialog";
 import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { DealNote, Task, DealAttachment, Deal } from "@/types/crm";
+import type { DealNote, Task, DealAttachment } from "@/types/crm";
 
 interface TaskFormData {
   title: string;
@@ -84,15 +84,16 @@ export function DealDetails() {
     related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
-  const [isTaskCalendarOpen, setIsTaskCalendarOpen] = useState(false); // Renamed to avoid conflict
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Fixed: Initialize with null
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
+
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -638,7 +639,7 @@ export function DealDetails() {
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingBusinessNote(true)} className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
+                <Button variant="outline" onClick={() => setIsAddingBusinessNote(true)} className="w-full active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Add Business Note
                 </Button>
               )}
@@ -917,7 +918,7 @@ export function DealDetails() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-due_date">Due Date</Label>
-                <Popover open={isTaskCalendarOpen} onOpenChange={setIsTaskCalendarOpen}>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -936,7 +937,7 @@ export function DealDetails() {
                       selected={taskFormData.due_date}
                       onSelect={(date) => {
                         setTaskFormData(prev => ({ ...prev, due_date: date || undefined }));
-                        setIsTaskCalendarOpen(false);
+                        setIsCalendarOpen(false);
                       }}
                       initialFocus
                     />

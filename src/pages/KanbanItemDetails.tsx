@@ -36,7 +36,6 @@ import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge"; // Import TaskStatusBadge
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge"; // Import TaskPriorityBadge
-import { useToast } from "@/hooks/use-toast"; // Import useToast
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -49,29 +48,6 @@ interface TaskFormData {
   related_deal_id: string;
   related_kanban_item_id: string;
   due_date: Date | undefined;
-}
-
-interface KanbanItemDetailsFormData {
-  title: string;
-  description: string;
-  column_id: string;
-  order_index: number;
-  category: string | undefined;
-  priority_level: KanbanItem['priority_level'] | undefined;
-  assigned_to: string | undefined;
-  due_date: Date | undefined;
-  event_time: string | undefined;
-  // New Tenant Lead Information fields
-  client_category: KanbanItem['client_category'] | 'none';
-  tenant_contact_full_name: string;
-  tenant_contact_phone: string;
-  tenant_contact_email: string;
-  household_composition: string;
-  pets_info: string;
-  bedrooms_needed: number | undefined;
-  bathrooms_needed: number | undefined;
-  preferred_locations: string;
-  desired_move_in_date: Date | undefined;
 }
 
 export function KanbanItemDetails() {
@@ -93,7 +69,6 @@ export function KanbanItemDetails() {
   } = useCRMData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast(); // Fixed: Destructure toast from useToast
 
   const item = kanbanItems.find((i) => i.id === id);
 
@@ -119,37 +94,6 @@ export function KanbanItemDetails() {
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false); // State for task due date calendar
 
-  // State for Tenant Lead Information form
-  const [tenantLeadFormData, setTenantLeadFormData] = useState<KanbanItemDetailsFormData>({
-    title: "",
-    description: "",
-    column_id: "",
-    order_index: 0,
-    category: undefined,
-    priority_level: undefined,
-    assigned_to: undefined,
-    due_date: undefined,
-    event_time: undefined,
-    client_category: 'none',
-    tenant_contact_full_name: "",
-    tenant_contact_phone: "",
-    tenant_contact_email: "",
-    household_composition: "",
-    pets_info: "",
-    bedrooms_needed: undefined,
-    bathrooms_needed: undefined,
-    preferred_locations: "",
-    desired_move_in_date: undefined,
-  });
-  const [isTenantLeadCalendarOpen, setIsTenantLeadCalendarOpen] = useState(false); // New calendar state
-
-  const clientCategories: { value: KanbanItem['client_category'] | 'none', label: string }[] = [
-    { value: 'none', label: 'Select Category' },
-    { value: 'Insurance Company', label: 'Insurance Company' },
-    { value: 'Corporate Relocation', label: 'Corporate Relocation' },
-    { value: 'Private Individual', label: 'Private Individual' },
-  ];
-
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
     { value: "in_progress", label: "In Progress" },
@@ -173,27 +117,6 @@ export function KanbanItemDetails() {
   useEffect(() => {
     if (item) {
       setTaskFormData(prev => ({ ...prev, related_kanban_item_id: item.id }));
-      setTenantLeadFormData({
-        title: item.title,
-        description: item.description || "",
-        column_id: item.column_id,
-        order_index: item.order_index,
-        category: item.category || undefined,
-        priority_level: item.priority_level || undefined,
-        assigned_to: item.assigned_to || undefined,
-        due_date: item.due_date ? new Date(item.due_date) : undefined,
-        event_time: item.event_time || undefined,
-        client_category: item.client_category || 'none',
-        tenant_contact_full_name: item.tenant_contact_full_name || "",
-        tenant_contact_phone: item.tenant_contact_phone || "",
-        tenant_contact_email: item.tenant_contact_email || "",
-        household_composition: item.household_composition || "",
-        pets_info: item.pets_info || "",
-        bedrooms_needed: item.bedrooms_needed || undefined,
-        bathrooms_needed: item.bathrooms_needed || undefined,
-        preferred_locations: item.preferred_locations || "",
-        desired_move_in_date: item.desired_move_in_date ? new Date(item.desired_move_in_date) : undefined,
-      });
     }
   }, [item]);
 
@@ -333,43 +256,6 @@ export function KanbanItemDetails() {
     }
   };
 
-  const handleUpdateKanbanItemTenantLeadSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!item) return;
-
-    try {
-      const dataToSubmit = {
-        ...tenantLeadFormData,
-        client_category: tenantLeadFormData.client_category === 'none' ? null : tenantLeadFormData.client_category,
-        tenant_contact_full_name: tenantLeadFormData.tenant_contact_full_name || null,
-        tenant_contact_phone: tenantLeadFormData.tenant_contact_phone || null,
-        tenant_contact_email: tenantLeadFormData.tenant_contact_email || null,
-        household_composition: tenantLeadFormData.household_composition || null,
-        pets_info: tenantLeadFormData.pets_info || null,
-        bedrooms_needed: tenantLeadFormData.bedrooms_needed ?? null,
-        bathrooms_needed: tenantLeadFormData.bathrooms_needed ?? null,
-        preferred_locations: tenantLeadFormData.preferred_locations || null,
-        desired_move_in_date: tenantLeadFormData.desired_move_in_date ? format(tenantLeadFormData.desired_move_in_date, "yyyy-MM-dd") : null,
-      };
-      // Only send the tenant lead specific fields for update
-      await updateKanbanItem(item.id, {
-        client_category: dataToSubmit.client_category,
-        tenant_contact_full_name: dataToSubmit.tenant_contact_full_name,
-        tenant_contact_phone: dataToSubmit.tenant_contact_phone,
-        tenant_contact_email: dataToSubmit.tenant_contact_email,
-        household_composition: dataToSubmit.household_composition,
-        pets_info: dataToSubmit.pets_info,
-        bedrooms_needed: dataToSubmit.bedrooms_needed,
-        bathrooms_needed: dataToSubmit.bathrooms_needed,
-        preferred_locations: dataToSubmit.preferred_locations,
-        desired_move_in_date: dataToSubmit.desired_move_in_date,
-      });
-      toast({ title: "Tenant Lead Info Updated", description: "Tenant lead details for this item have been updated." });
-    } catch (error: any) {
-      toast({ title: "Error Updating Tenant Lead Info", description: error.message, variant: "destructive" });
-    }
-  };
-
   const getCategoryColorClass = (category?: KanbanItem['category']) => {
     switch (category?.toLowerCase()) {
       case 'design': return "bg-primary/20 text-primary border-primary";
@@ -501,68 +387,6 @@ export function KanbanItemDetails() {
 
       {/* Kanban Data Hygiene Card */}
       {item && <KanbanDataHygieneCard item={item} />}
-
-      {/* Tenant Lead Information Section */}
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Tenant Lead Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Client Category</p>
-              <p className="text-lg font-semibold">{item.client_category || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Primary Contact Full Name</p>
-              <p className="text-lg font-semibold">{item.tenant_contact_full_name || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Contact Phone Number</p>
-              <p className="text-lg font-semibold">{item.tenant_contact_phone || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Contact Email Address</p>
-              <p className="text-lg font-semibold">{item.tenant_contact_email || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Household Composition</p>
-              <p className="text-lg font-semibold">{item.household_composition || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pets</p>
-              <p className="text-lg font-semibold">{item.pets_info || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Bedrooms Needed</p>
-              <p className="text-lg font-semibold">{item.bedrooms_needed ?? "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Bathrooms Needed</p>
-              <p className="text-lg font-semibold">{item.bathrooms_needed ?? "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Preferred Locations / Zip Codes</p>
-              <p className="text-lg font-semibold">{item.preferred_locations || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Desired Move-In Date</p>
-              <p className="text-lg font-semibold">
-                {item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsItemFormDialogOpen(true)} // Re-use item form dialog for editing
-              className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-            >
-              <Edit className="w-4 h-4 mr-2" /> Edit Tenant Info
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Kanban Item Notes Section */}
       <Card className="bg-gradient-card border-border/50">

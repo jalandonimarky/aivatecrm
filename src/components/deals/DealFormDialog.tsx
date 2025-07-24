@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -121,7 +121,6 @@ export function DealFormDialog({
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <h3 className="text-lg font-semibold mt-4">Deal Information</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
@@ -265,7 +264,7 @@ export function DealFormDialog({
             </Popover>
           </div>
 
-          <DialogFooter>
+          <div className="flex justify-end space-x-2">
             <Button
               type="button"
               variant="outline"
@@ -276,7 +275,7 @@ export function DealFormDialog({
             <Button type="submit" className="bg-gradient-primary active:scale-95">
               {initialData ? "Update" : "Create"} Deal
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
