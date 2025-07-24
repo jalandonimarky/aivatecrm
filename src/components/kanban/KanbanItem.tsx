@@ -6,7 +6,7 @@ import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, Clock } from "l
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { Badge } from "@/components/ui/badge";
-import { format, parse, parseISO, formatDistanceToNowStrict } from "date-fns"; // Import parseISO and formatDistanceToNowStrict
+import { format, parse, parseISO, formatDistanceToNowStrict } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { KanbanItem as KanbanItemType } from "@/types/crm";
 import { KanbanPriorityBadge } from "./KanbanPriorityBadge";
@@ -15,9 +15,10 @@ import { useNavigate } from "react-router-dom";
 interface KanbanItemProps {
   item: KanbanItemType;
   index: number;
+  onDeleteItem: (itemId: string) => Promise<void>; // New prop for deleting item
 }
 
-export function KanbanItem({ item, index }: KanbanItemProps) {
+export function KanbanItem({ item, index, onDeleteItem }: KanbanItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
 
@@ -34,14 +35,20 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
+    // Prevent card click from triggering when clicking dropdown menu or its trigger button
     if (target.closest('button') || target.closest('[data-radix-popper-content-wrapper]')) {
       return;
     }
+    setIsExpanded(!isExpanded); // Only toggle expansion
+  };
 
-    if (isExpanded) {
-      navigate(`/kanban/items/${item.id}`);
-    } else {
-      setIsExpanded(true);
+  const handleOpenFullDetails = () => {
+    navigate(`/kanban/items/${item.id}`);
+  };
+
+  const handleDeleteClick = async () => {
+    if (confirm("Are you sure you want to delete this lead? This action cannot be undone.")) {
+      await onDeleteItem(item.id);
     }
   };
 
@@ -75,6 +82,23 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
                 <h4 className="font-semibold text-foreground text-sm flex-1 min-w-0 pr-2 break-words">
                   {item.title}
                 </h4>
+                {/* Dropdown Menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-6 w-6 p-0 opacity-70 hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={handleOpenFullDetails}>
+                      View Full Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Lead
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               
               <div className="flex flex-wrap items-center gap-2 mt-2">

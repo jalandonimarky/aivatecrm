@@ -12,7 +12,7 @@ interface KanbanBoardViewProps {
   onEditColumn: (column: KanbanColumnType) => void;
   onDeleteColumn: (columnId: string) => void;
   onAddItem: (columnId: string) => void;
-  // Removed onEditItem and onDeleteItem props
+  onDeleteItem: (itemId: string) => Promise<void>; // New prop
   onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>;
   onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>;
   onReorderColumns: (boardId: string, columnIds: string[]) => Promise<void>;
@@ -24,6 +24,7 @@ export function KanbanBoardView({
   onEditColumn,
   onDeleteColumn,
   onAddItem,
+  onDeleteItem, // Destructure new prop
   onReorderItemsInColumn,
   onMoveItem,
   onReorderColumns,
@@ -111,7 +112,7 @@ export function KanbanBoardView({
                       onAddItem={onAddItem}
                       onEditColumn={onEditColumn}
                       onDeleteColumn={onDeleteColumn}
-                      // onEditItem and onDeleteItem are no longer passed here
+                      onDeleteItem={onDeleteItem} // Pass down
                     />
                   </div>
                 )}

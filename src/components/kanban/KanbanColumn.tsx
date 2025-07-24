@@ -13,7 +13,7 @@ interface KanbanColumnProps {
   onAddItem: (columnId: string) => void;
   onEditColumn: (column: KanbanColumnType) => void;
   onDeleteColumn: (columnId: string) => void;
-  // Removed onEditItem and onDeleteItem props
+  onDeleteItem: (itemId: string) => Promise<void>; // New prop
 }
 
 export function KanbanColumn({
@@ -21,6 +21,7 @@ export function KanbanColumn({
   onAddItem,
   onEditColumn,
   onDeleteColumn,
+  onDeleteItem, // Destructure new prop
 }: KanbanColumnProps) {
   const sortedItems = [...(column.items || [])].sort((a, b) => a.order_index - b.order_index);
 
@@ -76,7 +77,7 @@ export function KanbanColumn({
                   key={item.id}
                   item={item}
                   index={index}
-                  // onEdit and onDelete props are no longer passed here
+                  onDeleteItem={onDeleteItem} // Pass down
                 />
               ))}
               {provided.placeholder}
