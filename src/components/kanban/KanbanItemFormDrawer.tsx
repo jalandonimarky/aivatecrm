@@ -106,7 +106,7 @@ export function KanbanItemFormDrawer({ // Renamed component
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange} direction="right">
-      <DrawerContent className="w-full md:w-1/2 lg:w-2/5 max-w-lg h-full mt-0 rounded-none"> {/* Adjusted width classes */}
+      <DrawerContent className="w-full md:w-1/2 lg:w-1/3 max-w-sm h-full mt-0 rounded-none"> {/* Adjusted width classes */}
         <DrawerHeader>
           <DrawerTitle>{initialData ? "Edit Item" : "Add New Item"}</DrawerTitle>
         </DrawerHeader>
