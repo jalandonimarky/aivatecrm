@@ -81,7 +81,11 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
                 {item.priority_level && (
                   <KanbanPriorityBadge priority={item.priority_level} />
                 )}
-                {/* Removed item.category badge */}
+                {item.category && (
+                  <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                    {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                  </Badge>
+                )}
               </div>
 
               {/* SLA Timer - Always visible */}

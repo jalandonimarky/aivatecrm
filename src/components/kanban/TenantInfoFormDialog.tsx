@@ -30,16 +30,16 @@ export function TenantInfoFormDialog({
   const [isMoveInCalendarOpen, setIsMoveInCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const leadTypes: { value: KanbanItem['lead_type'], label: string }[] = [
+  const clientCategories: { value: string, label: string }[] = [
+    { value: "Insurance Company", label: "Insurance Company" },
     { value: "Corporate Relocation", label: "Corporate Relocation" },
-    { value: "Insurance Lead", label: "Insurance Lead" },
     { value: "Private Individual", label: "Private Individual" },
   ];
 
   useEffect(() => {
     if (isOpen && initialData) {
       setFormData({
-        lead_type: initialData.lead_type || undefined,
+        client_category: initialData.client_category || undefined,
         tenant_contact_full_name: initialData.tenant_contact_full_name || "",
         tenant_contact_phone: initialData.tenant_contact_phone || "",
         tenant_contact_email: initialData.tenant_contact_email || "",
@@ -67,7 +67,6 @@ export function TenantInfoFormDialog({
         desired_move_in_date: formData.desired_move_in_date ? format(new Date(formData.desired_move_in_date), "yyyy-MM-dd") : null,
         bedrooms_needed: formData.bedrooms_needed ? Number(formData.bedrooms_needed) : null,
         bathrooms_needed: formData.bathrooms_needed ? Number(formData.bathrooms_needed) : null,
-        lead_type: formData.lead_type || null, // Ensure null for 'undefined' or 'none'
       };
       await onSubmit(submissionData);
       onOpenChange(false);
@@ -86,61 +85,61 @@ export function TenantInfoFormDialog({
           <ScrollArea className="h-[70vh] p-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="lead-type">Lead Type</Label>
+                <Label htmlFor="client-category">Client Category</Label>
                 <Select
-                  value={formData.lead_type || "none"}
-                  onValueChange={(value) => handleInputChange('lead_type', value === "none" ? undefined : value)}
+                  value={formData.client_category || "none"}
+                  onValueChange={(value) => handleInputChange('client_category', value === "none" ? undefined : value)}
                 >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent">
-                    <SelectValue placeholder="Select lead type" />
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                    <SelectValue placeholder="Select client category" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
-                    {leadTypes.map(type => <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>)}
+                    {clientCategories.map(cat => <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tenant-name">Tenant Full Name</Label>
-                  <Input id="tenant-name" value={formData.tenant_contact_full_name || ""} onChange={(e) => handleInputChange('tenant_contact_full_name', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                  <Input id="tenant-name" value={formData.tenant_contact_full_name || ""} onChange={(e) => handleInputChange('tenant_contact_full_name', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tenant-phone">Tenant Phone</Label>
-                  <Input id="tenant-phone" value={formData.tenant_contact_phone || ""} onChange={(e) => handleInputChange('tenant_contact_phone', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                  <Input id="tenant-phone" value={formData.tenant_contact_phone || ""} onChange={(e) => handleInputChange('tenant_contact_phone', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tenant-email">Tenant Email</Label>
-                <Input id="tenant-email" type="email" value={formData.tenant_contact_email || ""} onChange={(e) => handleInputChange('tenant_contact_email', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                <Input id="tenant-email" type="email" value={formData.tenant_contact_email || ""} onChange={(e) => handleInputChange('tenant_contact_email', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="household-comp">Household Composition</Label>
-                <Textarea id="household-comp" value={formData.household_composition || ""} onChange={(e) => handleInputChange('household_composition', e.target.value)} rows={2} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                <Textarea id="household-comp" value={formData.household_composition || ""} onChange={(e) => handleInputChange('household_composition', e.target.value)} rows={2} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pets-info">Pets Info</Label>
-                <Input id="pets-info" value={formData.pets_info || ""} onChange={(e) => handleInputChange('pets_info', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                <Input id="pets-info" value={formData.pets_info || ""} onChange={(e) => handleInputChange('pets_info', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="bedrooms">Bedrooms Needed</Label>
-                  <Input id="bedrooms" type="number" value={formData.bedrooms_needed || ""} onChange={(e) => handleInputChange('bedrooms_needed', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                  <Input id="bedrooms" type="number" value={formData.bedrooms_needed || ""} onChange={(e) => handleInputChange('bedrooms_needed', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="bathrooms">Bathrooms Needed</Label>
-                  <Input id="bathrooms" type="number" value={formData.bathrooms_needed || ""} onChange={(e) => handleInputChange('bathrooms_needed', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                  <Input id="bathrooms" type="number" value={formData.bathrooms_needed || ""} onChange={(e) => handleInputChange('bathrooms_needed', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="locations">Preferred Locations</Label>
-                <Input id="locations" value={formData.preferred_locations || ""} onChange={(e) => handleInputChange('preferred_locations', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent" />
+                <Input id="locations" value={formData.preferred_locations || ""} onChange={(e) => handleInputChange('preferred_locations', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="move-in-date">Desired Move-in Date</Label>
                 <Popover open={isMoveInCalendarOpen} onOpenChange={setIsMoveInCalendarOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent", !formData.desired_move_in_date && "text-muted-foreground")}>
+                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0", !formData.desired_move_in_date && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {formData.desired_move_in_date ? format(new Date(formData.desired_move_in_date), "PPP") : <span>Pick a date</span>}
                     </Button>

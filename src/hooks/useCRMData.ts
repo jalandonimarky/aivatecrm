@@ -162,8 +162,7 @@ export function useCRMData() {
           columns:kanban_columns(
             *,
             items:kanban_items(
-              id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level, lead_type,
-              tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
+              *,
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               column:kanban_columns(name, board_id),
@@ -1119,8 +1118,7 @@ export function useCRMData() {
       toast({ title: "Board created", description: "New Kanban board added." });
       await fetchData();
       return data as any as KanbanBoard;
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error("Error creating Kanban board:", error);
       toast({ title: "Error creating board", description: error.message, variant: "destructive" });
       throw error;
@@ -1176,8 +1174,7 @@ export function useCRMData() {
         .select(`
           *,
           items:kanban_items(
-            id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level, lead_type,
-            tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
+            *,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name, board_id),
@@ -1207,8 +1204,7 @@ export function useCRMData() {
         .select(`
           *,
           items:kanban_items(
-            id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level, lead_type,
-            tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
+            *,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
             column:kanban_columns(name, board_id),
@@ -1257,11 +1253,9 @@ export function useCRMData() {
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
           due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
-          lead_type: itemData.lead_type || null,
         }])
         .select(`
-          id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level, lead_type,
-          tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
+          *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name, board_id),
@@ -1292,7 +1286,6 @@ export function useCRMData() {
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
         due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
         event_time: updates.event_time || null,
-        lead_type: updates.lead_type || null,
       };
 
       const { data, error } = await supabase
@@ -1300,8 +1293,7 @@ export function useCRMData() {
         .update(dataToUpdate)
         .eq("id", id)
         .select(`
-          id, column_id, title, description, order_index, created_by, created_at, assigned_to, due_date, event_time, category, priority_level, lead_type,
-          tenant_contact_full_name, tenant_contact_phone, tenant_contact_email, household_composition, pets_info, bedrooms_needed, bathrooms_needed, preferred_locations, desired_move_in_date,
+          *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name, board_id),
