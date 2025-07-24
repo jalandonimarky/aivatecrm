@@ -39,7 +39,7 @@ import { RallyDialog } from "@/components/deals/RallyDialog";
 import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { DealNote, Task, DealAttachment } from "@/types/crm";
+import type { DealNote, Task, DealAttachment, Deal } from "@/types/crm";
 
 interface TaskFormData {
   title: string;
@@ -84,7 +84,7 @@ export function DealDetails() {
     related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isTaskCalendarOpen, setIsTaskCalendarOpen] = useState(false); // Renamed to avoid conflict
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
@@ -639,7 +639,7 @@ export function DealDetails() {
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingBusinessNote(true)} className="w-full active:scale-95">
+                <Button onClick={() => setIsAddingBusinessNote(true)} className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Add Business Note
                 </Button>
               )}
@@ -701,7 +701,7 @@ export function DealDetails() {
                   </div>
                 </div>
               ) : (
-                <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(true)} className="w-full active:scale-95">
+                <Button onClick={() => setIsAddingDevelopmentNote(true)} className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Add Development Note
                 </Button>
               )}
@@ -918,7 +918,7 @@ export function DealDetails() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-due_date">Due Date</Label>
-                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <Popover open={isTaskCalendarOpen} onOpenChange={setIsTaskCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -937,7 +937,7 @@ export function DealDetails() {
                       selected={taskFormData.due_date}
                       onSelect={(date) => {
                         setTaskFormData(prev => ({ ...prev, due_date: date || undefined }));
-                        setIsCalendarOpen(false);
+                        setIsTaskCalendarOpen(false);
                       }}
                       initialFocus
                     />

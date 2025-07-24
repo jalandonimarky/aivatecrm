@@ -356,7 +356,7 @@ export function TaskDetails() {
                 </div>
               </div>
             ) : (
-              <Button variant="outline" onClick={() => setIsAddingNote(true)} className="w-full active:scale-95">
+              <Button onClick={() => setIsAddingNote(true)} className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
                 <Plus className="w-4 h-4 mr-2" /> Add Activity Note
               </Button>
             )}
