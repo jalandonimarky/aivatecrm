@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, LayoutDashboard } from "lucide-react";
 import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
 import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDialog";
-import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
+import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog"; // Updated import
 import { Skeleton } from "@/components/ui/skeleton";
-import { DragDropContext, Droppable, Draggable, DropResult, DragStart } from "react-beautiful-dnd"; // Import DragStart
-import { KanbanDeleteZone } from "@/components/kanban/KanbanDeleteZone"; // New import
-import { useToast } from "@/hooks/use-toast"; // Import useToast for drag errors
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
 export function Kanban() {
@@ -29,15 +26,15 @@ export function Kanban() {
     createKanbanItem,
     updateKanbanItem,
     deleteKanbanItem,
-    reorderKanbanItemsInColumn,
-    moveKanbanItem,
+    reorderKanbanItemsInColumn, // Renamed
+    moveKanbanItem, // New function
     reorderKanbanColumns,
-    profiles,
-    getFullName,
+    profiles, // Destructure profiles
+    getFullName, // Destructure getFullName
+    refetch, // To re-fetch data after changes
   } = useCRMData();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { toast } = useToast(); // Initialize useToast
 
   const selectedBoardId = searchParams.get("boardId");
   const selectedBoard = kanbanBoards.find(board => board.id === selectedBoardId);
@@ -54,13 +51,7 @@ export function Kanban() {
   const [editingItem, setEditingItem] = useState<KanbanItem | null>(null);
   const [currentColumnIdForItem, setCurrentColumnIdForItem] = useState<string | null>(null);
 
-  // Drag-to-delete states
-  const [isDraggingKanbanItem, setIsDraggingKanbanItem] = useState(false);
-  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
-  const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(false);
-  const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
-
-  // Handlers for Board operations (existing)
+  // Handlers for Board operations
   const handleCreateBoard = async (data: { name: string }) => {
     await createKanbanBoard(data);
   };
@@ -75,7 +66,7 @@ export function Kanban() {
     if (confirm("Are you sure you want to delete this board and all its columns and items? This action cannot be undone.")) {
       await deleteKanbanBoard(boardId);
       if (selectedBoardId === boardId) {
-        setSearchParams({});
+        setSearchParams({}); // Clear boardId from URL if deleted
       }
     }
   };
@@ -88,7 +79,7 @@ export function Kanban() {
     setSearchParams({});
   };
 
-  // Handlers for Column operations (existing)
+  // Handlers for Column operations
   const handleAddColumnClick = (boardId: string) => {
     setEditingColumn(null);
     setCurrentBoardIdForColumn(boardId);
@@ -117,7 +108,7 @@ export function Kanban() {
     }
   };
 
-  // Handlers for Item operations (existing)
+  // Handlers for Item operations
   const handleAddItemClick = (columnId: string) => {
     setEditingItem(null);
     setCurrentColumnIdForItem(columnId);
@@ -141,95 +132,22 @@ export function Kanban() {
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    await deleteKanbanItem(itemId);
-  };
-
-  // Drag and Drop Handlers
-  const onDragStart = (start: DragStart) => {
-    if (start.type === "item") {
-      setIsDraggingKanbanItem(true);
-      setDraggedItemId(start.draggableId);
+    if (confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
+      await deleteKanbanItem(itemId);
     }
   };
 
-  const onDragEnd = async (result: DropResult) => {
-    setIsDraggingKanbanItem(false);
-    setDraggedItemId(null);
-
-    const { destination, source, draggableId, type } = result;
-
-    // 1. Dropped on the delete zone
-    if (destination && destination.droppableId === "kanban-delete-zone") {
-      setItemToDeleteId(draggableId);
-      setIsConfirmDeleteDialogOpen(true);
-      return; // Stop further processing
-    }
-
-    // 2. Dropped outside any valid droppable area (not delete zone)
-    if (!destination) {
-      return;
-    }
-
-    // 3. Dropped in the same place
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
-
-    // 4. Column reordering
-    if (type === "column") {
-      if (!selectedBoard) return; // Should not happen if we are in board view
-      const newColumnOrder = Array.from(selectedBoard.columns.map(col => col.id));
-      newColumnOrder.splice(source.index, 1);
-      newColumnOrder.splice(destination.index, 0, draggableId);
-      await reorderKanbanColumns(selectedBoard.id, newColumnOrder);
-      return;
-    }
-
-    // 5. Item reordering/moving
-    if (type === "item") {
-      if (!selectedBoard) return; // Should not happen if we are in board view
-      const startColumn = selectedBoard.columns.find(col => col.id === source.droppableId);
-      const finishColumn = selectedBoard.columns.find(col => col.id === destination.droppableId);
-
-      if (!startColumn || !finishColumn) {
-        toast({
-          title: "Drag Error",
-          description: "Could not find source or destination column.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Moving within the same column
-      if (startColumn.id === finishColumn.id) {
-        const newItems = Array.from(startColumn.items || []).sort((a, b) => a.order_index - b.order_index);
-        const [reorderedItem] = newItems.splice(source.index, 1);
-        newItems.splice(destination.index, 0, reorderedItem);
-        
-        const newItemIds = newItems.map(item => item.id);
-        await reorderKanbanItemsInColumn(startColumn.id, newItemIds);
-      } else {
-        // Moving between different columns
-        await moveKanbanItem(
-          draggableId,
-          source.droppableId,
-          source.index,
-          destination.droppableId,
-          destination.index
-        );
-      }
-    }
+  // Reordering handlers
+  const handleReorderItems = async (columnId: string, itemIds: string[]) => {
+    await reorderKanbanItemsInColumn(columnId, itemIds);
   };
 
-  const handleConfirmDelete = async () => {
-    if (itemToDeleteId) {
-      await deleteKanbanItem(itemToDeleteId);
-      setItemToDeleteId(null);
-      setIsConfirmDeleteDialogOpen(false);
-    }
+  const handleMoveItem = async (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => {
+    await moveKanbanItem(itemId, sourceColumnId, sourceIndex, destinationColumnId, destinationIndex);
+  };
+
+  const handleReorderColumns = async (boardId: string, columnIds: string[]) => {
+    await reorderKanbanColumns(boardId, columnIds);
   };
 
   if (loading) {
@@ -247,69 +165,62 @@ export function Kanban() {
 
   if (selectedBoard) {
     return (
-      <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
-        <div className="space-y-6 h-full flex flex-col">
-          <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={handleBackToBoards}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Boards
-            </Button>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              {selectedBoard.name}
-            </h1>
-            <Button
-              className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-              onClick={() => handleAddColumnClick(selectedBoard.id)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Column
-            </Button>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <KanbanBoardView
-              board={selectedBoard}
-              onAddColumn={handleAddColumnClick}
-              onEditColumn={handleEditColumnClick}
-              onDeleteColumn={handleDeleteColumn}
-              onAddItem={handleAddItemClick}
-              // Reordering functions are now handled by onDragEnd in this component
-            />
-          </div>
-
-          {/* Column Form Dialog */}
-          {currentBoardIdForColumn && (
-            <KanbanColumnFormDialog
-              isOpen={isColumnFormDialogOpen}
-              onOpenChange={setIsColumnFormDialogOpen}
-              initialData={editingColumn}
-              boardId={currentBoardIdForColumn}
-              onSubmit={editingColumn ? handleUpdateColumn : handleCreateColumn}
-              nextOrderIndex={selectedBoard.columns?.length || 0}
-            />
-          )}
-
-          {/* Item Form Dialog */}
-          {currentColumnIdForItem && (
-            <KanbanItemFormDialog
-              isOpen={isItemFormDialogOpen}
-              onOpenChange={setIsItemFormDialogOpen}
-              initialData={editingItem}
-              columnId={currentColumnIdForItem}
-              onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
-              nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
-              profiles={profiles}
-              getFullName={getFullName}
-            />
-          )}
+      <div className="space-y-6 h-full flex flex-col">
+        <div className="flex items-center justify-between">
+          <Button variant="outline" onClick={handleBackToBoards}>
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Boards
+          </Button>
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            {selectedBoard.name}
+          </h1>
+          <Button
+            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+            onClick={() => handleAddColumnClick(selectedBoard.id)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Column
+          </Button>
         </div>
-        {isDraggingKanbanItem && (
-          <KanbanDeleteZone
-            isDraggingItem={isDraggingKanbanItem}
-            onConfirmDelete={handleConfirmDelete}
-            isOpen={isConfirmDeleteDialogOpen}
-            onOpenChange={setIsConfirmDeleteDialogOpen}
+        <div className="flex-1 overflow-hidden">
+          <KanbanBoardView
+            board={selectedBoard}
+            onAddColumn={handleAddColumnClick}
+            onEditColumn={handleEditColumnClick}
+            onDeleteColumn={handleDeleteColumn}
+            onAddItem={handleAddItemClick}
+            // Removed onEditItem and onDeleteItem props
+            onReorderItemsInColumn={handleReorderItems} // Pass renamed function
+            onMoveItem={handleMoveItem} // Pass new function
+            onReorderColumns={handleReorderColumns}
+          />
+        </div>
+
+        {/* Column Form Dialog */}
+        {currentBoardIdForColumn && (
+          <KanbanColumnFormDialog
+            isOpen={isColumnFormDialogOpen}
+            onOpenChange={setIsColumnFormDialogOpen}
+            initialData={editingColumn}
+            boardId={currentBoardIdForColumn}
+            onSubmit={editingColumn ? handleUpdateColumn : handleCreateColumn}
+            nextOrderIndex={selectedBoard.columns?.length || 0}
           />
         )}
-      </DragDropContext>
+
+        {/* Item Form Dialog */}
+        {currentColumnIdForItem && (
+          <KanbanItemFormDialog // Updated component name
+            isOpen={isItemFormDialogOpen}
+            onOpenChange={setIsItemFormDialogOpen}
+            initialData={editingItem}
+            columnId={currentColumnIdForItem}
+            onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
+            nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
+            profiles={profiles} // Pass profiles
+            getFullName={getFullName} // Pass getFullName
+          />
+        )}
+      </div>
     );
   }
 
