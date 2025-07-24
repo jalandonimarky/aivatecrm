@@ -105,7 +105,7 @@ All colors MUST be HSL.
     --warning: 38 92% 50%; /* Orange */
     --warning-foreground: 0 0% 100%; /* White - Better contrast on orange */
 
-    --border: 229 30% 12%; /* Darker border for consistency */
+    --border: 229 20% 20%; /* Lighter, more visible border for dark mode */
     --input: 229 30% 12%; /* Darker input for consistency */
     --ring: 248 69% 57%; /* Purple */
 
@@ -132,7 +132,7 @@ All colors MUST be HSL.
     --sidebar-primary-foreground: 229 42% 9%; /* Dark Blue */
     --sidebar-accent: 229 30% 15%; /* Darker muted */
     --sidebar-accent-foreground: 0 0% 100%; /* White */
-    --sidebar-border: 229 30% 15%; /* Darker border */
+    --sidebar-border: 229 20% 20%; /* Lighter, more visible border for dark mode */
     --sidebar-ring: 150 42% 73%; /* Mint */
   }
 }
