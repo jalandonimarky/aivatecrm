@@ -121,7 +121,7 @@ export function AppSidebar() {
       >
         <SidebarContent className="p-4">
           {/* Logo */}
-          <div className="mb-8 px-2">
+          <div className="mb-8">
             <a href="/" onClick={handleLogoClick} className="flex items-center space-x-2 cursor-pointer">
               <img 
                 src="https://cdn.shopify.com/s/files/1/0636/9768/2537/files/AIVATE_2.png?v=1752900464" 
