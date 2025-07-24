@@ -27,6 +27,17 @@ export function AuthPage() {
           description: "Welcome back!",
         });
       } else {
+        // Email domain validation for registration
+        if (!email.endsWith("@aivate.net")) {
+          toast({
+            title: "Registration Error",
+            description: "Only @aivate.net email addresses are allowed for registration.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return; // Stop the registration process
+        }
+
         // For sign-up, pass first_name and last_name in user_metadata
         const { error } = await supabase.auth.signUp({ 
           email, 
