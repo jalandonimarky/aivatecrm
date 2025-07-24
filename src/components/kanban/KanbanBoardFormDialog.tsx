@@ -13,31 +13,31 @@ interface KanbanBoardFormDialogProps {
   onSubmit: (data: { name: string, background_color: string | null }) => Promise<void>;
 }
 
-// Theme-matching gradients for both light and dark mode
+// Only light, soft gradients for a gentle, eye-pleasing look
 const gradientOptions = [
   {
-    name: "Mint to Purple",
-    value: "linear-gradient(135deg, #88ebc5 0%, #5946df 100%)",
+    name: "Mint to White",
+    value: "linear-gradient(135deg, #b9fbc0 0%, #ffffff 100%)",
   },
   {
-    name: "Purple to Pink",
-    value: "linear-gradient(135deg, #5946df 0%, #fbcfe8 100%)",
+    name: "Sky Blue to White",
+    value: "linear-gradient(135deg, #dbeafe 0%, #ffffff 100%)",
   },
   {
-    name: "Blue to Mint",
-    value: "linear-gradient(135deg, #bfdbfe 0%, #88ebc5 100%)",
+    name: "Peach to White",
+    value: "linear-gradient(135deg, #ffe5b4 0%, #ffffff 100%)",
   },
   {
-    name: "Orange to Yellow",
-    value: "linear-gradient(135deg, #fbbf24 0%, #fde68a 100%)",
+    name: "Lavender to White",
+    value: "linear-gradient(135deg, #e9d5ff 0%, #ffffff 100%)",
   },
   {
-    name: "Indigo to Blue",
-    value: "linear-gradient(135deg, #6366f1 0%, #60a5fa 100%)",
+    name: "Soft Yellow to White",
+    value: "linear-gradient(135deg, #fef9c3 0%, #ffffff 100%)",
   },
   {
-    name: "Pink to Orange",
-    value: "linear-gradient(135deg, #fbcfe8 0%, #fbbf24 100%)",
+    name: "Blush to White",
+    value: "linear-gradient(135deg, #ffe4e6 0%, #ffffff 100%)",
   },
 ];
 
