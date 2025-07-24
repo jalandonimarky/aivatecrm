@@ -36,6 +36,12 @@ import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge"; // Import TaskStatusBadge
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge"; // Import TaskPriorityBadge
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"; // Import Accordion components
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -383,6 +389,63 @@ export function KanbanItemDetails() {
             </>
           )}
         </CardContent>
+      </Card>
+
+      {/* TENANT LEAD FORM FIELDS - Collapsible Section */}
+      <Card className="bg-gradient-card border-border/50">
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="tenant-lead-fields">
+            <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+              Tenant Lead Form Fields
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Client Category</p>
+                  <p className="text-lg font-semibold">{item.client_category || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Primary Contact Full Name</p>
+                  <p className="text-lg font-semibold">{item.primary_contact_full_name || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Contact Phone Number</p>
+                  <p className="text-lg font-semibold">{item.contact_phone_number || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Contact Email Address</p>
+                  <p className="text-lg font-semibold">{item.contact_email_address || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Household Composition</p>
+                  <p className="text-lg font-semibold">{item.household_composition || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Pets</p>
+                  <p className="text-lg font-semibold">{item.pets || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Bedrooms Needed</p>
+                  <p className="text-lg font-semibold">{item.bedrooms_needed ?? "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Bathrooms Needed</p>
+                  <p className="text-lg font-semibold">{item.bathrooms_needed ?? "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Preferred Locations / Zip Codes</p>
+                  <p className="text-lg font-semibold">{item.preferred_locations_zip_codes || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Desired Move-In Date</p>
+                  <p className="text-lg font-semibold">
+                    {item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}
+                  </p>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </Card>
 
       {/* Kanban Data Hygiene Card */}
