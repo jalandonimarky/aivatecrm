@@ -6,11 +6,11 @@ import { MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, Clock } from "l
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { Badge } from "@/components/ui/badge";
-import { format, parse } from "date-fns";
+import { format, parse, parseISO, formatDistanceToNowStrict } from "date-fns"; // Import parseISO and formatDistanceToNowStrict
 import { cn } from "@/lib/utils";
 import type { KanbanItem as KanbanItemType } from "@/types/crm";
 import { KanbanPriorityBadge } from "./KanbanPriorityBadge";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 interface KanbanItemProps {
   item: KanbanItemType;
@@ -18,34 +18,29 @@ interface KanbanItemProps {
 }
 
 export function KanbanItem({ item, index }: KanbanItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false); // New state for expansion
+  const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
 
-  // Function to get the item's left border color based on its column name
   const getItemBorderColorClass = (columnName?: string) => {
-    if (!columnName) return "border-l-4 border-transparent"; // Fallback
+    if (!columnName) return "border-l-4 border-transparent";
 
     const lowerCaseName = columnName.toLowerCase();
-    if (lowerCaseName.includes("backlog")) return "border-l-4 border-primary"; // Mint
-    if (lowerCaseName.includes("in progress")) return "border-l-4 border-accent"; // Purple
-    if (lowerCaseName.includes("on hold")) return "border-l-4 border-warning"; // Orange
-    if (lowerCaseName.includes("done")) return "border-l-4 border-success"; // Green
-    return "border-l-4 border-muted-foreground"; // Default grey
+    if (lowerCaseName.includes("backlog")) return "border-l-4 border-primary";
+    if (lowerCaseName.includes("in progress")) return "border-l-4 border-accent";
+    if (lowerCaseName.includes("on hold")) return "border-l-4 border-warning";
+    if (lowerCaseName.includes("done")) return "border-l-4 border-success";
+    return "border-l-4 border-muted-foreground";
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent navigation if an interactive element within the card is clicked
-    // We remove data-rbd-draggable-context-id here because we're handling dragHandleProps.onClick explicitly
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('[data-radix-popper-content-wrapper]')) {
       return;
     }
 
     if (isExpanded) {
-      // If already expanded, navigate to details page
       navigate(`/kanban/items/${item.id}`);
     } else {
-      // If not expanded, expand it
       setIsExpanded(true);
     }
   };
@@ -53,25 +48,22 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
   return (
     <Draggable draggableId={item.id} index={index}>
       {(provided, snapshot) => {
-        // Extract onClick from dragHandleProps to combine it
         const { onClick: onDragClick, ...restDragHandleProps } = provided.dragHandleProps;
 
         return (
           <Card
             ref={provided.innerRef}
             {...provided.draggableProps}
-            {...restDragHandleProps} // Spread all other dragHandleProps
+            {...restDragHandleProps}
             onClick={(e) => {
-              // Call the original drag handler's click if it exists
               if (onDragClick) {
                 onDragClick(e);
               }
-              // Then call our custom handler
               handleCardClick(e);
             }}
             className={cn(
               "relative bg-gradient-card border-border/50 shadow-sm transition-all duration-200 ease-in-out cursor-pointer",
-              getItemBorderColorClass(item.column?.name), // Use the new function to set border color
+              getItemBorderColorClass(item.column?.name),
               snapshot.isDragging
                 ? "z-50 shadow-lg ring-2 ring-primary"
                 : "hover:z-40 hover:-translate-y-1",
@@ -96,7 +88,15 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
                 )}
               </div>
 
-              {isExpanded && ( // Conditionally render expanded details
+              {/* SLA Timer - Always visible */}
+              {item.created_at && (
+                <div className="flex items-center text-xs text-muted-foreground mt-2">
+                  <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
+                  <span>{formatDistanceToNowStrict(parseISO(item.created_at), { addSuffix: true })}</span>
+                </div>
+              )}
+
+              {isExpanded && (
                 <>
                   {item.description && (
                     <p className="text-muted-foreground text-xs mt-2 line-clamp-2">
