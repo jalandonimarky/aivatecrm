@@ -12,7 +12,7 @@ interface KanbanBoardCardProps {
   onSelect: (boardId: string) => void;
   onEdit: (board: KanbanBoard) => void;
   onDelete: (boardId: string) => void;
-  onColorChange: (boardId: string, color: string | null) => void; // Still needed for direct color change if implemented elsewhere, but not used here for now
+  onColorChange: (boardId: string, color: string | null) => void;
 }
 
 export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChange }: KanbanBoardCardProps) {

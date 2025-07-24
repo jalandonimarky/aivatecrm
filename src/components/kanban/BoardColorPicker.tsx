@@ -1,1 +1,0 @@
-<dyad-delete path="src/components/kanban/BoardColorPicker.tsx"></dyad-delete>
