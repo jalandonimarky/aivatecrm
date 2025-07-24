@@ -486,6 +486,7 @@ export type Database = {
           priority: string
           related_contact_id: string | null
           related_deal_id: string | null
+          related_kanban_item_id: string | null
           status: string
           title: string
           updated_at: string
@@ -500,6 +501,7 @@ export type Database = {
           priority?: string
           related_contact_id?: string | null
           related_deal_id?: string | null
+          related_kanban_item_id?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -514,6 +516,7 @@ export type Database = {
           priority?: string
           related_contact_id?: string | null
           related_deal_id?: string | null
+          related_kanban_item_id?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -545,6 +548,13 @@ export type Database = {
             columns: ["related_deal_id"]
             isOneToOne: false
             referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_related_kanban_item_id_fkey"
+            columns: ["related_kanban_item_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_items"
             referencedColumns: ["id"]
           },
         ]
