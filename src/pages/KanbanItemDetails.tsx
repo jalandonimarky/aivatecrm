@@ -432,7 +432,7 @@ export function KanbanItemDetails() {
             <p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Pets Info</p>
+            <p className="text-sm text-muted-foreground">Do you have pets? If yes, how many?</p>
             <p className="font-semibold">{item.pets_info || "N/A"}</p>
           </div>
         </div>

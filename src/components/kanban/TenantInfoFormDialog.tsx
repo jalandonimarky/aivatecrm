@@ -118,7 +118,7 @@ export function TenantInfoFormDialog({
                 <Textarea id="household-comp" value={formData.household_composition || ""} onChange={(e) => handleInputChange('household_composition', e.target.value)} rows={2} className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none border-border" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="pets-info">Pets Info</Label>
+                <Label htmlFor="pets-info">Do you have pets? If yes, how many?</Label>
                 <Input id="pets-info" value={formData.pets_info || ""} onChange={(e) => handleInputChange('pets_info', e.target.value)} className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none border-border" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
