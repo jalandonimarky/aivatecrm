@@ -480,7 +480,7 @@ export function KanbanItemDetails() {
             {isAddingNote ? (
               <div className="space-y-2">
                 <Label htmlFor="new-note-content">Add New Note</Label>
-                <Textarea id="new-note-content" value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)} placeholder="Type your note here..." rows={3} />
+                <Textarea id="new-note-content" value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)} placeholder="Type your note here..." rows={3} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
                   <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
@@ -550,7 +550,7 @@ export function KanbanItemDetails() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-note-content">Note Content</Label>
-              <Textarea id="edit-note-content" value={editNoteContent} onChange={(e) => setEditNoteContent(e.target.value)} rows={5} />
+              <Textarea id="edit-note-content" value={editNoteContent} onChange={(e) => setEditNoteContent(e.target.value)} rows={5} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
             </div>
           </div>
           <DialogFooter>
@@ -588,24 +588,24 @@ export function KanbanItemDetails() {
           <form onSubmit={handleTaskSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="task-title">Title *</Label>
-              <Input id="task-title" value={taskFormData.title} onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))} required />
+              <Input id="task-title" value={taskFormData.title} onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))} required className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-description">Description</Label>
-              <Textarea id="task-description" value={taskFormData.description} onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} />
+              <Textarea id="task-description" value={taskFormData.description} onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="task-status">Status *</Label>
                 <Select value={taskFormData.status} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as Task['status'] }))} required>
-                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Select status" /></SelectTrigger>
                   <SelectContent>{taskStatuses.map(status => <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-priority">Priority *</Label>
                 <Select value={taskFormData.priority} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as Task['priority'] }))} required>
-                  <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Select priority" /></SelectTrigger>
                   <SelectContent>{taskPriorities.map(priority => <SelectItem key={priority.value} value={priority.value}>{priority.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -614,7 +614,7 @@ export function KanbanItemDetails() {
               <div className="space-y-2">
                 <Label htmlFor="task-assigned_to">Assigned To</Label>
                 <Select value={taskFormData.assigned_to} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, assigned_to: value }))}>
-                  <SelectTrigger><SelectValue placeholder="Select a user" /></SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Select a user" /></SelectTrigger>
                   <SelectContent>{profiles.map(profile => <SelectItem key={profile.id} value={profile.id}>{getFullName(profile)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -622,7 +622,7 @@ export function KanbanItemDetails() {
                 <Label htmlFor="task-due_date">Due Date</Label>
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !taskFormData.due_date && "text-muted-foreground")}>
+                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0", !taskFormData.due_date && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {taskFormData.due_date ? format(taskFormData.due_date, "PPP") : <span>Pick a date</span>}
                     </Button>
@@ -637,7 +637,7 @@ export function KanbanItemDetails() {
               <div className="space-y-2">
                 <Label htmlFor="task-related_contact_id">Related Contact</Label>
                 <Select value={taskFormData.related_contact_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_contact_id: value }))}>
-                  <SelectTrigger><SelectValue placeholder="Select a contact" /></SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Select a contact" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">None</SelectItem>
                     {contacts.map(contact => <SelectItem key={contact.id} value={contact.id}>{contact.name} ({contact.company})</SelectItem>)}
@@ -647,7 +647,7 @@ export function KanbanItemDetails() {
               <div className="space-y-2">
                 <Label htmlFor="task-related_deal_id">Related Deal</Label>
                 <Select value={taskFormData.related_deal_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}>
-                  <SelectTrigger><SelectValue placeholder="Select a deal" /></SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Select a deal" /></SelectTrigger>
                   <SelectContent>{deals.map(d => <SelectItem key={d.id} value={d.id}>{d.title} (${d.value.toLocaleString()})</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -655,7 +655,7 @@ export function KanbanItemDetails() {
             <div className="space-y-2">
               <Label htmlFor="task-related_kanban_item_id">Related Kanban Item</Label>
               <Select value={taskFormData.related_kanban_item_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))} disabled>
-                <SelectTrigger><SelectValue placeholder="Select a Kanban item" /></SelectTrigger>
+                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Select a Kanban item" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">None</SelectItem>
                   {kanbanItems.map(item => <SelectItem key={item.id} value={item.id}>{item.title} ({item.column?.name || 'No Column'})</SelectItem>)}

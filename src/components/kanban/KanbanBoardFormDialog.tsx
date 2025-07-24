@@ -54,6 +54,7 @@ export function KanbanBoardFormDialog({
               value={boardName}
               onChange={(e) => setBoardName(e.target.value)}
               required
+              className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
           <DialogFooter>

@@ -62,6 +62,7 @@ export function KanbanColumnFormDialog({
               value={columnName}
               onChange={(e) => setColumnName(e.target.value)}
               required
+              className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
           <DialogFooter>

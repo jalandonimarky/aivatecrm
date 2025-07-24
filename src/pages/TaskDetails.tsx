@@ -349,6 +349,7 @@ export function TaskDetails() {
                   onChange={(e) => setNewNoteContent(e.target.value)}
                   placeholder="Type your activity note here..."
                   rows={3}
+                  className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
@@ -378,6 +379,7 @@ export function TaskDetails() {
                 value={editNoteContent}
                 onChange={(e) => setEditNoteContent(e.target.value)}
                 rows={5}
+                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
           </div>
@@ -402,6 +404,7 @@ export function TaskDetails() {
                 value={taskFormData.title}
                 onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))}
                 required
+                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
 
@@ -412,6 +415,7 @@ export function TaskDetails() {
                 value={taskFormData.description}
                 onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
+                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
 
@@ -423,7 +427,7 @@ export function TaskDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as Task['status'] }))}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -442,7 +446,7 @@ export function TaskDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as Task['priority'] }))}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
@@ -463,7 +467,7 @@ export function TaskDetails() {
                   value={taskFormData.assigned_to}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, assigned_to: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select a user" />
                   </SelectTrigger>
                   <SelectContent>
@@ -482,7 +486,7 @@ export function TaskDetails() {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
                         !taskFormData.due_date && "text-muted-foreground"
                       )}
                     >
@@ -512,7 +516,7 @@ export function TaskDetails() {
                   value={taskFormData.related_contact_id}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_contact_id: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select a contact" />
                   </SelectTrigger>
                   <SelectContent>
@@ -531,7 +535,7 @@ export function TaskDetails() {
                   value={taskFormData.related_deal_id}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select a deal" />
                   </SelectTrigger>
                   <SelectContent>
@@ -552,7 +556,7 @@ export function TaskDetails() {
                 value={taskFormData.related_kanban_item_id}
                 onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                   <SelectValue placeholder="Select a Kanban item" />
                 </SelectTrigger>
                 <SelectContent>

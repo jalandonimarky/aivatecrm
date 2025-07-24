@@ -632,6 +632,7 @@ export function DealDetails() {
                     onChange={(e) => setBusinessNoteContent(e.target.value)}
                     placeholder="Type your business note here..."
                     rows={3}
+                    className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingBusinessNote(false)}>Cancel</Button>
@@ -694,6 +695,7 @@ export function DealDetails() {
                     onChange={(e) => setDevelopmentNoteContent(e.target.value)}
                     placeholder="Type your development note here..."
                     rows={3}
+                    className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(false)}>Cancel</Button>
@@ -804,6 +806,7 @@ export function DealDetails() {
                 value={editNoteContent}
                 onChange={(e) => setEditNoteContent(e.target.value)}
                 rows={5}
+                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
             <div className="space-y-2">
@@ -842,6 +845,7 @@ export function DealDetails() {
                 value={taskFormData.title}
                 onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))}
                 required
+                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
 
@@ -852,6 +856,7 @@ export function DealDetails() {
                 value={taskFormData.description}
                 onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
+                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
 
@@ -863,7 +868,7 @@ export function DealDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as Task['status'] }))}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -882,7 +887,7 @@ export function DealDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as Task['priority'] }))}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
@@ -903,7 +908,7 @@ export function DealDetails() {
                   value={taskFormData.assigned_to}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, assigned_to: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select a user" />
                   </SelectTrigger>
                   <SelectContent>
@@ -923,7 +928,7 @@ export function DealDetails() {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
                         !taskFormData.due_date && "text-muted-foreground"
                       )}
                     >
@@ -953,7 +958,7 @@ export function DealDetails() {
                   value={taskFormData.related_contact_id}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_contact_id: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select a contact" />
                   </SelectTrigger>
                   <SelectContent>
@@ -973,7 +978,7 @@ export function DealDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}
                   disabled
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <SelectValue placeholder="Select a deal" />
                   </SelectTrigger>
                   <SelectContent>
@@ -994,7 +999,7 @@ export function DealDetails() {
                 value={taskFormData.related_kanban_item_id}
                 onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                   <SelectValue placeholder="Select a Kanban item" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1018,68 +1023,6 @@ export function DealDetails() {
               </Button>
               <Button type="submit" className="bg-gradient-primary active:scale-95">
                 {editingTask ? "Update" : "Create"} Task
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Deal Edit Dialog */}
-      <DealFormDialog
-        isOpen={isEditDealDialogOpen}
-        onOpenChange={setIsEditDealDialogOpen}
-        initialData={deal}
-        onSubmit={handleUpdateDealSubmit}
-        contacts={contacts}
-        profiles={profiles}
-        getFullName={getFullName}
-      />
-
-      {/* Rally Dialog */}
-      {deal && (
-        <RallyDialog
-          isOpen={isRallyDialogOpen}
-          onOpenChange={setIsRallyDialogOpen}
-          onSubmit={handleRallySubmit}
-          deal={deal}
-        />
-      )}
-
-      {/* Upload Attachment Dialog */}
-      <Dialog open={isUploadAttachmentDialogOpen} onOpenChange={setIsUploadAttachmentDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Upload Attachment</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleUploadAttachment} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="file-input">File</Label>
-              <Input
-                id="file-input"
-                type="file"
-                onChange={handleFileChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="attachment-type">Attachment Type</Label>
-              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value as 'contract' | 'receipt' | 'other')} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="contract">Contract</SelectItem>
-                  <SelectItem value="receipt">Receipt</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsUploadAttachmentDialogOpen(false)} type="button">
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-gradient-primary active:scale-95" disabled={uploadingAttachment}>
-                {uploadingAttachment ? "Uploading..." : "Upload"}
               </Button>
             </DialogFooter>
           </form>

@@ -265,14 +265,14 @@ export function Settings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" {...profileForm.register("firstName")} />
+                <Input id="firstName" {...profileForm.register("firstName")} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                 {profileForm.formState.errors.firstName && (
                   <p className="text-destructive text-sm">{profileForm.formState.errors.firstName.message}</p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" {...profileForm.register("lastName")} />
+                <Input id="lastName" {...profileForm.register("lastName")} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                 {profileForm.formState.errors.lastName && (
                   <p className="text-destructive text-sm">{profileForm.formState.errors.lastName.message}</p>
                 )}
@@ -280,7 +280,7 @@ export function Settings() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...profileForm.register("email")} />
+              <Input id="email" type="email" {...profileForm.register("email")} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               {profileForm.formState.errors.email && (
                 <p className="text-destructive text-sm">{profileForm.formState.errors.email.message}</p>
               )}
@@ -305,14 +305,14 @@ export function Settings() {
           <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
-              <Input id="newPassword" type="password" {...passwordForm.register("newPassword")} />
+              <Input id="newPassword" type="password" {...passwordForm.register("newPassword")} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               {passwordForm.formState.errors.newPassword && (
                 <p className="text-destructive text-sm">{passwordForm.formState.errors.newPassword.message}</p>
               )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
-              <Input id="confirmNewPassword" type="password" {...passwordForm.register("confirmNewPassword")} />
+              <Input id="confirmNewPassword" type="password" {...passwordForm.register("confirmNewPassword")} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               {passwordForm.formState.errors.confirmNewPassword && (
                 <p className="text-destructive text-sm">{passwordForm.formState.errors.confirmNewPassword.message}</p>
                 )}
