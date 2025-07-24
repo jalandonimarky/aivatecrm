@@ -2,9 +2,10 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Users } from "lucide-react"; // Removed Palette import
+import { MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import type { KanbanBoard } from "@/types/crm";
+import { cn } from "@/lib/utils"; // Import cn utility
 
 interface KanbanBoardCardProps {
   board: KanbanBoard;
@@ -17,8 +18,11 @@ interface KanbanBoardCardProps {
 export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChange }: KanbanBoardCardProps) {
   return (
     <Card 
-      className="bg-gradient-card border-border/50 hover:shadow-medium transition-smooth cursor-pointer"
-      style={board.background_color ? { backgroundColor: board.background_color } : {}}
+      className={cn(
+        "border-border/50 hover:shadow-medium transition-smooth cursor-pointer",
+        !board.background_color && "bg-gradient-card" // Only apply gradient if no custom color is set
+      )}
+      style={board.background_color ? { backgroundColor: board.background_color } : {}} // Apply custom background color if available
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold flex-1 min-w-0 pr-2 break-words" onClick={() => onSelect(board.id)}>
@@ -35,7 +39,6 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChan
               <Edit className="mr-2 h-4 w-4" />
               Edit Board
             </DropdownMenuItem>
-            {/* Removed BoardColorPicker from here */}
             <DropdownMenuItem onClick={() => onDelete(board.id)} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Board
