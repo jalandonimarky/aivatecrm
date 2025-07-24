@@ -90,7 +90,7 @@ export function DealDetails() {
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Fixed: Initialize to null
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
@@ -635,7 +635,7 @@ export function DealDetails() {
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingBusinessNote(false)}>Cancel</Button>
-                    <Button onClick={() => handleAddNote('business', businessNoteContent)} className="bg-gradient-primary active:scale-95">Add Note</Button>
+                    <Button onClick={() => handleAddNote('business', businessNoteContent)} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
                   </div>
                 </div>
               ) : (
@@ -697,7 +697,7 @@ export function DealDetails() {
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(false)}>Cancel</Button>
-                    <Button onClick={() => handleAddNote('development', developmentNoteContent)} className="bg-gradient-primary active:scale-95">Add Note</Button>
+                    <Button onClick={() => handleAddNote('development', developmentNoteContent)} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
                   </div>
                 </div>
               ) : (

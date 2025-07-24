@@ -352,7 +352,7 @@ export function TaskDetails() {
                 />
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
-                  <Button onClick={handleAddNote} className="bg-gradient-primary active:scale-95">Add Note</Button>
+                  <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
                 </div>
               </div>
             ) : (
@@ -425,8 +425,8 @@ export function TaskDetails() {
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
+                    </SelectTrigger>
+                    <SelectContent>
                     {taskStatuses.map(status => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -467,7 +467,6 @@ export function TaskDetails() {
                     <SelectValue placeholder="Select a user" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">None</SelectItem>
                     {profiles.map(profile => (
                       <SelectItem key={profile.id} value={profile.id}>
                         {getFullName(profile)}
