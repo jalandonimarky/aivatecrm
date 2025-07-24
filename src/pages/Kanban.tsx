@@ -25,7 +25,7 @@ export function Kanban() {
     deleteKanbanColumn,
     createKanbanItem,
     updateKanbanItem,
-    deleteKanbanItem, // Destructure deleteKanbanItem
+    deleteKanbanItem,
     reorderKanbanItemsInColumn, // Renamed
     moveKanbanItem, // New function
     reorderKanbanColumns,
@@ -131,6 +131,12 @@ export function Kanban() {
     }
   };
 
+  const handleDeleteItem = async (itemId: string) => {
+    if (confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
+      await deleteKanbanItem(itemId);
+    }
+  };
+
   // Reordering handlers
   const handleReorderItems = async (columnId: string, itemIds: string[]) => {
     await reorderKanbanItemsInColumn(columnId, itemIds);
@@ -182,9 +188,9 @@ export function Kanban() {
             onEditColumn={handleEditColumnClick}
             onDeleteColumn={handleDeleteColumn}
             onAddItem={handleAddItemClick}
-            onDeleteItem={deleteKanbanItem} // Pass deleteKanbanItem here
-            onReorderItemsInColumn={handleReorderItems}
-            onMoveItem={handleMoveItem}
+            // Removed onEditItem and onDeleteItem props
+            onReorderItemsInColumn={handleReorderItems} // Pass renamed function
+            onMoveItem={handleMoveItem} // Pass new function
             onReorderColumns={handleReorderColumns}
           />
         </div>
@@ -203,15 +209,15 @@ export function Kanban() {
 
         {/* Item Form Dialog */}
         {currentColumnIdForItem && (
-          <KanbanItemFormDialog
+          <KanbanItemFormDialog // Updated component name
             isOpen={isItemFormDialogOpen}
             onOpenChange={setIsItemFormDialogOpen}
             initialData={editingItem}
             columnId={currentColumnIdForItem}
             onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
             nextOrderIndex={kanbanColumns.find(col => col.id === currentColumnIdForItem)?.items?.length || 0}
-            profiles={profiles}
-            getFullName={getFullName}
+            profiles={profiles} // Pass profiles
+            getFullName={getFullName} // Pass getFullName
           />
         )}
       </div>
