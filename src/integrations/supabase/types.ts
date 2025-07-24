@@ -162,6 +162,16 @@ export type Database = {
           updated_at: string
           value: number
           tier: string | null
+          client_category: string | null
+          primary_contact_full_name: string | null
+          contact_phone_number: string | null
+          contact_email_address: string | null
+          household_composition: string | null
+          pets: string | null
+          bedrooms_needed: number | null
+          bathrooms_needed: number | null
+          preferred_locations_zip_codes: string | null
+          desired_move_in_date: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -176,6 +186,16 @@ export type Database = {
           updated_at?: string
           value?: number
           tier?: string | null
+          client_category?: string | null
+          primary_contact_full_name?: string | null
+          contact_phone_number?: string | null
+          contact_email_address?: string | null
+          household_composition?: string | null
+          pets?: string | null
+          bedrooms_needed?: number | null
+          bathrooms_needed?: number | null
+          preferred_locations_zip_codes?: string | null
+          desired_move_in_date?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -190,6 +210,16 @@ export type Database = {
           updated_at?: string
           value?: number
           tier?: string | null
+          client_category?: string | null
+          primary_contact_full_name?: string | null
+          contact_phone_number?: string | null
+          contact_email_address?: string | null
+          household_composition?: string | null
+          pets?: string | null
+          bedrooms_needed?: number | null
+          bathrooms_needed?: number | null
+          preferred_locations_zip_codes?: string | null
+          desired_move_in_date?: string | null
         }
         Relationships: [
           {
