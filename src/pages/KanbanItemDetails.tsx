@@ -395,7 +395,10 @@ export function KanbanItemDetails() {
         }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Removed Client Category display */}
+          <div>
+            <p className="text-sm text-muted-foreground">Lead Type</p>
+            <p className="font-semibold">{item.lead_type || "N/A"}</p>
+          </div>
           <div>
             <p className="text-sm text-muted-foreground">Tenant Name</p>
             <p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p>

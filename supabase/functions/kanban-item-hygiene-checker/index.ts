@@ -60,7 +60,11 @@ serve(async (req) => {
       suggestions.push("Consider adding a specific time for the due date.");
     }
 
-    // Removed client_category check
+    // New: Check for Lead Type
+    if (!item.lead_type) {
+      missingFields.push("Lead Type");
+      suggestions.push("Specify the lead type (e.g., Corporate Relocation, Insurance Lead, Private Individual).");
+    }
 
     // --- Critical Item Alert Logic ---
     // A high-priority item (P0 or P1) is critical if it's missing an assignee or a due date, or if the due date is in the past.

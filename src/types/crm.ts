@@ -122,7 +122,7 @@ export interface KanbanItem {
   column?: { name: string; board_id: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
   tasks?: Task[]; // New: Added tasks array for Kanban items
-  // client_category?: string; // REMOVED
+  lead_type?: 'Corporate Relocation' | 'Insurance Lead' | 'Private Individual'; // New: Lead Type
   tenant_contact_full_name?: string;
   tenant_contact_phone?: string;
   tenant_contact_email?: string;

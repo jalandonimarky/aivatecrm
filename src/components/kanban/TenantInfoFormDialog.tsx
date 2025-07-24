@@ -30,12 +30,16 @@ export function TenantInfoFormDialog({
   const [isMoveInCalendarOpen, setIsMoveInCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Removed clientCategories array as it's no longer needed
+  const leadTypes: { value: KanbanItem['lead_type'], label: string }[] = [
+    { value: "Corporate Relocation", label: "Corporate Relocation" },
+    { value: "Insurance Lead", label: "Insurance Lead" },
+    { value: "Private Individual", label: "Private Individual" },
+  ];
 
   useEffect(() => {
     if (isOpen && initialData) {
       setFormData({
-        // client_category: initialData.client_category || undefined, // Removed
+        lead_type: initialData.lead_type || undefined,
         tenant_contact_full_name: initialData.tenant_contact_full_name || "",
         tenant_contact_phone: initialData.tenant_contact_phone || "",
         tenant_contact_email: initialData.tenant_contact_email || "",
@@ -63,6 +67,7 @@ export function TenantInfoFormDialog({
         desired_move_in_date: formData.desired_move_in_date ? format(new Date(formData.desired_move_in_date), "yyyy-MM-dd") : null,
         bedrooms_needed: formData.bedrooms_needed ? Number(formData.bedrooms_needed) : null,
         bathrooms_needed: formData.bathrooms_needed ? Number(formData.bathrooms_needed) : null,
+        lead_type: formData.lead_type || null, // Ensure null for 'undefined' or 'none'
       };
       await onSubmit(submissionData);
       onOpenChange(false);
@@ -80,7 +85,21 @@ export function TenantInfoFormDialog({
         <form onSubmit={handleSubmit}>
           <ScrollArea className="h-[70vh] p-4">
             <div className="space-y-4">
-              {/* Removed Client Category field */}
+              <div className="space-y-2">
+                <Label htmlFor="lead-type">Lead Type</Label>
+                <Select
+                  value={formData.lead_type || "none"}
+                  onValueChange={(value) => handleInputChange('lead_type', value === "none" ? undefined : value)}
+                >
+                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input focus-visible:ring-transparent">
+                    <SelectValue placeholder="Select lead type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {leadTypes.map(type => <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tenant-name">Tenant Full Name</Label>
