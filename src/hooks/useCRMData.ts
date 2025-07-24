@@ -173,11 +173,11 @@ export function useCRMData() {
         `)
         .order("created_at", { ascending: false })
         .order("order_index", { foreignTable: "columns", ascending: true })
-        .order("order_index", { foreignTable: "columns.items", ascending: true }) as { data: any[] | null, error: any }; // Explicitly cast data here
+        .order("order_index", { foreignTable: "columns.items", ascending: true }) as any; // Cast the entire result to any
 
       if (boardsError) throw boardsError;
       
-      const typedBoardsData = (boardsData || []).map((board: any) => ({
+      const typedBoardsData = (boardsData?.data || []).map((board: any) => ({
         ...board,
         creator: board.creator ? (board.creator as Profile) : null,
         columns: (board.columns as any[] || []).map((column: any) => ({

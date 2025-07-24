@@ -352,7 +352,7 @@ export function TaskDetails() {
                 />
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
-                  <Button onClick={handleAddNote} className="active:scale-95">Add Note</Button>
+                  <Button onClick={handleAddNote} className="bg-gradient-primary active:scale-95">Add Note</Button>
                 </div>
               </div>
             ) : (
