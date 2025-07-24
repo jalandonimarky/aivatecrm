@@ -37,6 +37,7 @@ import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
+import { CollapsibleCard } from "@/components/CollapsibleCard"; // Import the new component
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -366,81 +367,88 @@ export function KanbanItemDetails() {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">Tenant Lead Information</CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => setIsTenantInfoDialogOpen(true)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Tenant Info
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+      <CollapsibleCard
+        title="Tenant Lead Information"
+        storageKey="kanban-tenant-info-collapsed"
+        optionsMenu={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setIsTenantInfoDialogOpen(true)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Tenant Info
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Client Category</p>
+            <p className="font-semibold">{item.client_category || "N/A"}</p>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Client Category</p>
-              <p className="font-semibold">{item.client_category || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tenant Name</p>
-              <p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tenant Phone</p>
-              <p className="font-semibold">{item.tenant_contact_phone || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tenant Email</p>
-              <p className="font-semibold">{item.tenant_contact_email || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Bedrooms Needed</p>
-              <p className="font-semibold">{item.bedrooms_needed || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Bathrooms Needed</p>
-              <p className="font-semibold">{item.bathrooms_needed || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Desired Move-in Date</p>
-              <p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pets Info</p>
-              <p className="font-semibold">{item.pets_info || "N/A"}</p>
-            </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Tenant Name</p>
+            <p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p>
           </div>
-          <Separator />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Household Composition</p>
-              <p className="font-semibold whitespace-pre-wrap">{item.household_composition || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Preferred Locations</p>
-              <p className="font-semibold whitespace-pre-wrap">{item.preferred_locations || "N/A"}</p>
-            </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Tenant Phone</p>
+            <p className="font-semibold">{item.tenant_contact_phone || "N/A"}</p>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <p className="text-sm text-muted-foreground">Tenant Email</p>
+            <p className="font-semibold">{item.tenant_contact_email || "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Bedrooms Needed</p>
+            <p className="font-semibold">{item.bedrooms_needed || "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Bathrooms Needed</p>
+            <p className="font-semibold">{item.bathrooms_needed || "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Desired Move-in Date</p>
+            <p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Pets Info</p>
+            <p className="font-semibold">{item.pets_info || "N/A"}</p>
+          </div>
+        </div>
+        <Separator className="my-4" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Household Composition</p>
+            <p className="font-semibold whitespace-pre-wrap">{item.household_composition || "N/A"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Preferred Locations</p>
+            <p className="font-semibold whitespace-pre-wrap">{item.preferred_locations || "N/A"}</p>
+          </div>
+        </div>
+      </CollapsibleCard>
 
-      {item && <KanbanDataHygieneCard item={item} />}
+      {item && (
+        <CollapsibleCard
+          title="Data Hygiene Check"
+          storageKey="kanban-data-hygiene-collapsed"
+          defaultOpen={true} // Keep this open by default as it's important
+        >
+          <KanbanDataHygieneCard item={item} />
+        </CollapsibleCard>
+      )}
 
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Notes ({sortedNotes.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <CollapsibleCard
+        title={`Notes (${sortedNotes.length})`}
+        storageKey="kanban-notes-collapsed"
+      >
+        <div className="space-y-4">
+          {sortedNotes.length === 0 && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
           {sortedNotes.map((note: KanbanItemNote) => (
             <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
               <div>
@@ -476,57 +484,57 @@ export function KanbanItemDetails() {
               </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </CollapsibleCard>
 
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-semibold">Related Tasks ({relatedTasks.length})</CardTitle>
+      <CollapsibleCard
+        title={`Related Tasks (${relatedTasks.length})`}
+        storageKey="kanban-related-tasks-collapsed"
+        optionsMenu={
           <Button variant="outline" size="sm" onClick={handleAddTaskClick} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
             <Plus className="w-4 h-4 mr-2" /> Add Task
           </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {relatedTasks.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No tasks related to this Kanban item yet.</TableCell></TableRow>
-                ) : (
-                  relatedTasks.map((task) => (
-                    <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                      <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">{task.title}</NavLink></TableCell>
-                      <TableCell><TaskStatusBadge status={task.status} /></TableCell>
-                      <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
-                      <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
-                      <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => handleEditTaskClick(task)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+        }
+      >
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Assigned To</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {relatedTasks.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No tasks related to this Kanban item yet.</TableCell></TableRow>
+              ) : (
+                relatedTasks.map((task) => (
+                  <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
+                    <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">{task.title}</NavLink></TableCell>
+                    <TableCell><TaskStatusBadge status={task.status} /></TableCell>
+                    <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
+                    <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
+                    <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleEditTaskClick(task)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </CollapsibleCard>
 
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
