@@ -1366,7 +1366,7 @@ export function useCRMData() {
         .upsert(updates, { onConflict: 'id' });
 
       if (error) throw error;
-      toast({ title: "Items reordered", description: "Kanban items reordered successfully." });
+      // toast({ title: "Items reordered", description: "Kanban items reordered successfully." }); // Removed toast
     } catch (error: any) {
       console.error("Error reordering Kanban items within column:", error);
       toast({ title: "Error reordering items", description: error.message, variant: "destructive" });
@@ -1466,7 +1466,7 @@ export function useCRMData() {
         .upsert(finalUpdates, { onConflict: 'id' });
 
       if (error) throw error;
-      toast({ title: "Item moved", description: "Kanban item moved successfully." });
+      // toast({ title: "Item moved", description: "Kanban item moved successfully." }); // Removed toast
     } catch (error: any) {
       console.error("Error moving Kanban item:", error);
       toast({ title: "Error moving item", description: error.message, variant: "destructive" });
