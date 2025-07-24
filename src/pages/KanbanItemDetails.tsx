@@ -271,11 +271,8 @@ export function KanbanItemDetails() {
 
   const getCategoryColorClass = (category?: KanbanItem['category']) => {
     switch (category?.toLowerCase()) {
-      case 'design': return "bg-primary/20 text-primary border-primary";
-      case 'development': return "bg-accent/20 text-accent border-accent";
-      case 'marketing': return "bg-warning/20 text-warning border-warning";
-      case 'business': return "bg-success/20 text-success border-success";
-      case 'other': return "bg-muted/20 text-muted-foreground border-muted";
+      case 'real estate': return "bg-primary/20 text-primary border-primary";
+      case 'tech solutions': return "bg-accent/20 text-accent border-accent";
       default: return "bg-secondary/20 text-secondary-foreground border-secondary";
     }
   };

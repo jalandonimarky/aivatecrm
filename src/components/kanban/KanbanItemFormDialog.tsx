@@ -37,13 +37,9 @@ export function KanbanItemFormDialog({
   const [formData, setFormData] = useState<Partial<KanbanItem>>({});
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
 
-  const itemCategories: { value: string, label: string }[] = [
-    { value: "design", label: "Design" },
-    { value: "development", label: "Development" },
-    { value: "marketing", label: "Marketing" },
-    { value: "business", label: "Business" },
-  ];
+  const predefinedCategories = ["Real Estate", "Tech Solutions"];
 
   const priorityLevels: { value: KanbanItem['priority_level'], label: string }[] = [
     { value: "p0", label: "P0 - Urgent" },
@@ -54,6 +50,13 @@ export function KanbanItemFormDialog({
 
   useEffect(() => {
     if (isOpen) {
+      const initialCategory = initialData?.category;
+      if (initialCategory && !predefinedCategories.includes(initialCategory)) {
+        setIsCustomCategory(true);
+      } else {
+        setIsCustomCategory(false);
+      }
+
       setFormData({
         title: initialData?.title || "",
         description: initialData?.description || "",
@@ -69,6 +72,16 @@ export function KanbanItemFormDialog({
 
   const handleInputChange = (field: keyof KanbanItem, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCategoryChange = (value: string) => {
+    if (value === 'Others') {
+      setIsCustomCategory(true);
+      handleInputChange('category', ''); // Clear category to allow typing
+    } else {
+      setIsCustomCategory(false);
+      handleInputChange('category', value === 'none' ? undefined : value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,17 +149,30 @@ export function KanbanItemFormDialog({
                 <div className="space-y-2">
                   <Label htmlFor="item-category">Category</Label>
                   <Select
-                    value={formData.category || "none"}
-                    onValueChange={(value) => handleInputChange('category', value === "none" ? undefined : value)}
+                    value={isCustomCategory ? 'Others' : formData.category || 'none'}
+                    onValueChange={handleCategoryChange}
                   >
                     <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
-                      {itemCategories.map(cat => <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>)}
+                      {predefinedCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                      <SelectItem value="Others">Others</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
+              {isCustomCategory && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-category">Custom Category</Label>
+                  <Input
+                    id="custom-category"
+                    value={formData.category || ''}
+                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    placeholder="Enter custom category name"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="item-assigned-to">Assigned To</Label>
