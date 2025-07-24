@@ -7,7 +7,7 @@ import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
 import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDialog";
-import { KanbanItemFormDrawer } from "@/components/kanban/KanbanItemFormDrawer";
+import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog"; // Updated import
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
@@ -209,7 +209,7 @@ export function Kanban() {
 
         {/* Item Form Dialog */}
         {currentColumnIdForItem && (
-          <KanbanItemFormDrawer
+          <KanbanItemFormDialog // Updated component name
             isOpen={isItemFormDialogOpen}
             onOpenChange={setIsItemFormDialogOpen}
             initialData={editingItem}

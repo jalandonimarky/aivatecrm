@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; // Changed from Drawer
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { KanbanItem, Profile } from "@/types/crm";
 
-interface KanbanItemFormDrawerProps {
+interface KanbanItemFormDialogProps { // Changed interface name
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: KanbanItem | null;
@@ -23,7 +23,7 @@ interface KanbanItemFormDrawerProps {
   getFullName: (profile: Profile) => string;
 }
 
-export function KanbanItemFormDrawer({ // Corrected export name from KanbanItemFormDialog to KanbanItemFormDrawer
+export function KanbanItemFormDialog({ // Changed export name
   isOpen,
   onOpenChange,
   initialData,
@@ -32,7 +32,7 @@ export function KanbanItemFormDrawer({ // Corrected export name from KanbanItemF
   nextOrderIndex,
   profiles,
   getFullName,
-}: KanbanItemFormDrawerProps) {
+}: KanbanItemFormDialogProps) {
   const [itemTitle, setItemTitle] = useState("");
   const [itemDescription, setItemDescription] = useState("");
   const [itemCategory, setItemCategory] = useState<string | undefined>(undefined);
@@ -105,12 +105,12 @@ export function KanbanItemFormDrawer({ // Corrected export name from KanbanItemF
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={onOpenChange} direction="right">
-      <DrawerContent className="w-full sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 max-w-md h-full mt-0 rounded-none">
-        <DrawerHeader>
-          <DrawerTitle>{initialData ? "Edit Item" : "Add New Item"}</DrawerTitle>
-        </DrawerHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4 px-4 overflow-y-auto flex-1">
+    <Dialog open={isOpen} onOpenChange={onOpenChange}> {/* Changed from Drawer */}
+      <DialogContent className="sm:max-w-[425px]"> {/* Changed from DrawerContent */}
+        <DialogHeader> {/* Changed from DrawerHeader */}
+          <DialogTitle>{initialData ? "Edit Item" : "Add New Item"}</DialogTitle> {/* Changed from DrawerTitle */}
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 py-4"> {/* Removed px-4 and flex-1 */}
           <div className="space-y-2">
             <Label htmlFor="item-title">Title *</Label>
             <Input
@@ -243,16 +243,16 @@ export function KanbanItemFormDrawer({ // Corrected export name from KanbanItemF
             />
           </div>
 
-          <DrawerFooter className="flex-shrink-0 px-0">
+          <DialogFooter> {/* Changed from DrawerFooter */}
             <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
               Cancel
             </Button>
             <Button type="submit" className="bg-gradient-primary active:scale-95" disabled={loading}>
               {loading ? (initialData ? "Saving..." : "Creating...") : (initialData ? "Save Changes" : "Add Item")}
             </Button>
-          </DrawerFooter>
+          </DialogFooter>
         </form>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
-import { KanbanItemFormDrawer } from "@/components/kanban/KanbanItemFormDrawer"; // Import the form drawer
+import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog"; // Updated import
 import type { KanbanItem } from "@/types/crm";
 
 export function KanbanItemDetails() {
@@ -34,7 +34,7 @@ export function KanbanItemDetails() {
 
   const item = kanbanItems.find((i) => i.id === id);
 
-  const [isItemFormDrawerOpen, setIsItemFormDrawerOpen] = useState(false);
+  const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false); // Changed state name
 
   useEffect(() => {
     if (!loading && id && !kanbanItems.find((i) => i.id === id)) {
@@ -43,13 +43,13 @@ export function KanbanItemDetails() {
   }, [kanbanItems, id, loading, navigate]);
 
   const handleEditItemClick = () => {
-    setIsItemFormDrawerOpen(true);
+    setIsItemFormDialogOpen(true); // Changed state setter
   };
 
   const handleUpdateItemSubmit = async (data: any) => {
     if (!item) return;
     await updateKanbanItem(item.id, data);
-    setIsItemFormDrawerOpen(false); // Close drawer after update
+    setIsItemFormDialogOpen(false); // Changed state setter // Close dialog after update
   };
 
   const handleDeleteItem = async () => {
@@ -186,11 +186,11 @@ export function KanbanItemDetails() {
         </CardContent>
       </Card>
 
-      {/* Kanban Item Form Drawer for editing */}
+      {/* Kanban Item Form Dialog for editing */}
       {item && (
-        <KanbanItemFormDrawer
-          isOpen={isItemFormDrawerOpen}
-          onOpenChange={setIsItemFormDrawerOpen}
+        <KanbanItemFormDialog // Updated component name
+          isOpen={isItemFormDialogOpen}
+          onOpenChange={setIsItemFormDialogOpen}
           initialData={item}
           columnId={item.column_id}
           onSubmit={handleUpdateItemSubmit}
