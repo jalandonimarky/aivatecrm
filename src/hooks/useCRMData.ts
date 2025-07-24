@@ -1412,7 +1412,7 @@ export function useCRMData() {
 
               // Recalculate order_index for destination column
               const updatedDestinationItems = newDestinationItems.map((item, index) => ({ ...item, order_index: index }));
-              return { ...col, items: updatedDestinationulators.
+              return { ...col, items: updatedDestinationItems };
             }
             return col;
           });
