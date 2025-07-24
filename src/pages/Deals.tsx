@@ -213,7 +213,7 @@ export function Deals() {
                 {filteredDeals.map((deal) => (
                   <TableRow key={deal.id} className="hover:bg-muted/50 transition-smooth">
                     <TableCell className="font-medium">
-                      <NavLink to={`/deals/${deal.id}`} className="text-primary hover:underline">
+                      <NavLink to={`/deals/${deal.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
                         {deal.title}
                       </NavLink>
                     </TableCell>

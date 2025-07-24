@@ -538,7 +538,7 @@ export function DealDetails() {
                           href={attachment.file_url} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="text-primary hover:underline"
+                          className="bg-gradient-primary bg-clip-text text-transparent hover:underline"
                         >
                           {attachment.file_name}
                         </a>
@@ -747,7 +747,7 @@ export function DealDetails() {
                   relatedTasks.map((task) => (
                     <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
                       <TableCell className="font-medium">
-                        <NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">
+                        <NavLink to={`/tasks/${task.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
                           {task.title}
                         </NavLink>
                       </TableCell>
@@ -865,8 +865,8 @@ export function DealDetails() {
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
+                    </SelectTrigger>
+                    <SelectContent>
                     {taskStatuses.map(status => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -907,7 +907,6 @@ export function DealDetails() {
                     <SelectValue placeholder="Select a user" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">None</SelectItem>
                     {profiles.map(profile => (
                       <SelectItem key={profile.id} value={profile.id}>
                         {getFullName(profile)}

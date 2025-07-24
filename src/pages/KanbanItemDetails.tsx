@@ -522,7 +522,7 @@ export function KanbanItemDetails() {
               ) : (
                 relatedTasks.map((task) => (
                   <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                    <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">{task.title}</NavLink></TableCell>
+                    <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">{task.title}</NavLink></TableCell>
                     <TableCell><TaskStatusBadge status={task.status} /></TableCell>
                     <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
                     <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>

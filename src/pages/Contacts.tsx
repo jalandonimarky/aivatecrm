@@ -231,7 +231,7 @@ export function Contacts() {
                 {filteredContacts.map((contact) => (
                   <TableRow key={contact.id} className="hover:bg-muted/50 transition-smooth">
                     <TableCell className="font-medium">
-                      <NavLink to={`/contacts/${contact.id}`} className="text-primary hover:underline">
+                      <NavLink to={`/contacts/${contact.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
                         {contact.name}
                       </NavLink>
                     </TableCell>

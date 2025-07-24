@@ -505,7 +505,7 @@ export function Tasks() {
                 {filteredTasks.map((task) => (
                   <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
                     <TableCell className="font-medium">
-                      <NavLink to={`/tasks/${task.id}`} className="text-primary hover:underline">
+                      <NavLink to={`/tasks/${task.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
                         {task.title}
                       </NavLink>
                     </TableCell>
