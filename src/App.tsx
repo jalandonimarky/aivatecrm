@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // Fixed import syntax
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/Dashboard";
@@ -14,7 +14,8 @@ import { Tasks } from "./pages/Tasks";
 import { TaskDetails } from "./pages/TaskDetails";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
-import { Kanban } from "./pages/Kanban"; // Import Kanban page
+import { Kanban } from "./pages/Kanban";
+import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import new KanbanItemDetails page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +64,8 @@ const App = () => {
               // Authenticated routes
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/kanban" element={<Kanban />} /> {/* New route for Kanban */}
+                <Route path="/kanban" element={<Kanban />} />
+                <Route path="/kanban/items/:id" element={<KanbanItemDetails />} /> {/* New route for Kanban item details */}
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/:id" element={<ContactDetails />} />
                 <Route path="/deals" element={<Deals />} />

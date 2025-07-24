@@ -7,7 +7,7 @@ import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
 import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDialog";
-import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
+import { KanbanItemFormDrawer } from "@/components/kanban/KanbanItemFormDrawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 
@@ -188,8 +188,7 @@ export function Kanban() {
             onEditColumn={handleEditColumnClick}
             onDeleteColumn={handleDeleteColumn}
             onAddItem={handleAddItemClick}
-            onEditItem={handleEditItemClick}
-            onDeleteItem={handleDeleteItem}
+            // Removed onEditItem and onDeleteItem props
             onReorderItemsInColumn={handleReorderItems} // Pass renamed function
             onMoveItem={handleMoveItem} // Pass new function
             onReorderColumns={handleReorderColumns}
@@ -210,7 +209,7 @@ export function Kanban() {
 
         {/* Item Form Dialog */}
         {currentColumnIdForItem && (
-          <KanbanItemFormDialog
+          <KanbanItemFormDrawer
             isOpen={isItemFormDialogOpen}
             onOpenChange={setIsItemFormDialogOpen}
             initialData={editingItem}

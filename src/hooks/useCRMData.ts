@@ -72,7 +72,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for KanbanItem upsert
   const getKanbanItemDbPayload = (item: KanbanItem) => {
-    const { creator, assigned_user, ...dbPayload } = item;
+    const { creator, assigned_user, column, ...dbPayload } = item; // Added 'column' to destructuring
     return dbPayload;
   };
 
@@ -163,7 +163,8 @@ export function useCRMData() {
             items:kanban_items(
               *,
               creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+              assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+              column:kanban_columns(name)
             )
           )
         `)
@@ -182,6 +183,7 @@ export function useCRMData() {
             ...item,
             creator: item.creator ? (item.creator as Profile) : null,
             assigned_user: item.assigned_user ? (item.assigned_user as Profile) : null, // Cast assigned_user
+            column: item.column ? (item.column as { name: string }) : null, // Cast column
           })),
         })),
       })) as KanbanBoard[];
@@ -1045,7 +1047,8 @@ export function useCRMData() {
           items:kanban_items(
             *,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-            assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+            column:kanban_columns(name)
           )
         `)
         .single();
@@ -1072,7 +1075,8 @@ export function useCRMData() {
           items:kanban_items(
             *,
             creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-            assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+            assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+            column:kanban_columns(name)
           )
         `)
         .single();
@@ -1106,7 +1110,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'column'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
@@ -1120,7 +1124,8 @@ export function useCRMData() {
         .select(`
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          column:kanban_columns(name)
         `)
         .single();
 
@@ -1135,7 +1140,7 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column'>>) => {
     try {
       // The form sends all fields, so we can safely convert undefined/empty to null for nullable fields.
       const dataToUpdate = {
@@ -1155,7 +1160,8 @@ export function useCRMData() {
         .select(`
           *,
           creator:profiles!kanban_items_created_by_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
-          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+          assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
+          column:kanban_columns(name)
         `)
         .single();
 

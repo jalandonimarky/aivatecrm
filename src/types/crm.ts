@@ -108,6 +108,7 @@ export interface KanbanItem {
   assigned_user?: Profile; // New: Assigned user profile
   due_date?: string; // New: Due date for the item
   event_time?: string | null;
+  column?: { name: string }; // Added column name for display
 }
 
 export interface KanbanColumn {

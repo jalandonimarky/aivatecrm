@@ -12,10 +12,9 @@ interface KanbanBoardViewProps {
   onEditColumn: (column: KanbanColumnType) => void;
   onDeleteColumn: (columnId: string) => void;
   onAddItem: (columnId: string) => void;
-  onEditItem: (item: KanbanItemType) => void;
-  onDeleteItem: (itemId: string) => void;
-  onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>; // Renamed
-  onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>; // New prop
+  // Removed onEditItem and onDeleteItem props
+  onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>;
+  onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>;
   onReorderColumns: (boardId: string, columnIds: string[]) => Promise<void>;
 }
 
@@ -25,10 +24,8 @@ export function KanbanBoardView({
   onEditColumn,
   onDeleteColumn,
   onAddItem,
-  onEditItem,
-  onDeleteItem,
-  onReorderItemsInColumn, // Renamed
-  onMoveItem, // New prop
+  onReorderItemsInColumn,
+  onMoveItem,
   onReorderColumns,
 }: KanbanBoardViewProps) {
   const { toast } = useToast();
@@ -77,7 +74,7 @@ export function KanbanBoardView({
         newItems.splice(destination.index, 0, reorderedItem);
         
         const newItemIds = newItems.map(item => item.id);
-        await onReorderItemsInColumn(startColumn.id, newItemIds); // Use renamed function
+        await onReorderItemsInColumn(startColumn.id, newItemIds);
       } else {
         // Moving between different columns
         await onMoveItem(
@@ -114,8 +111,7 @@ export function KanbanBoardView({
                       onAddItem={onAddItem}
                       onEditColumn={onEditColumn}
                       onDeleteColumn={onDeleteColumn}
-                      onEditItem={onEditItem}
-                      onDeleteItem={onDeleteItem}
+                      // onEditItem and onDeleteItem are no longer passed here
                     />
                   </div>
                 )}
