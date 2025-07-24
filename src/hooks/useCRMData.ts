@@ -1137,14 +1137,24 @@ export function useCRMData() {
         `)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("violates row-level security policy") || error.message.includes("permission denied")) {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have permission to make changes to this board.",
+            variant: "destructive",
+          });
+          return; // Stop execution, don't throw
+        }
+        throw error; // Throw other errors
+      }
       toast({ title: "Board updated", description: "Kanban board updated successfully." });
       await fetchData();
       return data as any as KanbanBoard;
     } catch (error: any) {
       console.error("Error updating Kanban board:", error);
       toast({ title: "Error updating board", description: error.message, variant: "destructive" });
-      throw error;
+      // No re-throw needed here
     }
   };
 
@@ -1155,13 +1165,23 @@ export function useCRMData() {
         .update({ background_color: color })
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("violates row-level security policy") || error.message.includes("permission denied")) {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have permission to make changes to this board.",
+            variant: "destructive",
+          });
+          return; // Stop execution, don't throw
+        }
+        throw error; // Throw other errors
+      }
       toast({ title: "Board color updated", description: "Kanban board color changed successfully." });
       await fetchData(); // Re-fetch to update UI
     } catch (error: any) {
       console.error("Error updating Kanban board color:", error);
       toast({ title: "Error updating board color", description: error.message, variant: "destructive" });
-      throw error;
+      // No re-throw needed here
     }
   };
 
