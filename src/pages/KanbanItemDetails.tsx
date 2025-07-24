@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format, parseISO, parse, formatDistanceToNowStrict } from "date-fns"; // Import formatDistanceToNowStrict
+import { format, parseISO, parse, formatDistanceToNowStrict } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
@@ -37,7 +37,7 @@ import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import { CollapsibleCard } from "@/components/CollapsibleCard"; // Import the new component
+import { CollapsibleCard } from "@/components/CollapsibleCard";
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
 
 interface TaskFormData {
@@ -328,9 +328,17 @@ export function KanbanItemDetails() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <p className="text-muted-foreground text-sm">
-            In column <span className="font-semibold">{item.column?.name || "N/A"}</span>
-          </p>
+          <div className="flex items-center justify-between text-muted-foreground text-sm">
+            <p>
+              In column <span className="font-semibold">{item.column?.name || "N/A"}</span>
+            </p>
+            {item.created_at && (
+              <div className="flex items-center space-x-1">
+                <Clock className="w-3 h-3 text-muted-foreground" />
+                <span className="text-xs">{formatDistanceToNowStrict(parseISO(item.created_at), { addSuffix: true })}</span>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -437,14 +445,14 @@ export function KanbanItemDetails() {
         <CollapsibleCard
           title="Data Hygiene Check"
           storageKey="kanban-data-hygiene-collapsed"
-          defaultOpen={true} // Keep this open by default as it's important
+          defaultOpen={true}
         >
           <KanbanDataHygieneCard item={item} />
         </CollapsibleCard>
       )}
 
       <CollapsibleCard
-        title={`Notes (${sortedNotes.length}) - Created ${formatDistanceToNowStrict(parseISO(item.created_at), { addSuffix: true })}`}
+        title={`Notes (${sortedNotes.length})`}
         storageKey="kanban-notes-collapsed"
       >
         <div className="space-y-4">
