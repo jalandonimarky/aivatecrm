@@ -67,7 +67,7 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Schedule Rally for "{deal.title}"</DialogTitle>
         </DialogHeader>
@@ -79,7 +79,7 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
                 <Button
                   variant={"outline"}
                   className={cn(
-                    "w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                    "w-full justify-start text-left font-normal",
                     !selectedDate && "text-muted-foreground"
                   )}
                 >
@@ -104,7 +104,7 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
           <div className="space-y-2">
             <Label htmlFor="rally-time">Time *</Label>
             <Select value={selectedTime} onValueChange={setSelectedTime} required>
-              <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+              <SelectTrigger>
                 <SelectValue placeholder="Select time" />
               </SelectTrigger>
               <SelectContent>
@@ -126,7 +126,6 @@ export function RallyDialog({ isOpen, onOpenChange, onSubmit, deal }: RallyDialo
               placeholder="Enter details for the rally..."
               rows={4}
               required
-              className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
 

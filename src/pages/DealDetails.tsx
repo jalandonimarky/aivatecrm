@@ -507,7 +507,7 @@ export function DealDetails() {
             onClick={() => setIsUploadAttachmentDialogOpen(true)}
             className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
           >
-            <Plus className="w-4 h-4 mr-2" /> Upload Attachment
+            <Upload className="w-4 h-4 mr-2" /> Upload Attachment
           </Button>
         </CardHeader>
         <CardContent>
@@ -632,7 +632,6 @@ export function DealDetails() {
                     onChange={(e) => setBusinessNoteContent(e.target.value)}
                     placeholder="Type your business note here..."
                     rows={3}
-                    className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingBusinessNote(false)}>Cancel</Button>
@@ -695,7 +694,6 @@ export function DealDetails() {
                     onChange={(e) => setDevelopmentNoteContent(e.target.value)}
                     placeholder="Type your development note here..."
                     rows={3}
-                    className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingDevelopmentNote(false)}>Cancel</Button>
@@ -794,7 +792,7 @@ export function DealDetails() {
 
       {/* Edit Note Dialog */}
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Note</DialogTitle>
           </DialogHeader>
@@ -806,7 +804,6 @@ export function DealDetails() {
                 value={editNoteContent}
                 onChange={(e) => setEditNoteContent(e.target.value)}
                 rows={5}
-                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
             <div className="space-y-2">
@@ -831,7 +828,7 @@ export function DealDetails() {
 
       {/* Add/Edit Task Dialog */}
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
               {editingTask ? "Edit Task" : "Add New Task"}
@@ -845,7 +842,6 @@ export function DealDetails() {
                 value={taskFormData.title}
                 onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))}
                 required
-                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
 
@@ -856,7 +852,6 @@ export function DealDetails() {
                 value={taskFormData.description}
                 onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
-                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
 
@@ -868,7 +863,7 @@ export function DealDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as Task['status'] }))}
                   required
                 >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -887,7 +882,7 @@ export function DealDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as Task['priority'] }))}
                   required
                 >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
@@ -908,7 +903,7 @@ export function DealDetails() {
                   value={taskFormData.assigned_to}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, assigned_to: value }))}
                 >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select a user" />
                   </SelectTrigger>
                   <SelectContent>
@@ -928,7 +923,7 @@ export function DealDetails() {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                        "w-full justify-start text-left font-normal",
                         !taskFormData.due_date && "text-muted-foreground"
                       )}
                     >
@@ -958,7 +953,7 @@ export function DealDetails() {
                   value={taskFormData.related_contact_id}
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_contact_id: value }))}
                 >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select a contact" />
                   </SelectTrigger>
                   <SelectContent>
@@ -978,7 +973,7 @@ export function DealDetails() {
                   onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}
                   disabled
                 >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select a deal" />
                   </SelectTrigger>
                   <SelectContent>
@@ -999,7 +994,7 @@ export function DealDetails() {
                 value={taskFormData.related_kanban_item_id}
                 onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
               >
-                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                <SelectTrigger>
                   <SelectValue placeholder="Select a Kanban item" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1023,6 +1018,68 @@ export function DealDetails() {
               </Button>
               <Button type="submit" className="bg-gradient-primary active:scale-95">
                 {editingTask ? "Update" : "Create"} Task
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deal Edit Dialog */}
+      <DealFormDialog
+        isOpen={isEditDealDialogOpen}
+        onOpenChange={setIsEditDealDialogOpen}
+        initialData={deal}
+        onSubmit={handleUpdateDealSubmit}
+        contacts={contacts}
+        profiles={profiles}
+        getFullName={getFullName}
+      />
+
+      {/* Rally Dialog */}
+      {deal && (
+        <RallyDialog
+          isOpen={isRallyDialogOpen}
+          onOpenChange={setIsRallyDialogOpen}
+          onSubmit={handleRallySubmit}
+          deal={deal}
+        />
+      )}
+
+      {/* Upload Attachment Dialog */}
+      <Dialog open={isUploadAttachmentDialogOpen} onOpenChange={setIsUploadAttachmentDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Upload Attachment</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUploadAttachment} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="file-input">File</Label>
+              <Input
+                id="file-input"
+                type="file"
+                onChange={handleFileChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="attachment-type">Attachment Type</Label>
+              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value as 'contract' | 'receipt' | 'other')} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contract">Contract</SelectItem>
+                  <SelectItem value="receipt">Receipt</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsUploadAttachmentDialogOpen(false)} type="button">
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-primary active:scale-95" disabled={uploadingAttachment}>
+                {uploadingAttachment ? "Uploading..." : "Upload"}
               </Button>
             </DialogFooter>
           </form>

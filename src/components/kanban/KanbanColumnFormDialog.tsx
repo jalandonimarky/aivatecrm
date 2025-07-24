@@ -50,7 +50,7 @@ export function KanbanColumnFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit Column" : "Add New Column"}</DialogTitle>
         </DialogHeader>
@@ -62,7 +62,6 @@ export function KanbanColumnFormDialog({
               value={columnName}
               onChange={(e) => setColumnName(e.target.value)}
               required
-              className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
           <DialogFooter>

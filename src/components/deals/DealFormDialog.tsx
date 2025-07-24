@@ -114,7 +114,7 @@ export function DealFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Edit Deal" : "Add New Deal"}
@@ -129,7 +129,6 @@ export function DealFormDialog({
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 required
-                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
             <div className="space-y-2">
@@ -140,7 +139,6 @@ export function DealFormDialog({
                 value={formData.value}
                 onChange={(e) => setFormData(prev => ({ ...prev, value: Number(e.target.value) }))}
                 required
-                className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
           </div>
@@ -152,7 +150,6 @@ export function DealFormDialog({
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={3}
-              className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
 
@@ -164,7 +161,7 @@ export function DealFormDialog({
                 onValueChange={(value) => setFormData(prev => ({ ...prev, stage: value as Deal['stage'] }))}
                 required
               >
-                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                <SelectTrigger>
                   <SelectValue placeholder="Select a stage" />
                 </SelectTrigger>
                 <SelectContent>
@@ -182,7 +179,7 @@ export function DealFormDialog({
                 value={formData.tier || "none-tier"}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, tier: value === "none-tier" ? null : value }))}
               >
-                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                <SelectTrigger>
                   <SelectValue placeholder="Select a tier" />
                 </SelectTrigger>
                 <SelectContent>
@@ -204,7 +201,7 @@ export function DealFormDialog({
                 value={formData.contact_id}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, contact_id: value }))}
               >
-                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                <SelectTrigger>
                   <SelectValue placeholder="Select a contact" />
                 </SelectTrigger>
                 <SelectContent>
@@ -223,7 +220,7 @@ export function DealFormDialog({
                 value={formData.assigned_to}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value }))}
               >
-                <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                <SelectTrigger>
                   <SelectValue placeholder="Select a user" />
                 </SelectTrigger>
                 <SelectContent>
@@ -245,7 +242,7 @@ export function DealFormDialog({
                 <Button
                   variant={"outline"}
                   className={cn(
-                    "w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                    "w-full justify-start text-left font-normal",
                     !formData.expected_close_date && "text-muted-foreground"
                   )}
                 >

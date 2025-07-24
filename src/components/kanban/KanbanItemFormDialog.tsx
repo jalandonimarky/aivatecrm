@@ -92,7 +92,7 @@ export function KanbanItemFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit Item" : "Add New Item"}</DialogTitle>
         </DialogHeader>
@@ -107,7 +107,6 @@ export function KanbanItemFormDialog({
                   value={formData.title || ""}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   required
-                  className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
               <div className="space-y-2">
@@ -117,7 +116,6 @@ export function KanbanItemFormDialog({
                   value={formData.description || ""}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   rows={3}
-                  className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
 
@@ -128,9 +126,7 @@ export function KanbanItemFormDialog({
                     value={formData.priority_level || "none"}
                     onValueChange={(value) => handleInputChange('priority_level', value === "none" ? undefined : value)}
                   >
-                    <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                      <SelectValue placeholder="Select priority" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
                       {priorityLevels.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
@@ -143,9 +139,7 @@ export function KanbanItemFormDialog({
                     value={formData.category || "none"}
                     onValueChange={(value) => handleInputChange('category', value === "none" ? undefined : value)}
                   >
-                    <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
                       {itemCategories.map(cat => <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>)}
@@ -160,9 +154,7 @@ export function KanbanItemFormDialog({
                   value={formData.assigned_to || "unassigned"}
                   onValueChange={(value) => handleInputChange('assigned_to', value)}
                 >
-                  <SelectTrigger className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                    <SelectValue placeholder="Select a user" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select a user" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">None</SelectItem>
                     {profiles.map(profile => <SelectItem key={profile.id} value={profile.id}>{getFullName(profile)}</SelectItem>)}
@@ -175,7 +167,7 @@ export function KanbanItemFormDialog({
                   <Label htmlFor="item-due-date">Due Date</Label>
                   <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0", !formData.due_date && "text-muted-foreground")}>
+                      <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !formData.due_date && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {formData.due_date ? format(new Date(formData.due_date), "PPP") : <span>Pick a date</span>}
                       </Button>
@@ -187,7 +179,7 @@ export function KanbanItemFormDialog({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="item-event-time">Time</Label>
-                  <Input id="item-event-time" type="time" value={formData.event_time || ""} onChange={(e) => handleInputChange('event_time', e.target.value)} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" />
+                  <Input id="item-event-time" type="time" value={formData.event_time || ""} onChange={(e) => handleInputChange('event_time', e.target.value)} />
                 </div>
               </div>
             </div>

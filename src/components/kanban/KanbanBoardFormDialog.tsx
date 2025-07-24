@@ -42,7 +42,7 @@ export function KanbanBoardFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit Board" : "Create New Board"}</DialogTitle>
         </DialogHeader>
@@ -54,7 +54,6 @@ export function KanbanBoardFormDialog({
               value={boardName}
               onChange={(e) => setBoardName(e.target.value)}
               required
-              className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
           <DialogFooter>
