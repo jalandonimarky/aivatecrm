@@ -477,6 +477,7 @@ export type Database = {
           id: string
           role: string
           updated_at: string
+          country_region: string | null // Added country_region
         }
         Insert: {
           avatar_url?: string | null
@@ -487,6 +488,7 @@ export type Database = {
           id?: string
           role?: string
           updated_at?: string
+          country_region?: string | null // Added country_region
         }
         Update: {
           avatar_url?: string | null
@@ -497,6 +499,7 @@ export type Database = {
           id?: string
           role?: string
           updated_at?: string
+          country_region?: string | null // Added country_region
         }
         Relationships: [
           {

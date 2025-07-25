@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ModeToggle } from "@/components/theme/ModeToggle";
-import { UserProfileCard } from "@/components/UserProfileCard";
+import { UserProfileCard } from "@/components/UserProfileCard"; // Keep for avatar display
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar components directly
 import type { Profile } from "@/types/crm";
 import { Trash2, UploadCloud, Image as ImageIcon } from "lucide-react";
 
@@ -20,6 +21,7 @@ const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email address").min(1, "Email is required"),
+  countryRegion: z.string().optional(), // New field
 });
 
 // Zod schema for password updates
@@ -46,6 +48,7 @@ export function Settings() {
       firstName: "",
       lastName: "",
       email: "",
+      countryRegion: "", // Initialize new field
     },
   });
 
@@ -74,7 +77,7 @@ export function Settings() {
     if (user) {
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
+        .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at, country_region") // Select new column
         .eq("id", user.id)
         .maybeSingle();
 
@@ -90,6 +93,7 @@ export function Settings() {
           firstName: profileData.first_name || "",
           lastName: profileData.last_name || "",
           email: profileData.email,
+          countryRegion: profileData.country_region || "", // Set new field
         });
       } else {
         const { data: newProfileData, error: createProfileError } = await supabase
@@ -99,8 +103,9 @@ export function Settings() {
             email: user.email || "",
             first_name: user.user_metadata?.first_name || "",
             last_name: user.user_metadata?.last_name || "",
+            country_region: "", // Default for new profile
           })
-          .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
+          .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at, country_region") // Select new column
           .single();
 
         if (createProfileError) {
@@ -115,6 +120,7 @@ export function Settings() {
             firstName: newProfileData.first_name || "",
             lastName: newProfileData.last_name || "",
             email: newProfileData.email,
+            countryRegion: newProfileData.country_region || "", // Set new field
           });
           toast({
             title: "Profile Created",
@@ -150,7 +156,12 @@ export function Settings() {
 
       const { error: profileUpdateError } = await supabase
         .from("profiles")
-        .update({ first_name: values.firstName, last_name: values.lastName, email: values.email })
+        .update({ 
+          first_name: values.firstName, 
+          last_name: values.lastName, 
+          email: values.email,
+          country_region: values.countryRegion, // Update new field
+        })
         .eq("id", user.id);
 
       if (profileUpdateError) throw profileUpdateError;
@@ -325,9 +336,13 @@ export function Settings() {
         <Skeleton className="h-24 w-full mb-6" />
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Profile Settings</CardTitle>
+            <CardTitle className="text-lg font-semibold">Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <Skeleton className="h-10 w-32" />
+            </div>
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
@@ -352,23 +367,11 @@ export function Settings() {
             <Skeleton className="h-10 w-full" />
           </CardContent>
         </Card>
-        {/* Skeleton for Avatar Settings */}
-        <Card className="bg-gradient-card border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Avatar Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <Skeleton className="h-10 w-full" />
-            <div className="flex space-x-2">
-              <Skeleton className="h-10 w-24" />
-              <Skeleton className="h-10 w-24" />
-            </div>
-          </CardContent>
-        </Card>
       </div>
     );
   }
+
+  const initials = `${userProfile?.first_name?.charAt(0) || ''}${userProfile?.last_name?.charAt(0) || ''}`.toUpperCase();
 
   return (
     <div className="space-y-6">
@@ -376,35 +379,102 @@ export function Settings() {
         Settings
       </h1>
 
-      {/* Profile Settings Card */}
+      {/* Combined Profile Card */}
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Profile Settings</CardTitle>
+          <CardTitle className="text-lg font-semibold">Profile</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" {...profileForm.register("firstName")} />
-                {profileForm.formState.errors.firstName && (
-                  <p className="text-destructive text-sm">{profileForm.formState.errors.firstName.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" {...profileForm.register("lastName")} />
-                {profileForm.formState.errors.lastName && (
-                  <p className="text-destructive text-sm">{profileForm.formState.errors.lastName.message}</p>
-                )}
+          <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)} className="space-y-6">
+            {/* Profile Picture Section */}
+            <div className="space-y-2">
+              <Label className="text-base">Profile Picture</Label>
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-16 h-16 border border-border">
+                  {userProfile?.avatar_url ? (
+                    <AvatarImage src={userProfile.avatar_url} alt={`${userProfile.first_name} ${userProfile.last_name}'s avatar`} />
+                  ) : (
+                    <AvatarFallback className="bg-muted text-muted-foreground text-xl font-semibold">
+                      {initials}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+                  <Input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarFileChange}
+                    disabled={uploadingAvatar}
+                    ref={fileInputRef}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="flex-1 bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+                  >
+                    <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change Image" : "Choose Image"}
+                  </Button>
+                  {avatarFile && (
+                    <span className="text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">
+                      {avatarFile.name}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRemoveAvatar}
+                    disabled={uploadingAvatar || !userProfile?.avatar_url}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Remove
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleUploadAvatar}
+                    disabled={uploadingAvatar || !avatarFile}
+                    className="bg-gradient-primary"
+                  >
+                    {uploadingAvatar ? "Uploading..." : <><UploadCloud className="w-4 h-4 mr-2" /> Upload</>}
+                  </Button>
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...profileForm.register("email")} />
-              {profileForm.formState.errors.email && (
-                <p className="text-destructive text-sm">{profileForm.formState.errors.email.message}</p>
-              )}
+
+            <Separator />
+
+            {/* Profile Information Form */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input id="firstName" {...profileForm.register("firstName")} />
+                  {profileForm.formState.errors.firstName && (
+                    <p className="text-destructive text-sm">{profileForm.formState.errors.firstName.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input id="lastName" {...profileForm.register("lastName")} />
+                  {profileForm.formState.errors.lastName && (
+                    <p className="text-destructive text-sm">{profileForm.formState.errors.lastName.message}</p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Contact Email</Label>
+                <Input id="email" type="email" {...profileForm.register("email")} />
+                {profileForm.formState.errors.email && (
+                  <p className="text-destructive text-sm">{profileForm.formState.errors.email.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="countryRegion">Country/Region</Label>
+                <Input id="countryRegion" {...profileForm.register("countryRegion")} placeholder="e.g., United States" />
+                {/* Note: For a full dropdown with country data, additional implementation would be needed. */}
+              </div>
             </div>
             <div className="flex justify-end">
               <Button type="submit" className="bg-gradient-primary" disabled={loading}>
@@ -412,69 +482,6 @@ export function Settings() {
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
-
-      <Separator className="my-6" />
-
-      {/* Avatar Settings Card */}
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Avatar Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {userProfile && (
-            <div className="flex items-center space-x-4">
-              <UserProfileCard profile={userProfile} />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="avatar-upload">Upload New Avatar</Label>
-            <div className="flex items-center space-x-2">
-              <Input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarFileChange}
-                disabled={uploadingAvatar}
-                ref={fileInputRef}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className="flex-1 bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-              >
-                <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change File" : "Choose File"}
-              </Button>
-              {avatarFile && (
-                <span className="text-sm text-muted-foreground truncate max-w-[150px]">
-                  {avatarFile.name}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleRemoveAvatar}
-              disabled={uploadingAvatar || !userProfile?.avatar_url}
-              className="text-destructive"
-            >
-              <Trash2 className="w-4 h-4 mr-2" /> Remove
-            </Button>
-            <Button
-              type="button"
-              onClick={handleUploadAvatar}
-              disabled={uploadingAvatar || !avatarFile}
-              className="bg-gradient-primary"
-            >
-              {uploadingAvatar ? "Uploading..." : <><UploadCloud className="w-4 h-4 mr-2" /> Upload</>}
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
