@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"; // Import useRef
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ModeToggle } from "@/components/theme/ModeToggle";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import type { Profile } from "@/types/crm";
-import { Trash2, UploadCloud, Image as ImageIcon } from "lucide-react"; // Import ImageIcon
+import { Trash2, UploadCloud, Image as ImageIcon } from "lucide-react";
 
 // Zod schema for profile updates
 const profileSchema = z.object({
@@ -38,7 +38,7 @@ export function Settings() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null); // Create a ref for the file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -423,35 +423,38 @@ export function Settings() {
           <CardTitle className="text-lg font-semibold">Avatar Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4">
-            {userProfile && <UserProfileCard profile={userProfile} />}
-            <div>
-              <p className="text-sm text-muted-foreground">Current Avatar</p>
-              {avatarFile && (
-                <p className="text-xs text-muted-foreground mt-1">Selected: {avatarFile.name}</p>
-              )}
+          {userProfile && (
+            <div className="flex items-center space-x-4">
+              <UserProfileCard profile={userProfile} />
             </div>
-          </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="avatar-upload">Upload New Avatar</Label>
-            <Input
-              id="avatar-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarFileChange}
-              disabled={uploadingAvatar}
-              ref={fileInputRef} // Attach the ref
-              className="hidden" // Hide the default input
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()} // Trigger click on hidden input
-              disabled={uploadingAvatar}
-              className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-            >
-              <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change Selected File" : "Choose File"}
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarFileChange}
+                disabled={uploadingAvatar}
+                ref={fileInputRef}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="flex-1 bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+              >
+                <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change File" : "Choose File"}
+              </Button>
+              {avatarFile && (
+                <span className="text-sm text-muted-foreground truncate max-w-[150px]">
+                  {avatarFile.name}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex justify-end space-x-2">
             <Button
@@ -461,7 +464,7 @@ export function Settings() {
               disabled={uploadingAvatar || !userProfile?.avatar_url}
               className="text-destructive"
             >
-              <Trash2 className="w-4 h-4 mr-2" /> Remove Avatar
+              <Trash2 className="w-4 h-4 mr-2" /> Remove
             </Button>
             <Button
               type="button"
@@ -469,7 +472,7 @@ export function Settings() {
               disabled={uploadingAvatar || !avatarFile}
               className="bg-gradient-primary"
             >
-              {uploadingAvatar ? "Uploading..." : <><UploadCloud className="w-4 h-4 mr-2" /> Upload Avatar</>}
+              {uploadingAvatar ? "Uploading..." : <><UploadCloud className="w-4 h-4 mr-2" /> Upload</>}
             </Button>
           </div>
         </CardContent>
