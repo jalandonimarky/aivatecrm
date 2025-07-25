@@ -416,11 +416,7 @@ export function Settings() {
                 >
                   <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change Image" : "Choose Image"}
                 </Button>
-                {avatarFile && (
-                  <span className="text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">
-                    {avatarFile.name}
-                  </span>
-                )}
+                {/* Removed conditional span for avatarFile.name */}
                 <Button
                   type="button"
                   variant="outline"
