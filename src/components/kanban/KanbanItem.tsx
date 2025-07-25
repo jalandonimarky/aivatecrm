@@ -10,6 +10,7 @@ import { format, parse, parseISO, formatDistanceToNowStrict } from "date-fns"; /
 import { cn } from "@/lib/utils";
 import type { KanbanItem as KanbanItemType } from "@/types/crm";
 import { KanbanPriorityBadge } from "./KanbanPriorityBadge";
+import { KanbanStatusBadge } from "./KanbanStatusBadge"; // Import new badge
 import { useNavigate } from "react-router-dom";
 
 interface KanbanItemProps {
@@ -80,6 +81,9 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {item.priority_level && (
                   <KanbanPriorityBadge priority={item.priority_level} />
+                )}
+                {item.status && ( // Display new status badge
+                  <KanbanStatusBadge status={item.status} />
                 )}
                 {item.category && (
                   <Badge variant="secondary" className="text-xs px-2 py-0.5">

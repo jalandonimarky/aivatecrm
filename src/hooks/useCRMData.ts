@@ -1290,6 +1290,7 @@ export function useCRMData() {
           created_by: creatorProfileId,
           assigned_to: itemData.assigned_to === "unassigned" ? null : itemData.assigned_to,
           due_date: itemData.due_date ? format(new Date(itemData.due_date), "yyyy-MM-dd") : null,
+          status: itemData.status || 'new', // Ensure status is set on creation
         }])
         .select(`
           *,
@@ -1320,6 +1321,7 @@ export function useCRMData() {
         description: updates.description || null,
         category: updates.category || null,
         priority_level: updates.priority_level || null,
+        status: updates.status || null, // Ensure status is handled
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
         due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
         event_time: updates.event_time || null,

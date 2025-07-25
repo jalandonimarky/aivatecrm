@@ -48,6 +48,12 @@ export function KanbanItemFormDialog({
     { value: "p3", label: "P3 - Low" },
   ];
 
+  const statusOptions: { value: KanbanItem['status'], label: string }[] = [
+    { value: "new", label: "New" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "closed", label: "Closed" },
+  ];
+
   useEffect(() => {
     if (isOpen) {
       const initialCategory = initialData?.category;
@@ -62,6 +68,7 @@ export function KanbanItemFormDialog({
         description: initialData?.description || "",
         category: initialData?.category || undefined,
         priority_level: initialData?.priority_level || undefined,
+        status: initialData?.status || "new", // Initialize status
         assigned_to: initialData?.assigned_to || "unassigned",
         due_date: initialData?.due_date,
         event_time: initialData?.event_time || undefined,
@@ -95,6 +102,7 @@ export function KanbanItemFormDialog({
         column_id: columnId,
         assigned_to: formData.assigned_to === "unassigned" ? null : formData.assigned_to,
         due_date: formData.due_date ? format(new Date(formData.due_date), "yyyy-MM-dd") : null,
+        status: formData.status || "new", // Ensure status is always set
       };
       await onSubmit(submissionData);
       onOpenChange(false);
@@ -173,6 +181,19 @@ export function KanbanItemFormDialog({
                   />
                 </div>
               )}
+
+              <div className="space-y-2">
+                <Label htmlFor="item-status">Status</Label>
+                <Select
+                  value={formData.status || "new"}
+                  onValueChange={(value) => handleInputChange('status', value as KanbanItem['status'])}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="item-assigned-to">Assigned To</Label>

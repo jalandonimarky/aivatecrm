@@ -115,6 +115,7 @@ export interface KanbanItem {
   creator?: Profile; // To store the profile of the item creator
   category?: string; // Changed to string to allow custom categories
   priority_level?: 'p0' | 'p1' | 'p2' | 'p3'; // New: Priority level
+  status?: 'new' | 'in_progress' | 'closed'; // New: Status for Kanban items
   assigned_to?: string; // New: Assigned user ID
   assigned_user?: Profile; // New: Assigned user profile
   due_date?: string; // New: Due date for the item

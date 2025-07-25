@@ -293,6 +293,7 @@ export type Database = {
           event_time: string | null
           category: string | null
           priority_level: string | null
+          status: string | null // Added status
           client_category: string | null
           tenant_contact_full_name: string | null
           tenant_contact_phone: string | null
@@ -317,6 +318,7 @@ export type Database = {
           event_time?: string | null
           category?: string | null
           priority_level?: string | null
+          status?: string | null // Added status
           client_category?: string | null
           tenant_contact_full_name?: string | null
           tenant_contact_phone?: string | null
@@ -341,6 +343,7 @@ export type Database = {
           event_time?: string | null
           category?: string | null
           priority_level?: string | null
+          status?: string | null // Added status
           client_category?: string | null
           tenant_contact_full_name?: string | null
           tenant_contact_phone?: string | null
