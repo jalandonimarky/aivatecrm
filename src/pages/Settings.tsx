@@ -207,7 +207,7 @@ export function Settings() {
       toast({
         title: "No file selected",
         description: "Please select an image to upload.",
-        variant: "warning",
+        variant: "default", // Changed from 'warning'
       });
       return;
     }
@@ -269,7 +269,7 @@ export function Settings() {
       toast({
         title: "No avatar to remove",
         description: "You don't have a profile picture set.",
-        variant: "info",
+        variant: "default", // Changed from 'info'
       });
       return;
     }
