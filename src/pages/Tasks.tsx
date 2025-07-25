@@ -175,7 +175,7 @@ export function Tasks() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-accent">
+          <h1 className="text-3xl font-bold text-accent dark:text-primary">
             Tasks
           </h1>
           <p className="text-muted-foreground">
@@ -505,7 +505,7 @@ export function Tasks() {
                 {filteredTasks.map((task) => (
                   <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
                     <TableCell className="font-medium">
-                      <NavLink to={`/tasks/${task.id}`} className="text-accent hover:underline">
+                      <NavLink to={`/tasks/${task.id}`} className="text-foreground font-medium hover:underline">
                         {task.title}
                       </NavLink>
                     </TableCell>

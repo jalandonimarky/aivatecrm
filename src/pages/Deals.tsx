@@ -111,7 +111,7 @@ export function Deals() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-accent">
+          <h1 className="text-3xl font-bold text-accent dark:text-primary">
             Deals
           </h1>
           <p className="text-muted-foreground">
@@ -213,7 +213,7 @@ export function Deals() {
                 {filteredDeals.map((deal) => (
                   <TableRow key={deal.id} className="hover:bg-muted/50 transition-smooth">
                     <TableCell className="font-medium">
-                      <NavLink to={`/deals/${deal.id}`} className="text-accent hover:underline">
+                      <NavLink to={`/deals/${deal.id}`} className="text-foreground font-medium hover:underline">
                         {deal.title}
                       </NavLink>
                     </TableCell>
