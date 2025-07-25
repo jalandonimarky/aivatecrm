@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, LayoutDashboard } from "lucide-react";
+import { Plus, ArrowLeft, LayoutDashboard, Search, Filter } from "lucide-react"; // Import Search and Filter icons
+import { Input } from "@/components/ui/input"; // Import Input
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
@@ -41,6 +43,10 @@ export function Kanban() {
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOwner, setSelectedOwner] = useState("all");
+
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -63,6 +69,13 @@ export function Kanban() {
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<KanbanItem | null>(null);
   const [currentColumnIdForItem, setCurrentColumnIdForItem] = useState<string | null>(null);
+
+  // Filtered boards based on search and owner
+  const filteredBoards = kanbanBoards.filter(board => {
+    const matchesSearch = board.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesOwner = selectedOwner === "all" || board.created_by === selectedOwner;
+    return matchesSearch && matchesOwner;
+  });
 
   // Handlers for Board operations
   const handleCreateBoard = async (data: { name: string, background_color: string | null }) => {
@@ -186,6 +199,11 @@ export function Kanban() {
     await reorderKanbanColumns(boardId, columnIds);
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedOwner("all");
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -279,13 +297,48 @@ export function Kanban() {
         </Button>
       </div>
 
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="relative flex-1 w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            placeholder="Search boards..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Owner" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Owners</SelectItem>
+            {profiles.map(profile => (
+              <SelectItem key={profile.id} value={profile.id}>
+                {getFullName(profile)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {(searchTerm !== "" || selectedOwner !== "all") && (
+          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+            <Filter className="w-4 h-4 mr-2" /> Clear Filters
+          </Button>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {kanbanBoards.length === 0 ? (
+        {filteredBoards.length === 0 ? (
           <p className="text-muted-foreground col-span-full text-center py-8">
-            No Kanban boards yet. Create your first board to get started!
+            {searchTerm || selectedOwner !== "all"
+              ? "No Kanban boards found matching your filters."
+              : "No Kanban boards yet. Create your first board to get started!"}
           </p>
         ) : (
-          kanbanBoards.map(board => (
+          filteredBoards.map(board => (
             <KanbanBoardCard
               key={board.id}
               board={board}
