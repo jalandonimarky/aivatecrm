@@ -36,7 +36,7 @@ export function RevenueChart({ paidDeals, cancelledDeals, pipelineValue }: Reven
   return (
     <Card className="bg-gradient-card border-border/50">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-accent">
+        <CardTitle className="text-lg font-semibold">
           Revenue Overview
         </CardTitle>
       </CardHeader>
