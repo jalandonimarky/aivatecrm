@@ -19,7 +19,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-        cloud: ['"Comfortaa"', 'sans-serif'],
+        cloud: ['Verdana', 'sans-serif'],
       },
 			colors: {
 				border: 'hsl(var(--border))',
