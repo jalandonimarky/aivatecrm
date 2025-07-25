@@ -175,7 +175,7 @@ export function Tasks() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Tasks
           </h1>
           <p className="text-muted-foreground">
