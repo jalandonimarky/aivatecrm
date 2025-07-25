@@ -75,7 +75,7 @@ export function AppSidebar() {
 
   const getNavClasses = (active: boolean) =>
     active 
-      ? "bg-gradient-primary text-primary-foreground font-medium shadow-glow" 
+      ? "bg-accent text-accent-foreground font-medium shadow-glow" // Changed to bg-accent and text-accent-foreground
       : "hover:bg-sidebar-accent hover:text-sidebar-foreground transition-smooth"; // Changed hover styles
 
   const handleLogoClick = () => {
