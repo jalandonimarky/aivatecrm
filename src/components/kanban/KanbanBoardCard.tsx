@@ -40,7 +40,7 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChan
         <CardTitle 
           className={cn(
             "text-lg font-semibold flex-1 min-w-0 pr-2 break-words",
-            isDarkThemeWithCustomBg ? "text-white/90" : "text-accent"
+            isDarkThemeWithCustomBg ? "text-white/90" : "text-accent dark:text-primary"
           )} 
           onClick={() => onSelect(board.id)}
         >

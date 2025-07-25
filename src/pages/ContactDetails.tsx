@@ -228,7 +228,7 @@ export function ContactDetails() {
                   relatedDeals.map((deal: Deal) => (
                     <TableRow key={deal.id} className="hover:bg-muted/50 transition-smooth">
                       <TableCell className="font-medium">
-                        <NavLink to={`/deals/${deal.id}`} className="text-accent hover:underline">
+                        <NavLink to={`/deals/${deal.id}`} className="text-accent dark:text-primary hover:underline">
                           {deal.title}
                         </NavLink>
                       </TableCell>
@@ -275,7 +275,7 @@ export function ContactDetails() {
                   relatedTasks.map((task: Task) => (
                     <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
                       <TableCell className="font-medium">
-                        <NavLink to={`/tasks/${task.id}`} className="text-accent hover:underline">
+                        <NavLink to={`/tasks/${task.id}`} className="text-accent dark:text-primary hover:underline">
                           {task.title}
                         </NavLink>
                       </TableCell>

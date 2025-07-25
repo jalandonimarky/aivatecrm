@@ -90,7 +90,7 @@ export function DealDetails() {
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Fixed: Initialize with null
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
@@ -538,7 +538,7 @@ export function DealDetails() {
                           href={attachment.file_url} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="text-accent hover:underline"
+                          className="text-accent dark:text-primary hover:underline"
                         >
                           {attachment.file_name}
                         </a>
@@ -747,7 +747,7 @@ export function DealDetails() {
                   relatedTasks.map((task) => (
                     <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
                       <TableCell className="font-medium">
-                        <NavLink to={`/tasks/${task.id}`} className="text-accent hover:underline">
+                        <NavLink to={`/tasks/${task.id}`} className="text-accent dark:text-primary hover:underline">
                           {task.title}
                         </NavLink>
                       </TableCell>
