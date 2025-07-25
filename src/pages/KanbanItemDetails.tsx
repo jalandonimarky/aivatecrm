@@ -93,8 +93,8 @@ export function KanbanItemDetails() {
     priority: "medium",
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
-    related_deal_id: "unassigned",
-    related_kanban_item_id: id || "unassigned",
+    related_deal_id: id || "unassigned",
+    related_kanban_item_id: "unassigned",
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -207,8 +207,8 @@ export function KanbanItemDetails() {
       priority: "medium",
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
-      related_deal_id: "unassigned",
-      related_kanban_item_id: id || "unassigned",
+      related_deal_id: id || "unassigned",
+      related_kanban_item_id: "unassigned",
       due_date: undefined,
     });
     setEditingTask(null);
@@ -228,7 +228,7 @@ export function KanbanItemDetails() {
       priority: task.priority,
       assigned_to: task.assigned_to || "unassigned",
       related_contact_id: task.related_contact_id || "unassigned",
-      related_deal_id: task.related_deal_id || "unassigned",
+      related_deal_id: task.related_deal_id || id || "unassigned",
       related_kanban_item_id: task.related_kanban_item_id || id || "unassigned",
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
@@ -583,7 +583,11 @@ export function KanbanItemDetails() {
               ) : (
                 relatedTasks.map((task) => (
                   <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                    <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="text-accent hover:underline">{task.title}</NavLink></TableCell>
+                    <TableCell className="font-bold">
+                      <NavLink to={`/tasks/${task.id}`} className="text-foreground hover:underline">
+                        {task.title}
+                      </NavLink>
+                    </TableCell>
                     <TableCell><TaskStatusBadge status={task.status} /></TableCell>
                     <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
                     <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
