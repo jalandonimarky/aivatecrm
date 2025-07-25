@@ -39,7 +39,7 @@ export function KanbanItemFormDialog({
   const [loading, setLoading] = useState(false);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
 
-  const predefinedCategories = ["Real Estate", "Tech Solutions"];
+  const predefinedCategories = ["Real Estate", "Tech Solutions", "Creative Design"];
 
   const priorityLevels: { value: KanbanItem['priority_level'], label: string }[] = [
     { value: "p0", label: "P0 - Urgent" },
