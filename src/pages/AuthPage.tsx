@@ -140,7 +140,7 @@ export function AuthPage() {
             {isLogin ? (
               <>
                 Don't have an account?{" "}
-                <Button variant="link" onClick={() => setIsLogin(false)} className="p-0 h-auto text-primary">
+                <Button variant="link" onClick={() => setIsLogin(false)} className="p-0 h-auto bg-gradient-primary bg-clip-text text-transparent">
                   Sign Up
                 </Button>
               </>
