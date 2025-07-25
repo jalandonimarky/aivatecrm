@@ -33,7 +33,7 @@ const mainNavItems = [
   { title: "Contacts", url: "/contacts", icon: Users },
   { title: "Deals", url: "/deals", icon: Briefcase },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Reporting", url: "/analytics", icon: BarChart3 }, // Changed from Analytics to Reporting
 ];
 
 export function AppSidebar() {
