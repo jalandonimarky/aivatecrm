@@ -11,10 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ModeToggle } from "@/components/theme/ModeToggle";
-import { UserProfileCard } from "@/components/UserProfileCard"; // Keep for avatar display
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar components directly
+import { UserProfileCard } from "@/components/UserProfileCard";
 import type { Profile } from "@/types/crm";
 import { Trash2, UploadCloud, Image as ImageIcon } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar components directly
 
 // Zod schema for profile updates
 const profileSchema = z.object({
@@ -387,59 +387,57 @@ export function Settings() {
         <CardContent>
           <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)} className="space-y-6">
             {/* Profile Picture Section */}
-            <div className="space-y-2">
-              <Label className="text-base">Profile Picture</Label>
-              <div className="flex items-center space-x-4">
-                <Avatar className="w-16 h-16 border border-border">
-                  {userProfile?.avatar_url ? (
-                    <AvatarImage src={userProfile.avatar_url} alt={`${userProfile.first_name} ${userProfile.last_name}'s avatar`} />
-                  ) : (
-                    <AvatarFallback className="bg-muted text-muted-foreground text-xl font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full">
-                  <Input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarFileChange}
-                    disabled={uploadingAvatar}
-                    ref={fileInputRef}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingAvatar}
-                    className="flex-1 bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-                  >
-                    <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change Image" : "Choose Image"}
-                  </Button>
-                  {avatarFile && (
-                    <span className="text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">
-                      {avatarFile.name}
-                    </span>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleRemoveAvatar}
-                    disabled={uploadingAvatar || !userProfile?.avatar_url}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" /> Remove
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleUploadAvatar}
-                    disabled={uploadingAvatar || !avatarFile}
-                    className="bg-gradient-primary"
-                  >
-                    {uploadingAvatar ? "Uploading..." : <><UploadCloud className="w-4 h-4 mr-2" /> Upload</>}
-                  </Button>
-                </div>
+            <div className="flex flex-col items-center space-y-2"> {/* Added flex-col and items-center */}
+              <Avatar className="w-24 h-24 border border-border"> {/* Increased size */}
+                {userProfile?.avatar_url ? (
+                  <AvatarImage src={userProfile.avatar_url} alt={`${userProfile.first_name} ${userProfile.last_name}'s avatar`} />
+                ) : (
+                  <AvatarFallback className="bg-muted text-muted-foreground text-4xl font-semibold"> {/* Adjusted text size */}
+                    {initials}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <Label className="text-base">Profile Picture</Label> {/* Moved label here */}
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full justify-center"> {/* Centered buttons */}
+                <Input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarFileChange}
+                  disabled={uploadingAvatar}
+                  ref={fileInputRef}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="flex-1 bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+                >
+                  <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change Image" : "Choose Image"}
+                </Button>
+                {avatarFile && (
+                  <span className="text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">
+                    {avatarFile.name}
+                  </span>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleRemoveAvatar}
+                  disabled={uploadingAvatar || !userProfile?.avatar_url}
+                  className="text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Remove
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleUploadAvatar}
+                  disabled={uploadingAvatar || !avatarFile}
+                  className="bg-gradient-primary"
+                >
+                  {uploadingAvatar ? "Uploading..." : <><UploadCloud className="w-4 h-4 mr-2" /> Upload</>}
+                </Button>
               </div>
             </div>
 
