@@ -34,13 +34,12 @@ import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
-import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog";
+import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog"; // Import new dialog
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { CollapsibleCard } from "@/components/CollapsibleCard";
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Import Avatar and AvatarFallback
 
 interface TaskFormData {
   title: string;
@@ -78,7 +77,7 @@ export function KanbanItemDetails() {
 
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
   const [isTenantInfoDialogOpen, setIsTenantInfoDialogOpen] = useState(false);
-  const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false);
+  const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false); // New state for housing dialog
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
@@ -520,48 +519,26 @@ export function KanbanItemDetails() {
         <div className="space-y-4">
           {sortedNotes.length === 0 && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
           {sortedNotes.map((note: KanbanItemNote) => (
-            <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex items-start space-x-4">
-              {/* Left side: User info and timestamp */}
-              <div className="flex-shrink-0 w-48">
-                {note.creator ? (
-                  <>
+            <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
+              <div>
+                <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                <div className="mt-1">
+                  {note.creator ? (
                     <UserProfileCard profile={note.creator} />
-                    <p className="text-xs text-muted-foreground mt-1 ml-10">
-                      {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                    </p>
-                  </>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <Avatar className="w-8 h-8 border border-border">
-                      <AvatarFallback className="bg-muted text-muted-foreground text-sm font-semibold">
-                        UN
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="text-sm font-medium text-foreground">Unknown User</h3>
-                      <p className="text-xs text-muted-foreground">
-                        {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Unknown on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}</p>
+                  )}
+                </div>
               </div>
-
-              {/* Right side: Note content and dropdown */}
-              <div className="flex-1 flex justify-between items-start">
-                <p className="text-sm text-foreground whitespace-pre-wrap flex-1 pr-4">
-                  {note.content}
-                </p>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => handleEditNoteClick(note)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDeleteNote(note.id, note.kanban_item_id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleEditNoteClick(note)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDeleteNote(note.id, note.kanban_item_id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ))}
           <div className="mt-4">

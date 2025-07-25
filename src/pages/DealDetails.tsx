@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, NavLink } from "react-router-dom";
+import { useParams, useNavigate, NavLink } from "react-router-dom"; // Import NavLink
 import { useCRMData } from "@/hooks/useCRMData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,6 @@ import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { DealNote, Task, DealAttachment, Deal } from "@/types/crm";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Import Avatar and AvatarFallback
 
 interface TaskFormData {
   title: string;
@@ -50,12 +49,12 @@ interface TaskFormData {
   assigned_to: string;
   related_contact_id: string;
   related_deal_id: string;
-  related_kanban_item_id: string;
+  related_kanban_item_id: string; // New: related_kanban_item_id
   due_date: Date | undefined;
 }
 
 export function DealDetails() {
-  const { deals, contacts, profiles, kanbanItems, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, createDealAttachment, deleteDealAttachment } = useCRMData();
+  const { deals, contacts, profiles, kanbanItems, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, createDealAttachment, deleteDealAttachment } = useCRMData(); // Removed dataHygieneInsights
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -82,10 +81,10 @@ export function DealDetails() {
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: id || "unassigned",
-    related_kanban_item_id: "unassigned",
+    related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
-  const [isTaskCalendarOpen, setIsTaskCalendarOpen] = useState(false);
+  const [isTaskCalendarOpen, setIsTaskCalendarOpen] = useState(false); // Renamed to avoid conflict
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
@@ -93,7 +92,7 @@ export function DealDetails() {
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
-  const [uploadingAttachment, setLoadingAttachment] = useState(false);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
@@ -180,7 +179,7 @@ export function DealDetails() {
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
       related_deal_id: id || "unassigned",
-      related_kanban_item_id: "unassigned",
+      related_kanban_item_id: "unassigned", // Reset new field
       due_date: undefined,
     });
     setEditingTask(null);
@@ -201,7 +200,7 @@ export function DealDetails() {
       assigned_to: task.assigned_to || "unassigned",
       related_contact_id: task.related_contact_id || "unassigned",
       related_deal_id: task.related_deal_id || id || "unassigned",
-      related_kanban_item_id: task.related_kanban_item_id || "unassigned",
+      related_kanban_item_id: task.related_kanban_item_id || "unassigned", // Set new field for editing
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setIsTaskDialogOpen(true);
@@ -218,7 +217,7 @@ export function DealDetails() {
         assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
         related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
         related_deal_id: id,
-        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id,
+        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id, // Handle new field
       };
 
       if (editingTask) {
@@ -325,7 +324,7 @@ export function DealDetails() {
       });
       return;
     }
-    setLoadingAttachment(true);
+    setUploadingAttachment(true);
     try {
       await createDealAttachment(id, selectedFile, attachmentType);
       setSelectedFile(null);
@@ -334,7 +333,7 @@ export function DealDetails() {
     } catch (error) {
       // Error handled in useCRMData hook
     } finally {
-      setLoadingAttachment(false);
+      setUploadingAttachment(false);
     }
   };
 
@@ -594,59 +593,37 @@ export function DealDetails() {
           <CardContent className="space-y-4">
             {businessNotes.length === 0 && <p className="text-muted-foreground text-sm">No business notes yet.</p>}
             {businessNotes.map((note: DealNote) => (
-              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex items-start space-x-4">
-                {/* Left side: User info and timestamp */}
-                <div className="flex-shrink-0 w-48">
-                  {note.creator ? (
-                    <>
+              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-foreground">{note.content}</p>
+                  <div className="mt-1">
+                    {note.creator ? (
                       <UserProfileCard profile={note.creator} />
-                      <p className="text-xs text-muted-foreground mt-1 ml-10">
-                        {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                      </p>
-                    </>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8 border border-border">
-                        <AvatarFallback className="bg-muted text-muted-foreground text-sm font-semibold">
-                          UN
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="text-sm font-medium text-foreground">Unknown User</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Unknown on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}</p>
+                    )}
+                  </div>
                 </div>
-
-                {/* Right side: Note content and dropdown */}
-                <div className="flex-1 flex justify-between items-start">
-                  <p className="text-sm text-foreground whitespace-pre-wrap flex-1 pr-4">
-                    {note.content}
-                  </p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteNote(note.id, note.deal_id)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteNote(note.id, note.deal_id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
             <div className="mt-4">
@@ -682,59 +659,37 @@ export function DealDetails() {
           <CardContent className="space-y-4">
             {developmentNotes.length === 0 && <p className="text-muted-foreground text-sm">No development notes yet.</p>}
             {developmentNotes.map((note: DealNote) => (
-              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex items-start space-x-4">
-                {/* Left side: User info and timestamp */}
-                <div className="flex-shrink-0 w-48">
-                  {note.creator ? (
-                    <>
+              <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-foreground">{note.content}</p>
+                  <div className="mt-1">
+                    {note.creator ? (
                       <UserProfileCard profile={note.creator} />
-                      <p className="text-xs text-muted-foreground mt-1 ml-10">
-                        {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                      </p>
-                    </>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8 border border-border">
-                        <AvatarFallback className="bg-muted text-muted-foreground text-sm font-semibold">
-                          UN
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="text-sm font-medium text-foreground">Unknown User</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Unknown on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}</p>
+                    )}
+                  </div>
                 </div>
-
-                {/* Right side: Note content and dropdown */}
-                <div className="flex-1 flex justify-between items-start">
-                  <p className="text-sm text-foreground whitespace-pre-wrap flex-1 pr-4">
-                    {note.content}
-                  </p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteNote(note.id, note.deal_id)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleEditNoteClick(note)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteNote(note.id, note.deal_id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
             <div className="mt-4">
