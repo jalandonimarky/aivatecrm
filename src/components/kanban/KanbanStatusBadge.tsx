@@ -14,7 +14,7 @@ export function KanbanStatusBadge({ status }: KanbanStatusBadgeProps) {
 
   switch (status) {
     case "new":
-      className = "bg-primary text-primary-foreground border-primary";
+      className = "bg-secondary text-secondary-foreground border-secondary"; // Changed to secondary for a more neutral 'new' state
       text = "New";
       break;
     case "in_progress":
