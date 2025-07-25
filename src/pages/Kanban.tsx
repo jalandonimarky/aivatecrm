@@ -227,7 +227,7 @@ export function Kanban() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex-1 min-w-0 pr-4"> {/* Added flex-1, min-w-0, and pr-4 */}
+        <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Project Management
           </h1>
@@ -236,7 +236,7 @@ export function Kanban() {
           </p>
         </div>
         <Button
-          className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95 flex-shrink-0" {/* Added flex-shrink-0 */}
+          className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
           onClick={() => { setEditingBoard(null); setIsBoardFormDialogOpen(true); }}
         >
           <Plus className="w-4 h-4 mr-2" />
