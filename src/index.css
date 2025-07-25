@@ -106,7 +106,7 @@ All colors MUST be HSL.
     --warning-foreground: 0 0% 100%; /* White - Better contrast on orange */
 
     --border: 229 20% 20%; /* Lighter, more visible border for dark mode */
-    --input: 229 30% 12%; /* Darker input for consistency */
+    --input: 229 30% 15%; /* Adjusted: Slightly lighter input for better visibility */
     --ring: 0 0% 100% / 0; /* Transparent to remove focus ring */
 
     --radius: 0.75rem;
