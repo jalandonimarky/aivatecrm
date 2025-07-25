@@ -261,7 +261,7 @@ export function TaskDetails() {
               <p className="text-sm text-muted-foreground">Related Contact</p>
               <p className="text-lg font-semibold">
                 {task.related_contact ? (
-                  <NavLink to={`/contacts/${task.related_contact.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
+                  <NavLink to={`/contacts/${task.related_contact.id}`} className="text-accent hover:underline">
                     {task.related_contact.name}
                   </NavLink>
                 ) : "N/A"}
@@ -271,7 +271,7 @@ export function TaskDetails() {
               <p className="text-sm text-muted-foreground">Related Deal</p>
               <p className="text-lg font-semibold">
                 {task.related_deal ? (
-                  <NavLink to={`/deals/${task.related_deal.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
+                  <NavLink to={`/deals/${task.related_deal.id}`} className="text-accent hover:underline">
                     {task.related_deal.title}
                   </NavLink>
                 ) : "N/A"}
@@ -282,7 +282,7 @@ export function TaskDetails() {
               <p className="text-sm text-muted-foreground">Related Kanban Item</p>
               <p className="text-lg font-semibold">
                 {task.related_kanban_item ? (
-                  <NavLink to={`/kanban/items/${task.related_kanban_item.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
+                  <NavLink to={`/kanban/items/${task.related_kanban_item.id}`} className="text-accent hover:underline">
                     {task.related_kanban_item.title}
                   </NavLink>
                 ) : "N/A"}
@@ -555,16 +555,16 @@ export function TaskDetails() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select a Kanban item" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">None</SelectItem>
-                  {kanbanItems.map(item => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.title} ({item.column?.name || 'No Column'})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectContent>
+                    <SelectItem value="unassigned">None</SelectItem>
+                    {kanbanItems.map(item => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.title} ({item.column?.name || 'No Column'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
             <DialogFooter>
               <Button

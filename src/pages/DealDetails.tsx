@@ -90,7 +90,7 @@ export function DealDetails() {
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Fixed: Initialize with null
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
@@ -135,7 +135,7 @@ export function DealDetails() {
         setIsAddingDevelopmentNote(false);
       }
     } catch (error) {
-      // Error handled in useCRMData hook
+      // Error handled in the hook
     }
   };
 
@@ -538,7 +538,7 @@ export function DealDetails() {
                           href={attachment.file_url} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="bg-gradient-primary bg-clip-text text-transparent hover:underline"
+                          className="text-accent hover:underline"
                         >
                           {attachment.file_name}
                         </a>
@@ -747,7 +747,7 @@ export function DealDetails() {
                   relatedTasks.map((task) => (
                     <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
                       <TableCell className="font-medium">
-                        <NavLink to={`/tasks/${task.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
+                        <NavLink to={`/tasks/${task.id}`} className="text-accent hover:underline">
                           {task.title}
                         </NavLink>
                       </TableCell>

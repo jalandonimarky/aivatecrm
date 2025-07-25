@@ -27,9 +27,11 @@ export function KanbanColumn({
   const sortedItems = [...(column.items || [])].sort((a, b) => a.order_index - b.order_index);
 
   const backgroundColor = getKanbanColor(column.background_color, theme);
-  const cardStyle = backgroundColor ? { backgroundImage: backgroundColor } : {};
   const hasCustomBg = !!backgroundColor;
   const isDarkThemeWithCustomBg = hasCustomBg && theme === 'dark';
+
+  const cardStyle = backgroundColor ? { backgroundImage: backgroundColor } : {};
+  
 
   return (
     <Card 
@@ -43,7 +45,7 @@ export function KanbanColumn({
         <div className="flex items-center justify-between">
           <CardTitle className={cn(
             "text-lg font-semibold flex-1 min-w-0 pr-2 break-words",
-            isDarkThemeWithCustomBg && "text-white/90"
+            isDarkThemeWithCustomBg ? "text-white/90" : "text-accent"
           )}>
             {column.name}
           </CardTitle>

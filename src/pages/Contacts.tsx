@@ -95,7 +95,7 @@ export function Contacts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-accent">
             Contacts
           </h1>
           <p className="text-muted-foreground">
@@ -231,7 +231,7 @@ export function Contacts() {
                 {filteredContacts.map((contact) => (
                   <TableRow key={contact.id} className="hover:bg-muted/50 transition-smooth">
                     <TableCell className="font-medium">
-                      <NavLink to={`/contacts/${contact.id}`} className="bg-gradient-primary bg-clip-text text-transparent hover:underline">
+                      <NavLink to={`/contacts/${contact.id}`} className="text-accent hover:underline">
                         {contact.name}
                       </NavLink>
                     </TableCell>

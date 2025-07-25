@@ -21,6 +21,8 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChan
   const { theme } = useTheme();
 
   const backgroundColor = getKanbanColor(board.background_color, theme);
+  const hasCustomBg = !!backgroundColor;
+  const isDarkThemeWithCustomBg = hasCustomBg && theme === 'dark';
   
   const cardStyle = backgroundColor
     ? { backgroundImage: backgroundColor }
@@ -38,7 +40,7 @@ export function KanbanBoardCard({ board, onSelect, onEdit, onDelete, onColorChan
         <CardTitle 
           className={cn(
             "text-lg font-semibold flex-1 min-w-0 pr-2 break-words",
-            backgroundColor && theme === 'dark' && "text-white/90"
+            isDarkThemeWithCustomBg ? "text-white/90" : "text-accent"
           )} 
           onClick={() => onSelect(board.id)}
         >
