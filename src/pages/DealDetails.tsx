@@ -596,9 +596,13 @@ export function DealDetails() {
               <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
                 <div>
                   <p className="text-sm text-foreground">{note.content}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                  </p>
+                  <div className="mt-1">
+                    {note.creator ? (
+                      <UserProfileCard profile={note.creator} />
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Unknown on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}</p>
+                    )}
+                  </div>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -658,9 +662,13 @@ export function DealDetails() {
               <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
                 <div>
                   <p className="text-sm text-foreground">{note.content}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                  </p>
+                  <div className="mt-1">
+                    {note.creator ? (
+                      <UserProfileCard profile={note.creator} />
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Unknown on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}</p>
+                    )}
+                  </div>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
