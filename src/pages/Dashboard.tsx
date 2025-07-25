@@ -95,12 +95,12 @@ export function Dashboard() {
           
           {/* Alerts */}
           {stats.overdueTasks > 0 && (
-            <div className="bg-gradient-to-r from-warning/10 to-warning/5 border border-warning/20 rounded-lg p-4">
+            <div className="bg-warning rounded-lg p-4">
               <div className="flex items-center space-x-3">
-                <AlertCircle className="w-5 h-5 text-warning" />
+                <AlertCircle className="w-5 h-5 text-white" />
                 <div>
-                  <h3 className="font-semibold text-warning">Overdue Tasks</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold text-white">Overdue Tasks</h3>
+                  <p className="text-sm text-white/80">
                     There {stats.overdueTasks === 1 ? "is" : "are"} {stats.overdueTasks} overdue task{stats.overdueTasks === 1 ? "" : "s"} that require attention.
                   </p>
                 </div>
