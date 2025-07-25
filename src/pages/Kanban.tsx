@@ -10,6 +10,8 @@ import { KanbanColumnFormDialog } from "@/components/kanban/KanbanColumnFormDial
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export function Kanban() {
   const {
@@ -20,7 +22,7 @@ export function Kanban() {
     createKanbanBoard,
     updateKanbanBoard,
     deleteKanbanBoard,
-    updateKanbanBoardColor, // Still available if needed for other direct color changes
+    updateKanbanBoardColor,
     createKanbanColumn,
     updateKanbanColumn,
     deleteKanbanColumn,
@@ -36,6 +38,16 @@ export function Kanban() {
   } = useCRMData();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { toast } = useToast();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
 
   const selectedBoardId = searchParams.get("boardId");
   const selectedBoard = kanbanBoards.find(board => board.id === selectedBoardId);
@@ -53,17 +65,40 @@ export function Kanban() {
   const [currentColumnIdForItem, setCurrentColumnIdForItem] = useState<string | null>(null);
 
   // Handlers for Board operations
-  const handleCreateBoard = async (data: { name: string, background_color: string | null }) => { // Updated signature
+  const handleCreateBoard = async (data: { name: string, background_color: string | null }) => {
     await createKanbanBoard(data);
   };
 
-  const handleUpdateBoard = async (data: { name: string, background_color: string | null }) => { // Updated signature
+  const handleUpdateBoard = async (data: { name: string, background_color: string | null }) => {
     if (editingBoard) {
       await updateKanbanBoard(editingBoard.id, data);
     }
   };
 
+  const handleEditBoardClick = (board: KanbanBoard) => {
+    if (board.created_by !== currentUserId) {
+      toast({
+        title: "Permission Denied",
+        description: "You can only edit boards that you have created.",
+        variant: "destructive",
+      });
+    } else {
+      setEditingBoard(board);
+      setIsBoardFormDialogOpen(true);
+    }
+  };
+
   const handleDeleteBoard = async (boardId: string) => {
+    const board = kanbanBoards.find(b => b.id === boardId);
+    if (board && board.created_by !== currentUserId) {
+      toast({
+        title: "Permission Denied",
+        description: "You can only delete boards that you have created.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (confirm("Are you sure you want to delete this board and all its columns and items? This action cannot be undone.")) {
       await deleteKanbanBoard(boardId);
       if (selectedBoardId === boardId) {
@@ -255,7 +290,7 @@ export function Kanban() {
               key={board.id}
               board={board}
               onSelect={handleSelectBoard}
-              onEdit={(b) => { setEditingBoard(b); setIsBoardFormDialogOpen(true); }}
+              onEdit={handleEditBoardClick}
               onDelete={handleDeleteBoard}
               onColorChange={updateKanbanBoardColor}
             />
