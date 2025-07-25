@@ -31,7 +31,6 @@ import { format, parseISO, parse, formatDistanceToNowStrict } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
-import { KanbanStatusBadge } from "@/components/kanban/KanbanStatusBadge"; // Import new badge
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
@@ -353,10 +352,6 @@ export function KanbanItemDetails() {
               {item.priority_level ? <KanbanPriorityBadge priority={item.priority_level} /> : <p className="font-semibold">N/A</p>}
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Status</p>
-              {item.status ? <KanbanStatusBadge status={item.status} /> : <p className="font-semibold">N/A</p>}
-            </div>
-            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Category</p>
               {item.category ? <Badge variant="outline" className={cn("text-sm px-2 py-0.5", getCategoryColorClass(item.category))}>{item.category.charAt(0).toUpperCase() + item.category.slice(1)}</Badge> : <p className="font-semibold">N/A</p>}
             </div>
@@ -588,7 +583,7 @@ export function KanbanItemDetails() {
               ) : (
                 relatedTasks.map((task) => (
                   <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                    <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="hover:underline">{task.title}</NavLink></TableCell>
+                    <TableCell className="font-medium"><NavLink to={`/tasks/${task.id}`} className="text-accent hover:underline">{task.title}</NavLink></TableCell>
                     <TableCell><TaskStatusBadge status={task.status} /></TableCell>
                     <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
                     <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
@@ -721,24 +716,16 @@ export function KanbanItemDetails() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-related_deal_id">Related Deal</Label>
-                <Select value={taskFormData.related_deal_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))} disabled>
+                <Select value={taskFormData.related_deal_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_deal_id: value }))}>
                   <SelectTrigger><SelectValue placeholder="Select a deal" /></SelectTrigger>
-                  <SelectContent>
-                    {deals.map(d => <SelectItem key={d.id} value={d.id}>{d.title} (${d.value.toLocaleString()})</SelectItem>)}
-                  </SelectContent>
+                  <SelectContent>{deals.map(d => <SelectItem key={d.id} value={d.id}>{d.title} (${d.value.toLocaleString()})</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            {/* New: Related Kanban Item */}
             <div className="space-y-2">
               <Label htmlFor="task-related_kanban_item_id">Related Kanban Item</Label>
-              <Select
-                value={taskFormData.related_kanban_item_id}
-                onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a Kanban item" />
-                </SelectTrigger>
+              <Select value={taskFormData.related_kanban_item_id} onValueChange={(value) => setTaskFormData(prev => ({ ...prev, related_kanban_item_id: value }))} disabled>
+                <SelectTrigger><SelectValue placeholder="Select a Kanban item" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">None</SelectItem>
                   {kanbanItems.map(item => <SelectItem key={item.id} value={item.id}>{item.title} ({item.column?.name || 'No Column'})</SelectItem>)}

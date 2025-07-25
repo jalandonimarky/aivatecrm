@@ -32,11 +32,11 @@ export function DealStageBadge({ stage }: DealStageBadgeProps) {
       text = "Paid";
       break;
     case "completed":
-      className = "bg-success text-success-foreground border-success"; // Changed to success
+      className = "bg-secondary text-secondary-foreground border-secondary"; // Neutral for completed
       text = "Completed";
       break;
     case "cancelled":
-      className = "bg-destructive text-destructive-foreground border-destructive"; // Changed to destructive
+      className = "bg-destructive text-destructive-foreground border-destructive";
       text = "Cancelled";
       break;
     default:

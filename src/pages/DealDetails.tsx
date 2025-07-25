@@ -90,7 +90,7 @@ export function DealDetails() {
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Fixed: Initialized with null
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
@@ -370,12 +370,12 @@ export function DealDetails() {
   const getStageBadgeClass = (stage: string) => {
     switch (stage) {
       case 'paid': return "bg-success text-success-foreground";
-      case 'completed': return "bg-success text-success-foreground"; // Changed to success
+      case 'completed': return "bg-destructive text-destructive-foreground";
       case 'lead': return "bg-muted text-muted-foreground";
       case 'in_development': return "bg-accent text-accent-foreground";
       case 'demo': return "bg-primary text-primary-foreground";
       case 'discovery_call': return "bg-warning text-warning-foreground";
-      case 'cancelled': return "bg-destructive text-destructive-foreground"; // Changed to destructive
+      case 'cancelled': return "bg-secondary text-secondary-foreground";
       default: return "bg-muted text-muted-foreground";
     }
   };
