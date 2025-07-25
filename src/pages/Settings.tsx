@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // Import useRef
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,9 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ModeToggle } from "@/components/theme/ModeToggle";
-import { UserProfileCard } from "@/components/UserProfileCard"; // Import UserProfileCard
+import { UserProfileCard } from "@/components/UserProfileCard";
 import type { Profile } from "@/types/crm";
-import { Trash2, UploadCloud } from "lucide-react"; // Import icons
+import { Trash2, UploadCloud, Image as ImageIcon } from "lucide-react"; // Import ImageIcon
 
 // Zod schema for profile updates
 const profileSchema = z.object({
@@ -37,6 +37,8 @@ export function Settings() {
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null); // Create a ref for the file input
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -126,7 +128,7 @@ export function Settings() {
 
   useEffect(() => {
     fetchOrCreateUserProfile();
-  }, [toast]); // Removed profileForm from dependency array as it causes infinite loop
+  }, [toast]);
 
   const handleProfileSubmit = async (values: z.infer<typeof profileSchema>) => {
     setLoading(true);
@@ -157,7 +159,7 @@ export function Settings() {
         title: "Profile Updated",
         description: "Your profile information has been successfully updated.",
       });
-      await fetchOrCreateUserProfile(); // Re-fetch to ensure latest state
+      await fetchOrCreateUserProfile();
     } catch (error: any) {
       toast({
         title: "Error updating profile",
@@ -207,7 +209,7 @@ export function Settings() {
       toast({
         title: "No file selected",
         description: "Please select an image to upload.",
-        variant: "default", // Changed from 'warning'
+        variant: "default",
       });
       return;
     }
@@ -219,26 +221,23 @@ export function Settings() {
       if (!user) throw new Error("User not authenticated.");
 
       const fileExtension = avatarFile.name.split('.').pop();
-      const filePath = `${user.id}/${Date.now()}.${fileExtension}`; // Unique path for each user's avatar
+      const filePath = `${user.id}/${Date.now()}.${fileExtension}`;
 
-      // Upload the new avatar
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, avatarFile, {
           cacheControl: '3600',
-          upsert: true, // Overwrite existing file for this path
+          upsert: true,
         });
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: publicUrlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
       if (!publicUrlData || !publicUrlData.publicUrl) throw new Error("Could not get public URL for uploaded avatar.");
 
-      // Update the user's profile with the new avatar URL
       const { error: updateProfileError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrlData.publicUrl })
@@ -250,8 +249,8 @@ export function Settings() {
         title: "Avatar uploaded",
         description: "Your profile picture has been updated.",
       });
-      setAvatarFile(null); // Clear selected file
-      await fetchOrCreateUserProfile(); // Re-fetch profile to update UI
+      setAvatarFile(null);
+      await fetchOrCreateUserProfile();
     } catch (error: any) {
       console.error("Error uploading avatar:", error);
       toast({
@@ -269,7 +268,7 @@ export function Settings() {
       toast({
         title: "No avatar to remove",
         description: "You don't have a profile picture set.",
-        variant: "default", // Changed from 'info'
+        variant: "default",
       });
       return;
     }
@@ -278,24 +277,21 @@ export function Settings() {
       return;
     }
 
-    setUploadingAvatar(true); // Use same loading state for simplicity
+    setUploadingAvatar(true);
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
-      // Extract the file path from the URL
       const urlParts = userProfile.avatar_url.split('/');
       const filePathInBucket = urlParts.slice(urlParts.indexOf('avatars') + 1).join('/');
 
-      // Delete the file from storage
       const { error: storageError } = await supabase.storage
         .from('avatars')
         .remove([filePathInBucket]);
 
       if (storageError) throw storageError;
 
-      // Remove the avatar_url from the profile table
       const { error: updateProfileError } = await supabase
         .from('profiles')
         .update({ avatar_url: null })
@@ -307,7 +303,7 @@ export function Settings() {
         title: "Avatar removed",
         description: "Your profile picture has been successfully removed.",
       });
-      await fetchOrCreateUserProfile(); // Re-fetch profile to update UI
+      await fetchOrCreateUserProfile();
     } catch (error: any) {
       console.error("Error removing avatar:", error);
       toast({
@@ -431,6 +427,9 @@ export function Settings() {
             {userProfile && <UserProfileCard profile={userProfile} />}
             <div>
               <p className="text-sm text-muted-foreground">Current Avatar</p>
+              {avatarFile && (
+                <p className="text-xs text-muted-foreground mt-1">Selected: {avatarFile.name}</p>
+              )}
             </div>
           </div>
           <div className="space-y-2">
@@ -441,7 +440,18 @@ export function Settings() {
               accept="image/*"
               onChange={handleAvatarFileChange}
               disabled={uploadingAvatar}
+              ref={fileInputRef} // Attach the ref
+              className="hidden" // Hide the default input
             />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()} // Trigger click on hidden input
+              disabled={uploadingAvatar}
+              className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+            >
+              <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change Selected File" : "Choose File"}
+            </Button>
           </div>
           <div className="flex justify-end space-x-2">
             <Button
