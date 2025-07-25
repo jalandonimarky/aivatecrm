@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, LayoutDashboard, Search, Filter } from "lucide-react"; // Import Search and Filter icons
-import { Input } from "@/components/ui/input"; // Import Input
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Plus, ArrowLeft, LayoutDashboard, Search, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
 import { KanbanBoardCard } from "@/components/kanban/KanbanBoardCard";
 import { KanbanBoardFormDialog } from "@/components/kanban/KanbanBoardFormDialog";
@@ -14,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { KanbanBoard, KanbanColumn, KanbanItem } from "@/types/crm";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes"; // Import useTheme
+import { cn } from "@/lib/utils"; // Import cn
 
 export function Kanban() {
   const {
@@ -42,6 +44,7 @@ export function Kanban() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { theme } = useTheme(); // Get current theme
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -224,7 +227,10 @@ export function Kanban() {
           <Button variant="outline" onClick={handleBackToBoards}>
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Boards
           </Button>
-          <h1 className="text-3xl font-bold text-accent">
+          <h1 className={cn(
+            "text-3xl font-bold",
+            theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
+          )}>
             {selectedBoard.name}
           </h1>
           <Button
@@ -281,7 +287,10 @@ export function Kanban() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-accent">
+          <h1 className={cn(
+            "text-3xl font-bold",
+            theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
+          )}>
             Project Management
           </h1>
           <p className="text-muted-foreground">

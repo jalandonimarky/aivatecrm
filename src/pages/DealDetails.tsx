@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, NavLink } from "react-router-dom"; // Import NavLink
+import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ import { DataHygieneCard } from "@/components/deals/DataHygieneCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { DealNote, Task, DealAttachment, Deal } from "@/types/crm";
+import { useTheme } from "next-themes"; // Import useTheme
 
 interface TaskFormData {
   title: string;
@@ -49,15 +50,16 @@ interface TaskFormData {
   assigned_to: string;
   related_contact_id: string;
   related_deal_id: string;
-  related_kanban_item_id: string; // New: related_kanban_item_id
+  related_kanban_item_id: string;
   due_date: Date | undefined;
 }
 
 export function DealDetails() {
-  const { deals, contacts, profiles, kanbanItems, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, createDealAttachment, deleteDealAttachment } = useCRMData(); // Removed dataHygieneInsights
+  const { deals, contacts, profiles, kanbanItems, loading, createDealNote, updateDealNote, deleteDealNote, createTask, updateTask, deleteTask, getFullName, updateDeal, deleteDeal, createDealAttachment, deleteDealAttachment } = useCRMData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme } = useTheme(); // Get current theme
   
   const deal = deals.find(d => d.id === id);
 
@@ -81,16 +83,16 @@ export function DealDetails() {
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: id || "unassigned",
-    related_kanban_item_id: "unassigned", // Initialize new field
+    related_kanban_item_id: "unassigned",
     due_date: undefined,
   });
-  const [isTaskCalendarOpen, setIsTaskCalendarOpen] = useState(false); // Renamed to avoid conflict
+  const [isTaskCalendarOpen, setIsTaskCalendarOpen] = useState(false);
 
   const [isEditDealDialogOpen, setIsEditDealDialogOpen] = useState(false);
   const [isRallyDialogOpen, setIsRallyDialogOpen] = useState(false);
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Fixed: Initialize with null
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
@@ -179,7 +181,7 @@ export function DealDetails() {
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
       related_deal_id: id || "unassigned",
-      related_kanban_item_id: "unassigned", // Reset new field
+      related_kanban_item_id: "unassigned",
       due_date: undefined,
     });
     setEditingTask(null);
@@ -200,7 +202,7 @@ export function DealDetails() {
       assigned_to: task.assigned_to || "unassigned",
       related_contact_id: task.related_contact_id || "unassigned",
       related_deal_id: task.related_deal_id || id || "unassigned",
-      related_kanban_item_id: task.related_kanban_item_id || "unassigned", // Set new field for editing
+      related_kanban_item_id: task.related_kanban_item_id || "unassigned",
       due_date: task.due_date ? new Date(task.due_date) : undefined,
     });
     setIsTaskDialogOpen(true);
@@ -217,7 +219,7 @@ export function DealDetails() {
         assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
         related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
         related_deal_id: id,
-        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id, // Handle new field
+        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id,
       };
 
       if (editingTask) {
@@ -340,8 +342,6 @@ export function DealDetails() {
   const handleDeleteAttachment = async (attachment: DealAttachment) => {
     if (confirm("Are you sure you want to delete this attachment? This action cannot be undone.")) {
       try {
-        // The file_url contains the full path, we need to extract the path relative to the bucket
-        // Assuming file_url format is like: https://<project_id>.supabase.co/storage/v1/object/public/deal-attachments/<deal_id>/<file_name>
         const pathSegments = attachment.file_url.split('/');
         const filePathInBucket = pathSegments.slice(pathSegments.indexOf('deal-attachments') + 1).join('/');
         
@@ -403,7 +403,10 @@ export function DealDetails() {
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold min-w-0 mr-2">
+            <CardTitle className={cn(
+              "text-2xl font-bold min-w-0 mr-2",
+              theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
+            )}>
               {deal.title}
             </CardTitle>
             <div className="flex items-center space-x-2 flex-shrink-0">

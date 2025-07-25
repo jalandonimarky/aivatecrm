@@ -29,7 +29,8 @@ import { useCRMData } from "@/hooks/useCRMData";
 import type { Task } from "@/types/crm";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import { NavLink } from "react-router-dom"; // Import NavLink
+import { NavLink } from "react-router-dom";
+import { useTheme } from "next-themes"; // Import useTheme
 
 interface TaskFormData {
   title: string;
@@ -44,7 +45,7 @@ interface TaskFormData {
 }
 
 export function Tasks() {
-  const { tasks, contacts, deals, profiles, kanbanItems, loading, createTask, updateTask, deleteTask, getFullName } = useCRMData(); // Destructure all needed properties
+  const { tasks, contacts, deals, profiles, kanbanItems, loading, createTask, updateTask, deleteTask, getFullName } = useCRMData();
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -60,6 +61,7 @@ export function Tasks() {
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const { theme } = useTheme(); // Get current theme
 
   // Filter states
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -175,7 +177,10 @@ export function Tasks() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-accent">
+          <h1 className={cn(
+            "text-3xl font-bold",
+            theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
+          )}>
             Tasks
           </h1>
           <p className="text-muted-foreground">
@@ -496,7 +501,7 @@ export function Tasks() {
                   <TableHead>Assigned To</TableHead>
                   <TableHead>Related Contact</TableHead>
                   <TableHead>Related Deal</TableHead>
-                  <TableHead>Related Kanban Item</TableHead> {/* New column */}
+                  <TableHead>Related Kanban Item</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
@@ -518,7 +523,7 @@ export function Tasks() {
                     <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
                     <TableCell>{task.related_contact?.name || "-"}</TableCell>
                     <TableCell>{task.related_deal?.title || "-"}</TableCell>
-                    <TableCell>{task.related_kanban_item?.title || "-"}</TableCell> {/* Display related Kanban item */}
+                    <TableCell>{task.related_kanban_item?.title || "-"}</TableCell>
                     <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
                     <TableCell>
                       <DropdownMenu>
