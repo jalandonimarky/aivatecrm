@@ -104,12 +104,12 @@ export function ContactDetails() {
   const getStageBadgeClass = (stage: string) => {
     switch (stage) {
       case 'paid': return "bg-success text-success-foreground";
-      case 'completed': return "bg-destructive text-destructive-foreground";
+      case 'completed': return "bg-success text-success-foreground"; // Changed to success
       case 'lead': return "bg-muted text-muted-foreground";
       case 'in_development': return "bg-accent text-accent-foreground";
       case 'demo': return "bg-primary text-primary-foreground";
       case 'discovery_call': return "bg-warning text-warning-foreground";
-      case 'cancelled': return "bg-secondary text-secondary-foreground";
+      case 'cancelled': return "bg-destructive text-destructive-foreground"; // Changed to destructive
       default: return "bg-muted text-muted-foreground";
     }
   };

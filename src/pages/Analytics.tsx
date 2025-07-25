@@ -16,12 +16,12 @@ export function Analytics() {
   const getStageColor = (stage: Deal['stage']) => {
     switch (stage) {
       case 'paid': return "hsl(var(--success))";
-      case 'completed': return "hsl(var(--destructive))"; // Changed from 'done_completed'
+      case 'completed': return "hsl(var(--success))"; // Changed to success
       case 'lead': return "hsl(var(--muted-foreground))";
       case 'in_development': return "hsl(var(--accent))";
-      case 'demo': return "hsl(var(--primary))"; // Changed from 'proposal'
+      case 'demo': return "hsl(var(--primary))";
       case 'discovery_call': return "hsl(var(--warning))";
-      case 'cancelled': return "hsl(var(--secondary))"; // New color for cancelled deals
+      case 'cancelled': return "hsl(var(--destructive))"; // Changed to destructive
       default: return "hsl(var(--foreground))";
     }
   };
