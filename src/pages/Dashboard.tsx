@@ -4,12 +4,9 @@ import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { useCRMData } from "@/hooks/useCRMData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTheme } from "next-themes"; // Import useTheme
-import { cn } from "@/lib/utils"; // Import cn
 
 export function Dashboard() {
-  const { stats, loading } = useCRMData();
-  const { theme } = useTheme(); // Get current theme
+  const { stats, loading } = useCRMData(); // Destructure stats and loading
 
   if (loading) {
     return (
@@ -31,10 +28,7 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className={cn(
-          "text-3xl font-bold mb-2",
-          theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-        )}>
+        <h1 className="text-3xl font-bold text-accent mb-2">
           Welcome back! 
         </h1>
         <p className="text-muted-foreground">
@@ -111,7 +105,8 @@ export function Dashboard() {
                   </p>
                 </div>
               </div>
-            )}
+            </div>
+          )}
         </div>
       </div>
     </div>

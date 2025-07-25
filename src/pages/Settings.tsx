@@ -10,10 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ModeToggle } from "@/components/theme/ModeToggle";
+import { ModeToggle } from "@/components/theme/ModeToggle"; // Import ModeToggle
 import type { Profile } from "@/types/crm";
-import { useTheme } from "next-themes"; // Import useTheme
-import { cn } from "@/lib/utils"; // Import cn
 
 // Zod schema for profile updates
 const profileSchema = z.object({
@@ -35,7 +33,6 @@ export function Settings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
-  const { theme } = useTheme(); // Get current theme
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -70,10 +67,11 @@ export function Settings() {
       }
 
       if (user) {
+        // Use .maybeSingle() to handle cases where no profile exists or multiple exist (though the latter shouldn't happen with correct setup)
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
-          .eq("id", user.id)
+          .eq("id", user.id) // Changed from user_id to id
           .maybeSingle();
 
         if (profileError) {
@@ -83,6 +81,7 @@ export function Settings() {
             variant: "destructive",
           });
         } else if (profileData) {
+          // Profile found, set it
           setUserProfile(profileData as Profile);
           profileForm.reset({
             firstName: profileData.first_name || "",
@@ -90,16 +89,17 @@ export function Settings() {
             email: profileData.email,
           });
         } else {
+          // No profile found, create one
           const { data: newProfileData, error: createProfileError } = await supabase
             .from("profiles")
             .insert({ 
-              id: user.id,
-              email: user.email || "",
+              id: user.id, // Set id directly to user.id
+              email: user.email || "", // Use user's email, fallback to empty string
               first_name: user.user_metadata?.first_name || "",
               last_name: user.user_metadata?.last_name || "",
             })
             .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
-            .single();
+            .single(); // Use single here as we expect one new row
 
           if (createProfileError) {
             toast({
@@ -134,6 +134,7 @@ export function Settings() {
       if (userError) throw userError;
       if (!user) throw new Error("User not authenticated.");
 
+      // Update email if changed
       if (values.email !== userProfile?.email) {
         const { error: emailUpdateError } = await supabase.auth.updateUser({
           email: values.email,
@@ -145,10 +146,11 @@ export function Settings() {
         });
       }
 
+      // Update profile table with first_name and last_name
       const { error: profileUpdateError } = await supabase
         .from("profiles")
         .update({ first_name: values.firstName, last_name: values.lastName, email: values.email })
-        .eq("id", user.id);
+        .eq("id", user.id); // Changed from user_id to id
 
       if (profileUpdateError) throw profileUpdateError;
 
@@ -156,10 +158,11 @@ export function Settings() {
         title: "Profile Updated",
         description: "Your profile information has been successfully updated.",
       });
+      // Re-fetch user profile to update local state and forms
       const { data: profileData, error: refetchError } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, email, avatar_url, role, created_at, updated_at")
-        .eq("id", user.id)
+        .eq("id", user.id) // Changed from user_id to id
         .maybeSingle();
       if (refetchError) throw refetchError;
       setUserProfile(profileData as Profile);
@@ -193,7 +196,7 @@ export function Settings() {
         title: "Password Updated",
         description: "Your password has been successfully changed.",
       });
-      passwordForm.reset();
+      passwordForm.reset(); // Clear password fields
     } catch (error: any) {
       toast({
         title: "Error updating password",
@@ -208,10 +211,7 @@ export function Settings() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className={cn(
-          "text-3xl font-bold mb-6",
-          theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-        )}>
+        <h1 className="text-3xl font-bold text-accent mb-6">
           Settings
         </h1>
         <Skeleton className="h-24 w-full mb-6" />
@@ -236,6 +236,7 @@ export function Settings() {
             <Skeleton className="h-10 w-24 ml-auto" />
           </CardContent>
         </Card>
+        {/* Skeleton for Theme Settings */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Theme Settings</CardTitle>
@@ -250,10 +251,7 @@ export function Settings() {
 
   return (
     <div className="space-y-6">
-      <h1 className={cn(
-        "text-3xl font-bold mb-6",
-        theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-      )}>
+      <h1 className="text-3xl font-bold text-accent mb-6">
         Settings
       </h1>
 

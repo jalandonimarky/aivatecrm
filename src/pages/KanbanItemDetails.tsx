@@ -34,13 +34,12 @@ import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
-import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog";
+import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog"; // Import new dialog
 import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { CollapsibleCard } from "@/components/CollapsibleCard";
 import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
-import { useTheme } from "next-themes"; // Import useTheme
 
 interface TaskFormData {
   title: string;
@@ -73,13 +72,12 @@ export function KanbanItemDetails() {
   } = useCRMData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme(); // Get current theme
 
   const item = kanbanItems.find((i) => i.id === id);
 
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
   const [isTenantInfoDialogOpen, setIsTenantInfoDialogOpen] = useState(false);
-  const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false);
+  const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false); // New state for housing dialog
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
@@ -311,10 +309,7 @@ export function KanbanItemDetails() {
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className={cn(
-              "text-2xl font-bold min-w-0 mr-2",
-              theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-            )}>
+            <CardTitle className="text-2xl font-bold min-w-0 mr-2">
               {item.title}
             </CardTitle>
             <DropdownMenu>

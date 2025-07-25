@@ -25,8 +25,7 @@ import { cn } from "@/lib/utils";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
-import type { Task, TaskNote } from "@/types/crm";
-import { useTheme } from "next-themes"; // Import useTheme
+import type { Task, TaskNote } from "@/types/crm"; // Import TaskNote
 
 interface TaskFormData {
   title: string;
@@ -36,15 +35,14 @@ interface TaskFormData {
   assigned_to: string;
   related_contact_id: string;
   related_deal_id: string;
-  related_kanban_item_id: string;
+  related_kanban_item_id: string; // New: related_kanban_item_id
   due_date: Date | undefined;
 }
 
 export function TaskDetails() {
-  const { tasks, contacts, deals, profiles, kanbanItems, loading, updateTask, deleteTask, createTaskNote, updateTaskNote, deleteTaskNote, getFullName } = useCRMData();
+  const { tasks, contacts, deals, profiles, kanbanItems, loading, updateTask, deleteTask, createTaskNote, updateTaskNote, deleteTaskNote, getFullName } = useCRMData(); // Destructure all needed properties
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme(); // Get current theme
 
   const task = tasks.find(t => t.id === id);
 
@@ -57,7 +55,7 @@ export function TaskDetails() {
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: "unassigned",
-    related_kanban_item_id: "unassigned",
+    related_kanban_item_id: "unassigned", // Initialize new field
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -84,7 +82,7 @@ export function TaskDetails() {
 
   useEffect(() => {
     if (!loading && id && !tasks.find(t => t.id === id)) {
-      navigate("/tasks");
+      navigate("/tasks"); // Redirect if task not found
     }
     if (task) {
       setTaskFormData({
@@ -95,7 +93,7 @@ export function TaskDetails() {
         assigned_to: task.assigned_to || "unassigned",
         related_contact_id: task.related_contact_id || "unassigned",
         related_deal_id: task.related_deal_id || "unassigned",
-        related_kanban_item_id: task.related_kanban_item_id || "unassigned",
+        related_kanban_item_id: task.related_kanban_item_id || "unassigned", // Set new field for editing
         due_date: task.due_date ? new Date(task.due_date) : undefined,
       });
     }
@@ -116,7 +114,7 @@ export function TaskDetails() {
         assigned_to: taskFormData.assigned_to === "unassigned" ? null : taskFormData.assigned_to,
         related_contact_id: taskFormData.related_contact_id === "unassigned" ? null : taskFormData.related_contact_id,
         related_deal_id: taskFormData.related_deal_id === "unassigned" ? null : taskFormData.related_deal_id,
-        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id,
+        related_kanban_item_id: taskFormData.related_kanban_item_id === "unassigned" ? null : taskFormData.related_kanban_item_id, // Handle new field
       };
       await updateTask(task.id, dataToSubmit);
       setIsTaskFormDialogOpen(false);
@@ -130,7 +128,7 @@ export function TaskDetails() {
       try {
         if (id) {
           await deleteTask(id);
-          navigate("/tasks");
+          navigate("/tasks"); // Navigate back to tasks list after deletion
         }
       } catch (error) {
         // Error handled in useCRMData hook
@@ -207,10 +205,7 @@ export function TaskDetails() {
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className={cn(
-              "text-2xl font-bold min-w-0 mr-2",
-              theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-            )}>
+            <CardTitle className="text-2xl font-bold min-w-0 mr-2">
               {task.title}
             </CardTitle>
             <DropdownMenu>

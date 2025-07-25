@@ -23,17 +23,14 @@ import type { Deal } from "@/types/crm";
 import { DealFormDialog } from "@/components/deals/DealFormDialog";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DealStageBadge } from "@/components/deals/DealStageBadge";
-import { DealTierBadge } from "@/components/deals/DealTierBadge";
-import { useTheme } from "next-themes"; // Import useTheme
-import { cn } from "@/lib/utils"; // Import cn
+import { DealStageBadge } from "@/components/deals/DealStageBadge"; // Import new badge
+import { DealTierBadge } from "@/components/deals/DealTierBadge"; // Import new badge
 
 export function Deals() {
-  const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData();
+  const { deals, contacts, profiles, loading, createDeal, updateDeal, deleteDeal, getFullName } = useCRMData(); // Destructure all needed properties
   const [searchTerm, setSearchTerm] = useState("");
   const [isDealFormDialogOpen, setIsDealFormDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
-  const { theme } = useTheme(); // Get current theme
 
   // Filter states
   const [selectedStage, setSelectedStage] = useState<string>("all");
@@ -105,6 +102,8 @@ export function Deals() {
     setSelectedStage("all");
     setSelectedTier("all");
     setSelectedAssignedTo("all");
+    // Note: The original code had a recursive call here. Removed it.
+    // handleClearFilters(); 
   };
 
   return (
@@ -112,10 +111,7 @@ export function Deals() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={cn(
-            "text-3xl font-bold",
-            theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-          )}>
+          <h1 className="text-3xl font-bold text-accent">
             Deals
           </h1>
           <p className="text-muted-foreground">

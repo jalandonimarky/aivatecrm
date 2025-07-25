@@ -22,12 +22,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCRMData } from "@/hooks/useCRMData";
 import type { Contact } from "@/types/crm";
-import { NavLink } from "react-router-dom";
-import { useTheme } from "next-themes"; // Import useTheme
-import { cn } from "@/lib/utils"; // Import cn
+import { NavLink } from "react-router-dom"; // Import NavLink
 
 export function Contacts() {
-  const { contacts, loading, createContact, updateContact, deleteContact } = useCRMData();
+  const { contacts, loading, createContact, updateContact, deleteContact } = useCRMData(); // Destructure all needed properties
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -39,7 +37,6 @@ export function Contacts() {
     position: "",
     notes: "",
   });
-  const { theme } = useTheme(); // Get current theme
 
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,10 +95,7 @@ export function Contacts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={cn(
-            "text-3xl font-bold",
-            theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-          )}>
+          <h1 className="text-3xl font-bold text-accent">
             Contacts
           </h1>
           <p className="text-muted-foreground">
@@ -126,7 +120,7 @@ export function Contacts() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="name">Name *</Label>
                   <Input
@@ -147,7 +141,7 @@ export function Contacts() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Added sm:grid-cols-2 */}
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
                   <Input
@@ -221,7 +215,7 @@ export function Contacts() {
           <CardTitle>All Contacts ({filteredContacts.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto"> {/* Added overflow-x-auto */}
             <Table>
               <TableHeader>
                 <TableRow>

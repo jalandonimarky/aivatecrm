@@ -29,8 +29,6 @@ import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import type { Contact, Deal, Task } from "@/types/crm";
-import { useTheme } from "next-themes"; // Import useTheme
-import { cn } from "@/lib/utils"; // Import cn
 
 interface ContactFormData {
   name: string;
@@ -42,10 +40,9 @@ interface ContactFormData {
 }
 
 export function ContactDetails() {
-  const { contacts, loading, updateContact, deleteContact } = useCRMData();
+  const { contacts, loading, updateContact, deleteContact } = useCRMData(); // Destructure all needed properties
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme(); // Get current theme
 
   const contact = contacts.find(c => c.id === id);
 
@@ -61,7 +58,7 @@ export function ContactDetails() {
 
   useEffect(() => {
     if (!loading && id && !contacts.find(c => c.id === id)) {
-      navigate("/contacts");
+      navigate("/contacts"); // Redirect if contact not found
     }
     if (contact) {
       setFormData({
@@ -96,7 +93,7 @@ export function ContactDetails() {
       try {
         if (id) {
           await deleteContact(id);
-          navigate("/contacts");
+          navigate("/contacts"); // Navigate back to contacts list after deletion
         }
       } catch (error) {
         // Error handled in useCRMData hook
@@ -144,10 +141,7 @@ export function ContactDetails() {
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className={cn(
-              "text-2xl font-bold min-w-0 mr-2",
-              theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-            )}>
+            <CardTitle className="text-2xl font-bold min-w-0 mr-2">
               {contact.name}
             </CardTitle>
             <DropdownMenu>

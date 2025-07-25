@@ -8,23 +8,20 @@ import {
 } from "recharts";
 import { format, parseISO, startOfMonth } from "date-fns";
 import type { Deal, Task } from "@/types/crm";
-import { useTheme } from "next-themes"; // Import useTheme
-import { cn } from "@/lib/utils"; // Import cn
 
 export function Analytics() {
-  const { deals, contacts, tasks, loading } = useCRMData();
-  const { theme } = useTheme(); // Get current theme
+  const { deals, contacts, tasks, loading } = useCRMData(); // Destructure all needed properties
 
   // Helper functions for colors (consistent with existing design)
   const getStageColor = (stage: Deal['stage']) => {
     switch (stage) {
       case 'paid': return "hsl(var(--success))";
-      case 'completed': return "hsl(var(--destructive))";
+      case 'completed': return "hsl(var(--destructive))"; // Changed from 'done_completed'
       case 'lead': return "hsl(var(--muted-foreground))";
       case 'in_development': return "hsl(var(--accent))";
-      case 'demo': return "hsl(var(--primary))";
+      case 'demo': return "hsl(var(--primary))"; // Changed from 'proposal'
       case 'discovery_call': return "hsl(var(--warning))";
-      case 'cancelled': return "hsl(var(--secondary))";
+      case 'cancelled': return "hsl(var(--secondary))"; // New color for cancelled deals
       default: return "hsl(var(--foreground))";
     }
   };
@@ -62,11 +59,12 @@ export function Analytics() {
     if (!deals.length) return [];
     const stageCounts: { [key: string]: number } = {};
     deals.forEach(deal => {
+      // Ensure deal.stage is a string, provide a fallback if null/undefined
       const currentStage = (deal.stage || 'unknown_stage') as Deal['stage'];
       stageCounts[currentStage] = (stageCounts[currentStage] || 0) + 1;
     });
     return Object.keys(stageCounts).map(stageKey => {
-      const stage = stageKey as Deal['stage'];
+      const stage = stageKey as Deal['stage']; // Cast to Deal['stage'] for type safety
       return {
         name: stage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         count: stageCounts[stage],
@@ -123,10 +121,7 @@ export function Analytics() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className={cn(
-            "text-3xl font-bold",
-            theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-          )}>
+          <h1 className="text-3xl font-bold text-accent">
             Reporting
           </h1>
           <p className="text-muted-foreground">
@@ -146,10 +141,7 @@ export function Analytics() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className={cn(
-          "text-3xl font-bold",
-          theme === "dark" ? "text-primary" : "text-accent" // Conditional text color
-        )}>
+        <h1 className="text-3xl font-bold text-accent">
           Reporting
         </h1>
         <p className="text-muted-foreground">
