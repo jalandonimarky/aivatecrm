@@ -28,7 +28,7 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-accent dark:text-primary mb-2">
+        <h1 className="text-3xl font-bold text-accent mb-2">
           Welcome back! 
         </h1>
         <p className="text-muted-foreground">

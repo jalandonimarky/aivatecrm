@@ -45,7 +45,7 @@ export function KanbanColumn({
         <div className="flex items-center justify-between">
           <CardTitle className={cn(
             "text-lg font-semibold flex-1 min-w-0 pr-2 break-words",
-            isDarkThemeWithCustomBg ? "text-white/90" : "text-accent dark:text-primary"
+            isDarkThemeWithCustomBg ? "text-white/90" : "text-accent"
           )}>
             {column.name}
           </CardTitle>

@@ -121,7 +121,7 @@ export function Analytics() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-accent dark:text-primary">
+          <h1 className="text-3xl font-bold text-accent">
             Reporting
           </h1>
           <p className="text-muted-foreground">
@@ -141,7 +141,7 @@ export function Analytics() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-accent dark:text-primary">
+        <h1 className="text-3xl font-bold text-accent">
           Reporting
         </h1>
         <p className="text-muted-foreground">
@@ -153,7 +153,7 @@ export function Analytics() {
         {/* Revenue Over Time */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-accent dark:text-primary">Revenue Overview</CardTitle>
+            <CardTitle className="text-lg font-semibold text-accent">Revenue Overview</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">

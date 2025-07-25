@@ -211,7 +211,7 @@ export function Settings() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-accent dark:text-primary mb-6">
+        <h1 className="text-3xl font-bold text-accent mb-6">
           Settings
         </h1>
         <Skeleton className="h-24 w-full mb-6" />
@@ -251,7 +251,7 @@ export function Settings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-accent dark:text-primary mb-6">
+      <h1 className="text-3xl font-bold text-accent mb-6">
         Settings
       </h1>
 
