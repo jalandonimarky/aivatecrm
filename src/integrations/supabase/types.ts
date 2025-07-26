@@ -254,6 +254,7 @@ export type Database = {
           name: string
           order_index: number
           created_at: string
+          background_color: string | null
         }
         Insert: {
           id?: string
@@ -261,6 +262,7 @@ export type Database = {
           name: string
           order_index: number
           created_at?: string
+          background_color?: string | null
         }
         Update: {
           id?: string
@@ -268,6 +270,7 @@ export type Database = {
           name?: string
           order_index?: number
           created_at?: string
+          background_color?: string | null
         }
         Relationships: [
           {
@@ -311,6 +314,7 @@ export type Database = {
           property_bathrooms: number | null
           property_sq_ft: number | null
           property_mtr_approved: boolean | null
+          status: string | null
         }
         Insert: {
           id?: string
@@ -343,6 +347,7 @@ export type Database = {
           property_bathrooms?: number | null
           property_sq_ft?: number | null
           property_mtr_approved?: boolean | null
+          status?: string | null
         }
         Update: {
           id?: string
@@ -375,6 +380,7 @@ export type Database = {
           property_bathrooms?: number | null
           property_sq_ft?: number | null
           property_mtr_approved?: boolean | null
+          status?: string | null
         }
         Relationships: [
           {
