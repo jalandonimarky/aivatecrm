@@ -19,7 +19,7 @@ All colors MUST be HSL.
     --popover-foreground: 229 42% 9%; /* Dark Blue */
 
     --primary: 150 42% 73%; /* Mint - #88ebc5 */
-    --primary-foreground: 229 42% 9%; /* Dark Blue (for text on Mint) */
+    --primary-foreground: 0 0% 100%; /* White (for text on Mint/Gradients) */
     --primary-glow: 248 69% 57%; /* Purple - #5946df */
 
     --secondary: 220 13% 91%; /* Light Grey */
