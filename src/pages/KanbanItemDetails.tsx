@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, Clock, Plus } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, Clock, Plus, Upload, Download, Paperclip } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,12 +34,12 @@ import { KanbanPriorityBadge } from "@/components/kanban/KanbanPriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
-import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog"; // Import new dialog
-import { KanbanDataHygieneCard } from "@/components/kanban/KanbanDataHygieneCard";
+import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { CollapsibleCard } from "@/components/CollapsibleCard";
-import type { KanbanItem, KanbanItemNote, Task } from "@/types/crm";
+import { useToast } from "@/hooks/use-toast";
+import type { KanbanItem, KanbanItemNote, Task, KanbanItemAttachment } from "@/types/crm";
 
 interface TaskFormData {
   title: string;
@@ -69,15 +69,18 @@ export function KanbanItemDetails() {
     updateTask,
     deleteTask,
     getFullName,
+    createKanbanItemAttachment,
+    deleteKanbanItemAttachment,
   } = useCRMData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const item = kanbanItems.find((i) => i.id === id);
 
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
   const [isTenantInfoDialogOpen, setIsTenantInfoDialogOpen] = useState(false);
-  const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false); // New state for housing dialog
+  const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
@@ -98,6 +101,12 @@ export function KanbanItemDetails() {
     due_date: undefined,
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  // NEW: Attachment states
+  const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [attachmentType, setAttachmentType] = useState<string>('other'); // Changed to string for flexibility
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
     { value: "pending", label: "Pending" },
@@ -269,6 +278,53 @@ export function KanbanItemDetails() {
     }
   };
 
+  // NEW: Attachment handlers
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleUploadAttachment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !selectedFile) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a file to upload.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setUploadingAttachment(true);
+    try {
+      await createKanbanItemAttachment(id, selectedFile, attachmentType);
+      setSelectedFile(null);
+      setAttachmentType('other');
+      setIsUploadAttachmentDialogOpen(false);
+    } catch (error) {
+      // Error handled in useCRMData hook
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachment: KanbanItemAttachment) => {
+    if (confirm("Are you sure you want to delete this attachment? This action cannot be undone.")) {
+      try {
+        // The file_url contains the full path, we need to extract the path relative to the bucket
+        // Assuming file_url format is like: https://<project_id>.supabase.co/storage/v1/object/public/kanban-item-attachments/<kanban_item_id>/<file_name>
+        const pathSegments = attachment.file_url.split('/');
+        const filePathInBucket = pathSegments.slice(pathSegments.indexOf('kanban-item-attachments') + 1).join('/');
+        
+        await deleteKanbanItemAttachment(attachment.id, attachment.kanban_item_id, filePathInBucket);
+      } catch (error) {
+        // Error handled in useCRMData hook
+      }
+    }
+  };
+
   const getCategoryColorClass = (category?: KanbanItem['category']) => {
     switch (category?.toLowerCase()) {
       case 'real estate': return "bg-primary/20 text-foreground border-primary/40";
@@ -298,6 +354,10 @@ export function KanbanItemDetails() {
 
   const relatedTasks = (item.tasks || []).sort((a: Task, b: Task) => 
     (a.due_date ? parseISO(a.due_date).getTime() : Infinity) - (b.due_date ? parseISO(b.due_date).getTime() : Infinity)
+  );
+
+  const sortedAttachments = (item.attachments || []).sort((a: KanbanItemAttachment, b: KanbanItemAttachment) =>
+    parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime()
   );
 
   return (
@@ -502,15 +562,91 @@ export function KanbanItemDetails() {
         </div>
       </CollapsibleCard>
 
-      {item && (
-        <CollapsibleCard
-          title="Data Hygiene Check"
-          storageKey="kanban-data-hygiene-collapsed"
-          defaultOpen={true}
-        >
-          <KanbanDataHygieneCard item={item} />
-        </CollapsibleCard>
-      )}
+      {/* NEW: Attachments Section */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-lg font-semibold">Attachments ({sortedAttachments.length})</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setIsUploadAttachmentDialogOpen(true)}
+            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+          >
+            <Upload className="w-4 h-4 mr-2" /> Upload Attachment
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>File Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Uploaded By</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedAttachments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      No attachments yet for this Kanban item.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  sortedAttachments.map((attachment) => (
+                    <TableRow key={attachment.id} className="hover:bg-muted/50 transition-smooth">
+                      <TableCell className="font-medium flex items-center space-x-2">
+                        <Paperclip className="w-4 h-4 text-muted-foreground" />
+                        <a 
+                          href={attachment.file_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="hover:underline"
+                        >
+                          {attachment.file_name}
+                        </a>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {attachment.attachment_type.charAt(0).toUpperCase() + attachment.attachment_type.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{attachment.uploader ? getFullName(attachment.uploader) : "Unknown"}</TableCell>
+                      <TableCell>{format(parseISO(attachment.created_at), "MMM dd, yyyy")}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem asChild>
+                              <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                <Download className="mr-2 h-4 w-4" />
+                                Download
+                              </a>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteAttachment(attachment)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       <CollapsibleCard
         title={`Notes (${sortedNotes.length})`}
@@ -655,6 +791,47 @@ export function KanbanItemDetails() {
           onSubmit={handleUpdateHousingInfoSubmit}
         />
       )}
+
+      {/* NEW: Upload Attachment Dialog */}
+      <Dialog open={isUploadAttachmentDialogOpen} onOpenChange={setIsUploadAttachmentDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Upload Attachment</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUploadAttachment} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="file-input">File</Label>
+              <Input
+                id="file-input"
+                type="file"
+                onChange={handleFileChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="attachment-type">Attachment Type</Label>
+              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value)} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="document">Document</SelectItem>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsUploadAttachmentDialogOpen(false)} type="button">
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-primary active:scale-95" disabled={uploadingAttachment}>
+                {uploadingAttachment ? "Uploading..." : "Upload"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
