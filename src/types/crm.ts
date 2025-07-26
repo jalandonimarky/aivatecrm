@@ -57,7 +57,7 @@ export interface KanbanItemAttachment {
   kanban_item_id: string;
   file_name: string;
   file_url: string;
-  attachment_type: 'contract' | 'receipt' | 'other';
+  attachment_type: 'image' | 'document' | 'other';
   uploaded_by?: string;
   created_at: string;
   uploader?: Profile;
@@ -68,7 +68,7 @@ export interface DealAttachment { // New interface for deal attachments
   deal_id: string;
   file_name: string;
   file_url: string;
-  attachment_type: 'contract' | 'receipt' | 'other'; // Added 'other' for flexibility
+  attachment_type: 'image' | 'document' | 'other';
   uploaded_by?: string;
   created_at: string;
   uploader?: Profile; // To store the profile of the uploader

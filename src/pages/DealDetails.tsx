@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, NavLink } from "react-router-dom"; // Import NavLink
 import { useCRMData } from "@/hooks/useCRMData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,8 +91,9 @@ export function DealDetails() {
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
+  const [attachmentType, setAttachmentType] = useState<'image' | 'document' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
@@ -1056,20 +1057,35 @@ export function DealDetails() {
               <Input
                 id="file-input"
                 type="file"
+                ref={fileInputRef}
                 onChange={handleFileChange}
                 required
+                className="hidden"
               />
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Choose File
+                </Button>
+                <p className="text-sm text-muted-foreground truncate">
+                  {selectedFile ? selectedFile.name : "No file selected."}
+                </p>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="attachment-type">Attachment Type</Label>
-              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value as 'contract' | 'receipt' | 'other')} required>
+              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value as 'image' | 'document' | 'other')} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="contract">Contract</SelectItem>
-                  <SelectItem value="receipt">Receipt</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="document">Document</SelectItem>
+                  <SelectItem value="other">Others</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -104,7 +104,7 @@ export function KanbanItemDetails() {
 
   const [isUploadAttachmentDialogOpen, setIsUploadAttachmentDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [attachmentType, setAttachmentType] = useState<'contract' | 'receipt' | 'other'>('other');
+  const [attachmentType, setAttachmentType] = useState<'image' | 'document' | 'other'>('other');
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
@@ -893,13 +893,13 @@ export function KanbanItemDetails() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="attachment-type">Attachment Type</Label>
-              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value as 'contract' | 'receipt' | 'other')} required>
+              <Select value={attachmentType} onValueChange={(value) => setAttachmentType(value as 'image' | 'document' | 'other')} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="contract">Contract</SelectItem>
-                  <SelectItem value="receipt">Receipt</SelectItem>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="document">Document</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>

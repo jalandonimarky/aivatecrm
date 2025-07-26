@@ -1017,7 +1017,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for deal attachments
-  const createDealAttachment = async (dealId: string, file: File, attachmentType: 'contract' | 'receipt' | 'other') => {
+  const createDealAttachment = async (dealId: string, file: File, attachmentType: 'image' | 'document' | 'other') => {
     try {
       const uploaderProfileId = await getOrCreateUserProfileId();
       const fileExtension = file.name.split('.').pop();
@@ -1107,7 +1107,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban item attachments
-  const createKanbanItemAttachment = async (kanbanItemId: string, file: File, attachmentType: 'contract' | 'receipt' | 'other') => {
+  const createKanbanItemAttachment = async (kanbanItemId: string, file: File, attachmentType: 'image' | 'document' | 'other') => {
     try {
       const uploaderProfileId = await getOrCreateUserProfileId();
       const fileExtension = file.name.split('.').pop();
