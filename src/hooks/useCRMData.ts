@@ -1636,12 +1636,18 @@ export function useCRMData() {
       const updates = columnIds.map((id, index) => {
         const existingColumn = kanbanColumns.find(column => column.id === id);
         if (!existingColumn) throw new Error(`Column with ID ${id} not found for reordering.`);
-        return getKanbanColumnDbPayload({ // Apply the new helper here
-          ...existingColumn,
-          order_index: index,
+        
+        // Manually construct the payload to avoid deep type instantiation issues
+        const payload: TablesInsert<'kanban_columns'> = {
+          id: existingColumn.id,
           board_id: boardId,
-        });
-      }) as TablesInsert<'kanban_columns'>[]; // Explicit cast here
+          name: existingColumn.name,
+          order_index: index,
+          created_at: existingColumn.created_at,
+          background_color: existingColumn.background_color,
+        };
+        return payload;
+      });
 
       const { error } = await supabase
         .from('kanban_columns')
