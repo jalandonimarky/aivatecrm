@@ -63,17 +63,6 @@ export interface DealAttachment { // New interface for deal attachments
   uploader?: Profile; // To store the profile of the uploader
 }
 
-export interface KanbanItemAttachment { // NEW: Interface for Kanban item attachments
-  id: string;
-  kanban_item_id: string;
-  file_name: string;
-  file_url: string;
-  attachment_type: string; // e.g., 'image', 'document', 'other'
-  uploaded_by?: string;
-  created_at: string;
-  uploader?: Profile; // To store the profile of the uploader
-}
-
 export interface Deal {
   id: string;
   title: string;
@@ -133,7 +122,6 @@ export interface KanbanItem {
   column?: { name: string; board_id: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
   tasks?: Task[]; // New: Added tasks array for Kanban items
-  attachments?: KanbanItemAttachment[]; // NEW: Added attachments array for Kanban items
   // Tenant Info
   client_category?: string;
   tenant_contact_full_name?: string;

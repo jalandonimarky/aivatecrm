@@ -254,7 +254,6 @@ export type Database = {
           name: string
           order_index: number
           created_at: string
-          background_color: string | null
         }
         Insert: {
           id?: string
@@ -262,7 +261,6 @@ export type Database = {
           name: string
           order_index: number
           created_at?: string
-          background_color?: string | null
         }
         Update: {
           id?: string
@@ -270,7 +268,6 @@ export type Database = {
           name?: string
           order_index?: number
           created_at?: string
-          background_color?: string | null
         }
         Relationships: [
           {
@@ -306,15 +303,6 @@ export type Database = {
           bathrooms_needed: number | null
           preferred_locations: string | null
           desired_move_in_date: string | null
-          property_manager_name: string | null
-          property_contact_phone: string | null
-          property_contact_email: string | null
-          property_full_address: string | null
-          property_bedrooms: number | null
-          property_bathrooms: number | null
-          property_sq_ft: number | null
-          property_mtr_approved: boolean | null
-          status: string | null
         }
         Insert: {
           id?: string
@@ -339,15 +327,6 @@ export type Database = {
           bathrooms_needed?: number | null
           preferred_locations?: string | null
           desired_move_in_date?: string | null
-          property_manager_name?: string | null
-          property_contact_phone?: string | null
-          property_contact_email?: string | null
-          property_full_address?: string | null
-          property_bedrooms?: number | null
-          property_bathrooms?: number | null
-          property_sq_ft?: number | null
-          property_mtr_approved?: boolean | null
-          status?: string | null
         }
         Update: {
           id?: string
@@ -372,15 +351,6 @@ export type Database = {
           bathrooms_needed?: number | null
           preferred_locations?: string | null
           desired_move_in_date?: string | null
-          property_manager_name?: string | null
-          property_contact_phone?: string | null
-          property_contact_email?: string | null
-          property_full_address?: string | null
-          property_bedrooms?: number | null
-          property_bathrooms?: number | null
-          property_sq_ft?: number | null
-          property_mtr_approved?: boolean | null
-          status?: string | null
         }
         Relationships: [
           {
@@ -400,51 +370,6 @@ export type Database = {
           {
             foreignKeyName: "kanban_items_created_by_fkey"
             columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      kanban_item_attachments: {
-        Row: {
-          id: string
-          kanban_item_id: string
-          file_name: string
-          file_url: string
-          attachment_type: string
-          uploaded_by: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          kanban_item_id: string
-          file_name: string
-          file_url: string
-          attachment_type: string
-          uploaded_by?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          kanban_item_id?: string
-          file_name?: string
-          file_url?: string
-          attachment_type?: string
-          uploaded_by?: string | null
-          created_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kanban_item_attachments_kanban_item_id_fkey"
-            columns: ["kanban_item_id"]
-            isOneToOne: false
-            referencedRelation: "kanban_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_item_attachments_uploaded_by_fkey"
-            columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
