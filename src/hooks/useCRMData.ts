@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemNote } from "@/types/crm";
+import type { Contact, Deal, Task, Profile, DashboardStats, DealNote, TaskNote, DealAttachment, KanbanBoard, KanbanColumn, KanbanItem, KanbanItemNote, KanbanItemAttachment } from "@/types/crm";
 import { format, startOfMonth, subMonths, isWithinInterval, parseISO, endOfMonth } from "date-fns";
 
 export function useCRMData() {
@@ -72,7 +72,7 @@ export function useCRMData() {
 
   // Helper to filter out non-column properties for KanbanItem upsert
   const getKanbanItemDbPayload = (item: KanbanItem) => {
-    const { creator, assigned_user, column, notes, tasks, ...dbPayload } = item; // Added 'tasks' to destructuring
+    const { creator, assigned_user, column, notes, tasks, attachments, ...dbPayload } = item; // Added 'tasks' and 'attachments' to destructuring
     return dbPayload;
   };
 
@@ -167,7 +167,8 @@ export function useCRMData() {
               assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
               column:kanban_columns(name, board_id),
               notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-              tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+              tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+              attachments:kanban_item_attachments(*, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
             )
           )
         `)
@@ -197,6 +198,10 @@ export function useCRMData() {
               related_contact: task.related_contact ? (task.related_contact as Contact) : null,
               related_deal: task.related_deal ? (task.related_deal as Deal) : null,
               related_kanban_item: task.related_kanban_item ? (task.related_kanban_item as KanbanItem) : null,
+            })),
+            attachments: (item.attachments as any[] || []).map((att: any) => ({
+              ...att,
+              uploader: att.uploader ? (att.uploader as Profile) : null,
             })),
           })),
         })),
@@ -1101,6 +1106,94 @@ export function useCRMData() {
     }
   };
 
+  // CRUD operations for Kanban item attachments
+  const createKanbanItemAttachment = async (kanbanItemId: string, file: File, attachmentType: 'contract' | 'receipt' | 'other') => {
+    try {
+      const uploaderProfileId = await getOrCreateUserProfileId();
+      const fileExtension = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
+      const filePath = `${kanbanItemId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('kanban-item-attachments')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('kanban-item-attachments')
+        .getPublicUrl(filePath);
+
+      if (!publicUrlData || !publicUrlData.publicUrl) throw new Error("Could not get public URL for uploaded file.");
+
+      const { data, error: insertError } = await supabase
+        .from('kanban_item_attachments')
+        .insert({
+          kanban_item_id: kanbanItemId,
+          file_name: file.name,
+          file_url: publicUrlData.publicUrl,
+          attachment_type: attachmentType,
+          uploaded_by: uploaderProfileId,
+        })
+        .select(`
+          *,
+          uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)
+        `)
+        .single();
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Attachment uploaded",
+        description: "File has been successfully attached to the Kanban item.",
+      });
+      await fetchData();
+      return data as any as KanbanItemAttachment;
+    } catch (error: any) {
+      console.error("Error uploading attachment:", error);
+      toast({
+        title: "Error uploading attachment",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteKanbanItemAttachment = async (attachmentId: string, kanbanItemId: string, filePath: string) => {
+    try {
+      const { error: dbError } = await supabase
+        .from('kanban_item_attachments')
+        .delete()
+        .eq('id', attachmentId);
+
+      if (dbError) throw dbError;
+
+      const { error: storageError } = await supabase.storage
+        .from('kanban-item-attachments')
+        .remove([filePath.split('kanban-item-attachments/')[1]]);
+
+      if (storageError) throw storageError;
+
+      toast({
+        title: "Attachment deleted",
+        description: "File and its record have been removed successfully.",
+      });
+      await fetchData();
+    } catch (error: any) {
+      console.error("Error deleting attachment:", error);
+      toast({
+        title: "Error deleting attachment",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   // CRUD operations for Kanban Boards
   const createKanbanBoard = async (boardData: Omit<KanbanBoard, 'id' | 'created_at' | 'columns' | 'creator'>) => {
     try {
@@ -1280,7 +1373,7 @@ export function useCRMData() {
   };
 
   // CRUD operations for Kanban Items
-  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'column' | 'notes' | 'tasks'>) => {
+  const createKanbanItem = async (itemData: Omit<KanbanItem, 'id' | 'created_at' | 'creator' | 'assigned_user' | 'column' | 'notes' | 'tasks' | 'attachments'>) => {
     try {
       const creatorProfileId = await getOrCreateUserProfileId(); // This is now user.id
       const { data, error } = await supabase
@@ -1297,7 +1390,8 @@ export function useCRMData() {
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name, board_id),
           notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:kanban_item_attachments(*, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -1312,7 +1406,7 @@ export function useCRMData() {
     }
   };
 
-  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column' | 'notes' | 'tasks'>>) => {
+  const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column' | 'notes' | 'tasks' | 'attachments'>>) => {
     try {
       // The form sends all fields, so we can safely convert undefined/empty to null for nullable fields.
       const dataToUpdate = {
@@ -1335,7 +1429,8 @@ export function useCRMData() {
           assigned_user:profiles!kanban_items_assigned_to_fkey(id, first_name, last_name, email, avatar_url, role, created_at, updated_at),
           column:kanban_columns(name, board_id),
           notes:kanban_item_notes(id, kanban_item_id, content, created_at, created_by, creator:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at)),
-          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at))
+          tasks:tasks(id, title, description, status, priority, assigned_to, related_contact_id, related_deal_id, related_kanban_item_id, due_date, created_by, created_at, updated_at, assigned_user:profiles!tasks_assigned_to_fkey(id, first_name, last_name, email), related_contact:contacts(id, name), related_deal:deals(id, title, value, stage, created_at, updated_at)),
+          attachments:kanban_item_attachments(*, uploader:profiles(id, first_name, last_name, email, avatar_url, role, created_at, updated_at))
         `)
         .single();
 
@@ -1589,6 +1684,8 @@ export function useCRMData() {
     deleteKanbanItemNote,
     createDealAttachment, // Export new deal attachment functions
     deleteDealAttachment,
+    createKanbanItemAttachment,
+    deleteKanbanItemAttachment,
     createKanbanBoard,
     updateKanbanBoard,
     deleteKanbanBoard,

@@ -376,6 +376,51 @@ export type Database = {
           },
         ]
       }
+      kanban_item_attachments: {
+        Row: {
+          id: string
+          kanban_item_id: string
+          file_name: string
+          file_url: string
+          attachment_type: string
+          uploaded_by: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          kanban_item_id: string
+          file_name: string
+          file_url: string
+          attachment_type: string
+          uploaded_by?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          kanban_item_id?: string
+          file_name?: string
+          file_url?: string
+          attachment_type?: string
+          uploaded_by?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_item_attachments_kanban_item_id_fkey"
+            columns: ["kanban_item_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_item_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kanban_item_notes: {
         Row: {
           id: string
