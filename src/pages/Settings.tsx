@@ -387,7 +387,7 @@ export function Settings() {
         <CardContent>
           <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)} className="space-y-6">
             {/* Profile Picture Section */}
-            <div className="flex flex-col items-center space-y-2"> {/* Added flex-col and items-center */}
+            <div className="flex flex-col items-center space-y-4"> {/* Increased vertical spacing */}
               <Avatar className="w-24 h-24 border border-border"> {/* Increased size */}
                 {userProfile?.avatar_url ? (
                   <AvatarImage src={userProfile.avatar_url} alt={`${userProfile.first_name} ${userProfile.last_name}'s avatar`} />
@@ -398,7 +398,7 @@ export function Settings() {
                 )}
               </Avatar>
               <Label className="text-base">Profile Picture</Label> {/* Moved label here */}
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full justify-center"> {/* Centered buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 w-full max-w-xs"> {/* Use gap for spacing, limit width */}
                 <Input
                   id="avatar-upload"
                   type="file"
@@ -416,25 +416,25 @@ export function Settings() {
                 >
                   <ImageIcon className="w-4 h-4 mr-2" /> {avatarFile ? "Change Image" : "Choose Image"}
                 </Button>
-                {/* Removed conditional span for avatarFile.name */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleRemoveAvatar}
-                  disabled={uploadingAvatar || !userProfile?.avatar_url}
-                  className="text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" /> Remove
-                </Button>
                 <Button
                   type="button"
                   onClick={handleUploadAvatar}
                   disabled={uploadingAvatar || !avatarFile}
-                  className="bg-gradient-primary"
+                  className="flex-1 bg-gradient-primary"
                 >
                   {uploadingAvatar ? "Uploading..." : <><UploadCloud className="w-4 h-4 mr-2" /> Upload</>}
                 </Button>
               </div>
+              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleRemoveAvatar}
+                disabled={uploadingAvatar || !userProfile?.avatar_url}
+                className="w-full max-w-xs text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" /> Remove Avatar
+              </Button>
             </div>
 
             <Separator />
