@@ -16,6 +16,7 @@ interface KanbanBoardViewProps {
   onReorderItemsInColumn: (columnId: string, itemIds: string[]) => Promise<void>;
   onMoveItem: (itemId: string, sourceColumnId: string, sourceIndex: number, destinationColumnId: string, destinationIndex: number) => Promise<void>;
   onReorderColumns: (boardId: string, columnIds: string[]) => Promise<void>;
+  isColumnDragDisabled: boolean;
 }
 
 export function KanbanBoardView({
@@ -27,6 +28,7 @@ export function KanbanBoardView({
   onReorderItemsInColumn,
   onMoveItem,
   onReorderColumns,
+  isColumnDragDisabled,
 }: KanbanBoardViewProps) {
   const { toast } = useToast();
 
@@ -98,7 +100,12 @@ export function KanbanBoardView({
             className="flex space-x-4 p-4 overflow-x-auto custom-scrollbar h-full"
           >
             {sortedColumns.map((column, index) => (
-              <Draggable draggableId={column.id} index={index} key={column.id}>
+              <Draggable 
+                draggableId={column.id} 
+                index={index} 
+                key={column.id}
+                isDragDisabled={isColumnDragDisabled}
+              >
                 {(provided) => (
                   <div
                     ref={provided.innerRef}

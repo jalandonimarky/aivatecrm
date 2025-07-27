@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useCRMData } from "@/hooks/useCRMData";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, LayoutDashboard, Search, Filter } from "lucide-react"; // Import Search and Filter icons
+import { Plus, ArrowLeft, LayoutDashboard, Search, Filter, Lock, Unlock } from "lucide-react"; // Import Lock and Unlock icons
 import { Input } from "@/components/ui/input"; // Import Input
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 import { KanbanBoardView } from "@/components/kanban/KanbanBoardView";
@@ -46,6 +46,7 @@ export function Kanban() {
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOwner, setSelectedOwner] = useState("all");
+  const [isColumnDragDisabled, setIsColumnDragDisabled] = useState(true);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -227,13 +228,23 @@ export function Kanban() {
           <h1 className="text-3xl font-bold text-accent dark:text-primary">
             {selectedBoard.name}
           </h1>
-          <Button
-            className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-            onClick={() => handleAddColumnClick(selectedBoard.id)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Column
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsColumnDragDisabled(!isColumnDragDisabled)}
+            >
+              {isColumnDragDisabled ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
+              {isColumnDragDisabled ? 'Unlock Columns' : 'Lock Columns'}
+            </Button>
+            <Button
+              className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+              onClick={() => handleAddColumnClick(selectedBoard.id)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Column
+            </Button>
+          </div>
         </div>
         <div className="flex-1 overflow-hidden">
           <KanbanBoardView
@@ -245,6 +256,7 @@ export function Kanban() {
             onReorderItemsInColumn={handleReorderItems}
             onMoveItem={handleMoveItem}
             onReorderColumns={handleReorderColumns}
+            isColumnDragDisabled={isColumnDragDisabled}
           />
         </div>
 
