@@ -436,10 +436,6 @@ export function KanbanItemDetails() {
               <p className="text-sm text-muted-foreground">Due Date</p>
               <p className="font-semibold">{item.due_date ? format(parseISO(item.due_date), "PPP") : "N/A"}</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Task ID</p>
-              <p className="font-semibold text-xs font-mono">{item.id}</p>
-            </div>
           </div>
           
           <Separator />
