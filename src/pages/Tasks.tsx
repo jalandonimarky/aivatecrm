@@ -51,7 +51,7 @@ export function Tasks() {
   const [formData, setFormData] = useState<TaskFormData>({
     title: "",
     description: "",
-    status: "Backlog",
+    status: "pending",
     priority: "medium",
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
@@ -69,11 +69,9 @@ export function Tasks() {
   const [selectedRelatedKanbanItem, setSelectedRelatedKanbanItem] = useState<string>("all"); // New filter state
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
-    { value: "Backlog", label: "Backlog" },
-    { value: "To Do", label: "To Do" },
-    { value: "In Progress", label: "In Progress" },
-    { value: "In Review", label: "In Review" },
-    { value: "Done", label: "Done" },
+    { value: "pending", label: "Pending" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
     { value: "cancelled", label: "Cancelled" },
   ];
 
@@ -130,7 +128,7 @@ export function Tasks() {
     setFormData({
       title: "",
       description: "",
-      status: "Backlog",
+      status: "pending",
       priority: "medium",
       assigned_to: "unassigned",
       related_contact_id: "unassigned",

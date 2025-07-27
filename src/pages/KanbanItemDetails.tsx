@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, Clock, Plus, Upload, Download, Paperclip, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, Clock, Plus, Upload, Download, Paperclip } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,7 +51,6 @@ interface TaskFormData {
   related_deal_id: string;
   related_kanban_item_id: string;
   due_date: Date | undefined;
-  pr_link?: string;
 }
 
 export function KanbanItemDetails() {
@@ -93,14 +92,13 @@ export function KanbanItemDetails() {
   const [taskFormData, setTaskFormData] = useState<TaskFormData>({
     title: "",
     description: "",
-    status: "Backlog",
+    status: "pending",
     priority: "medium",
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
     related_deal_id: "unassigned",
     related_kanban_item_id: "unassigned",
     due_date: undefined,
-    pr_link: "",
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -110,11 +108,9 @@ export function KanbanItemDetails() {
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
-    { value: "Backlog", label: "Backlog" },
-    { value: "To Do", label: "To Do" },
-    { value: "In Progress", label: "In Progress" },
-    { value: "In Review", label: "In Review" },
-    { value: "Done", label: "Done" },
+    { value: "pending", label: "Pending" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
     { value: "cancelled", label: "Cancelled" },
   ];
 
@@ -215,14 +211,13 @@ export function KanbanItemDetails() {
     setTaskFormData({
       title: "",
       description: "",
-      status: "Backlog",
+      status: "pending",
       priority: "medium",
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
       related_deal_id: "unassigned",
       related_kanban_item_id: id || "unassigned",
       due_date: undefined,
-      pr_link: "",
     });
     setEditingTask(null);
   };
@@ -244,7 +239,6 @@ export function KanbanItemDetails() {
       related_deal_id: task.related_deal_id || id || "unassigned",
       related_kanban_item_id: task.related_kanban_item_id || id || "unassigned",
       due_date: task.due_date ? new Date(task.due_date) : undefined,
-      pr_link: task.pr_link || "",
     });
     setIsTaskDialogOpen(true);
   };
@@ -565,67 +559,6 @@ export function KanbanItemDetails() {
       </CollapsibleCard>
 
       <CollapsibleCard
-        title={`Project Information (${relatedTasks.length})`}
-        storageKey="kanban-project-info-collapsed"
-        defaultOpen={true}
-        optionsMenu={
-          <Button variant="outline" size="sm" onClick={handleAddTaskClick} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
-            <Plus className="w-4 h-4 mr-2" /> Add Task
-          </Button>
-        }
-      >
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Task ID</TableHead>
-                <TableHead>Task Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>PR Link</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {relatedTasks.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No tasks related to this item yet.</TableCell></TableRow>
-              ) : (
-                relatedTasks.map((task) => (
-                  <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                    <TableCell className="font-mono text-xs text-muted-foreground">{task.id.substring(0, 8)}</TableCell>
-                    <TableCell className="font-bold">
-                      <NavLink to={`/tasks/${task.id}`} className="text-foreground hover:underline">
-                        {task.title}
-                      </NavLink>
-                    </TableCell>
-                    <TableCell><TaskStatusBadge status={task.status} /></TableCell>
-                    <TableCell>
-                      {task.pr_link ? (
-                        <a href={task.pr_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center">
-                          <LinkIcon className="w-4 h-4 mr-1" />
-                          View PR
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => handleEditTaskClick(task)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CollapsibleCard>
-
-      <CollapsibleCard
         title={`Attachments (${sortedAttachments.length})`}
         storageKey="kanban-attachments-collapsed"
         defaultOpen={true}
@@ -755,6 +688,59 @@ export function KanbanItemDetails() {
         </div>
       </CollapsibleCard>
 
+      <CollapsibleCard
+        title={`Related Tasks (${relatedTasks.length})`}
+        storageKey="kanban-related-tasks-collapsed"
+        optionsMenu={
+          <Button variant="outline" size="sm" onClick={handleAddTaskClick} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
+            <Plus className="w-4 h-4 mr-2" /> Add Task
+          </Button>
+        }
+      >
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Assigned To</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {relatedTasks.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No tasks related to this Kanban item yet.</TableCell></TableRow>
+              ) : (
+                relatedTasks.map((task) => (
+                  <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
+                    <TableCell className="font-bold">
+                      <NavLink to={`/tasks/${task.id}`} className="text-foreground hover:underline">
+                        {task.title}
+                      </NavLink>
+                    </TableCell>
+                    <TableCell><TaskStatusBadge status={task.status} /></TableCell>
+                    <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
+                    <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
+                    <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleEditTaskClick(task)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </CollapsibleCard>
+
       <Dialog open={isEditNoteDialogOpen} onOpenChange={setIsEditNoteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader><DialogTitle>Edit Note</DialogTitle></DialogHeader>
@@ -852,10 +838,6 @@ export function KanbanItemDetails() {
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pr_link">PR Link</Label>
-              <Input id="pr_link" value={taskFormData.pr_link} onChange={(e) => setTaskFormData(prev => ({ ...prev, pr_link: e.target.value }))} placeholder="https://github.com/..." />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
