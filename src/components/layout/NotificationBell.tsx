@@ -16,16 +16,11 @@ export function NotificationBell() {
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
-    if (notification.task_id) {
+    // Prioritize navigating to the Kanban item detail page if a kanban_item_id exists
+    if (notification.kanban_item_id) {
+      navigate(`/kanban/items/${notification.kanban_item_id}`);
+    } else if (notification.task_id) {
       navigate(`/tasks/${notification.task_id}`);
-    } else if (notification.kanban_item_id) {
-      const boardId = notification.kanban_items?.kanban_columns?.board_id;
-      if (boardId) {
-        navigate(`/kanban?boardId=${boardId}`);
-      } else {
-        // Fallback if boardId isn't found
-        navigate(`/kanban`);
-      }
     }
   };
 
