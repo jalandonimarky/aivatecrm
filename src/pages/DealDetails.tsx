@@ -76,7 +76,7 @@ export function DealDetails() {
   const [taskFormData, setTaskFormData] = useState<TaskFormData>({
     title: "",
     description: "",
-    status: "pending",
+    status: "Backlog",
     priority: "medium",
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
@@ -97,9 +97,11 @@ export function DealDetails() {
 
 
   const taskStatuses: { value: Task['status'], label: string }[] = [
-    { value: "pending", label: "Pending" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "completed", label: "Completed" },
+    { value: "Backlog", label: "Backlog" },
+    { value: "To Do", label: "To Do" },
+    { value: "In Progress", label: "In Progress" },
+    { value: "In Review", label: "In Review" },
+    { value: "Done", label: "Done" },
     { value: "cancelled", label: "Cancelled" },
   ];
 
@@ -175,7 +177,7 @@ export function DealDetails() {
     setTaskFormData({
       title: "",
       description: "",
-      status: "pending",
+      status: "Backlog",
       priority: "medium",
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
@@ -997,16 +999,16 @@ export function DealDetails() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select a Kanban item" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">None</SelectItem>
-                  {kanbanItems.map(item => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.title} ({item.column?.name || 'No Column'})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectContent>
+                    <SelectItem value="unassigned">None</SelectItem>
+                    {kanbanItems.map(item => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.title} ({item.column?.name || 'No Column'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
             <DialogFooter>
               <Button

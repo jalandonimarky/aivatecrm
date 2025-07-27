@@ -11,17 +11,25 @@ export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
   let text = "";
 
   switch (status) {
-    case "completed":
+    case "Done":
       className = "bg-success text-success-foreground border-success";
-      text = "Completed";
+      text = "Done";
       break;
-    case "pending":
-      className = "bg-warning text-warning-foreground border-warning";
-      text = "Pending";
+    case "Backlog":
+      className = "bg-muted text-muted-foreground border-border";
+      text = "Backlog";
       break;
-    case "in_progress":
+    case "To Do":
+      className = "bg-secondary text-secondary-foreground border-secondary";
+      text = "To Do";
+      break;
+    case "In Progress":
       className = "bg-accent text-accent-foreground border-accent";
       text = "In Progress";
+      break;
+    case "In Review":
+      className = "bg-warning text-warning-foreground border-warning";
+      text = "In Review";
       break;
     case "cancelled":
       className = "bg-destructive text-destructive-foreground border-destructive";

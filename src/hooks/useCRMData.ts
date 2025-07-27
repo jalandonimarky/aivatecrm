@@ -280,9 +280,9 @@ export function useCRMData() {
     const completedDealsCurrent = dealsData.filter(deal => deal.stage === 'completed'); // Changed to all deals
     const cancelledDealsCurrent = dealsData.filter(deal => deal.stage === 'cancelled'); // Changed to all deals
     const pipelineDealsCurrent = dealsData.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage)); // Changed to all deals
-    const completedTasksCurrent = tasksData.filter(task => task.status === 'completed'); // Changed to all tasks
+    const completedTasksCurrent = tasksData.filter(task => task.status === 'Done'); // Changed to all tasks
     const overdueTasksCurrent = tasksData.filter(task => 
-      task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
+      task.due_date && new Date(task.due_date) < new Date() && task.status !== 'Done'
     ); // Changed to all tasks
     const pendingTasksCurrentCount = tasksData.length - completedTasksCurrent.length; // Changed to all tasks
 
@@ -292,7 +292,7 @@ export function useCRMData() {
     // Previous month calculations for change metrics
     const paidDealsPrev = prevMonthDeals.filter(deal => deal.stage === 'paid');
     const pipelineDealsPrev = prevMonthDeals.filter(deal => !['paid', 'completed', 'cancelled'].includes(deal.stage));
-    const completedTasksPrev = prevMonthTasks.filter(task => task.status === 'completed');
+    const completedTasksPrev = prevMonthTasks.filter(task => task.status === 'Done');
     const pendingTasksPrevCount = prevMonthTasks.length - completedTasksPrev.length;
 
 

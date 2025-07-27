@@ -98,12 +98,13 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'Backlog' | 'To Do' | 'In Progress' | 'In Review' | 'Done' | 'cancelled';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   assigned_to?: string;
   related_contact_id?: string;
   related_deal_id?: string;
   related_kanban_item_id?: string; // New: Added related_kanban_item_id
+  pr_link?: string;
   due_date?: string;
   created_by?: string;
   created_at: string;
