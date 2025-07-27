@@ -469,53 +469,55 @@ export function KanbanItemDetails() {
         </TabsList>
 
         <TabsContent value="notes">
-          <CollapsibleCard
-            title={`Notes (${sortedNotes.length})`}
-            storageKey="kanban-notes-collapsed"
-            optionsMenu={
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsAddingNote(true)}
-                className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Add Note
-              </Button>
-            }
-          >
-            <div className="space-y-4">
-              {sortedNotes.length === 0 && !isAddingNote && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
-              {sortedNotes.map((note: KanbanItemNote) => (
-                <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
-                    </p>
+          <Card className="bg-gradient-card border-border/50">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                Notes ({sortedNotes.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {sortedNotes.length === 0 && !isAddingNote && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
+                {sortedNotes.map((note: KanbanItemNote) => (
+                  <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
+                    <div>
+                      <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Added by {note.creator ? getFullName(note.creator) : "Unknown"} on {format(parseISO(note.created_at), "MMM dd, yyyy 'at' hh:mm a")}
+                      </p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={() => handleEditNoteClick(note)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteNote(note.id, note.kanban_item_id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => handleEditNoteClick(note)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDeleteNote(note.id, note.kanban_item_id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              ))}
-              {isAddingNote && (
-                <div className="mt-4 space-y-2">
-                  <Label htmlFor="new-note-content">Add New Note</Label>
-                  <Textarea id="new-note-content" value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)} placeholder="Type your note here..." rows={3} />
-                  <div className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
-                    <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
+                ))}
+                
+                {isAddingNote ? (
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="new-note-content">Add New Note</Label>
+                    <Textarea id="new-note-content" value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)} placeholder="Type your note here..." rows={3} />
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
+                      <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </CollapsibleCard>
+                ) : (
+                  <Button 
+                    onClick={() => setIsAddingNote(true)}
+                    className="w-full bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Note
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="subtasks">
