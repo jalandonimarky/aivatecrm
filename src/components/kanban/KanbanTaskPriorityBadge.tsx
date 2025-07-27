@@ -13,10 +13,10 @@ export function KanbanTaskPriorityBadge({ priority }: KanbanTaskPriorityBadgePro
   let className = "";
   switch (priority) {
     case "Low":
-      className = "bg-secondary text-secondary-foreground border-secondary";
+      className = "bg-muted text-muted-foreground border-border";
       break;
     case "Medium":
-      className = "bg-accent text-accent-foreground border-accent";
+      className = "bg-secondary text-secondary-foreground border-secondary";
       break;
     case "High":
       className = "bg-warning text-warning-foreground border-warning";

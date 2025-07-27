@@ -11,6 +11,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import type { KanbanItem, Profile } from "@/types/crm";
 
 interface KanbanItemFormDialogProps {
@@ -48,6 +49,9 @@ export function KanbanItemFormDialog({
     { value: "p3", label: "P3 - Low" },
   ];
 
+  const statuses: KanbanItem['status'][] = ['Backlog', 'To Do', 'In Progress', 'In Review', 'Done'];
+  const priorities: KanbanItem['priority'][] = ['Low', 'Medium', 'High', 'Critical'];
+
   useEffect(() => {
     if (isOpen) {
       const initialCategory = initialData?.category;
@@ -64,7 +68,9 @@ export function KanbanItemFormDialog({
         priority_level: initialData?.priority_level || undefined,
         assigned_to: initialData?.assigned_to || "unassigned",
         due_date: initialData?.due_date,
-        event_time: initialData?.event_time || undefined,
+        status: initialData?.status || undefined,
+        priority: initialData?.priority || undefined,
+        pr_link: initialData?.pr_link || "",
       });
       setLoading(false);
     }
@@ -188,25 +194,49 @@ export function KanbanItemFormDialog({
                 </Select>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="item-due-date">Due Date</Label>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !formData.due_date && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.due_date ? format(new Date(formData.due_date), "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar mode="single" selected={formData.due_date ? new Date(formData.due_date) : undefined} onSelect={(date) => { handleInputChange('due_date', date); setIsCalendarOpen(false); }} initialFocus />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <Separator />
+              <h3 className="text-sm font-medium text-muted-foreground">Project Details</h3>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="item-due-date">Due Date</Label>
-                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !formData.due_date && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.due_date ? format(new Date(formData.due_date), "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={formData.due_date ? new Date(formData.due_date) : undefined} onSelect={(date) => { handleInputChange('due_date', date); setIsCalendarOpen(false); }} initialFocus />
-                    </PopoverContent>
-                  </Popover>
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={formData.status || "none"} onValueChange={(value) => handleInputChange('status', value === "none" ? undefined : value)}>
+                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="item-event-time">Time</Label>
-                  <Input id="item-event-time" type="time" value={formData.event_time || ""} onChange={(e) => handleInputChange('event_time', e.target.value)} />
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={formData.priority || "none"} onValueChange={(value) => handleInputChange('priority', value === "none" ? undefined : value)}>
+                    <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {priorities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pr-link">PR Link</Label>
+                <Input id="pr-link" value={formData.pr_link || ""} onChange={(e) => handleInputChange('pr_link', e.target.value)} placeholder="Paste link here" />
               </div>
             </div>
           </ScrollArea>

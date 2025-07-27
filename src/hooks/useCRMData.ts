@@ -1416,7 +1416,6 @@ export function useCRMData() {
         priority_level: updates.priority_level || null,
         assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
         due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
-        event_time: updates.event_time || null,
       };
 
       const { data, error } = await supabase

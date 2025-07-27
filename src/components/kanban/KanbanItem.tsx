@@ -113,12 +113,6 @@ export function KanbanItem({ item, index }: KanbanItemProps) {
                         {format(new Date(item.due_date), "MMM dd")}
                       </div>
                     )}
-                    {item.event_time && (
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p')}
-                      </div>
-                    )}
                   </div>
                 </>
               )}

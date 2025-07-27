@@ -19,10 +19,10 @@ export function KanbanStatusBadge({ status }: KanbanStatusBadgeProps) {
       className = "bg-secondary text-secondary-foreground border-secondary";
       break;
     case "In Progress":
-      className = "bg-accent text-accent-foreground border-accent";
+      className = "bg-warning text-warning-foreground border-warning";
       break;
     case "In Review":
-      className = "bg-primary text-primary-foreground border-primary";
+      className = "bg-warning text-warning-foreground border-warning";
       break;
     case "Done":
       className = "bg-success text-success-foreground border-success";

@@ -35,7 +35,6 @@ import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
 import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog";
-import { ProjectInfoFormDialog } from "@/components/kanban/ProjectInfoFormDialog";
 import { KanbanStatusBadge } from "@/components/kanban/KanbanStatusBadge";
 import { KanbanTaskPriorityBadge } from "@/components/kanban/KanbanTaskPriorityBadge";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
@@ -95,7 +94,6 @@ export function KanbanItemDetails() {
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
   const [isTenantInfoDialogOpen, setIsTenantInfoDialogOpen] = useState(false);
   const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false);
-  const [isProjectInfoDialogOpen, setIsProjectInfoDialogOpen] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
@@ -168,12 +166,6 @@ export function KanbanItemDetails() {
     if (!item) return;
     await updateKanbanItem(item.id, data);
     setIsHousingInfoDialogOpen(false);
-  };
-
-  const handleUpdateProjectInfoSubmit = async (data: Partial<KanbanItem>) => {
-    if (!item) return;
-    await updateKanbanItem(item.id, data);
-    setIsProjectInfoDialogOpen(false);
   };
 
   const handleDeleteItem = async () => {
@@ -425,8 +417,12 @@ export function KanbanItemDetails() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Status</p>
+              <KanbanStatusBadge status={item.status} />
+            </div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Priority</p>
-              {item.priority_level ? <KanbanPriorityBadge priority={item.priority_level} /> : <p className="font-semibold">N/A</p>}
+              <KanbanTaskPriorityBadge priority={item.priority} />
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Category</p>
@@ -441,66 +437,31 @@ export function KanbanItemDetails() {
               <p className="font-semibold">{item.due_date ? format(parseISO(item.due_date), "PPP") : "N/A"}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Event Time</p>
-              <p className="font-semibold">{item.event_time ? format(parse(item.event_time, 'HH:mm:ss', new Date()), 'p') : "N/A"}</p>
+              <p className="text-sm text-muted-foreground">Task ID</p>
+              <p className="font-semibold text-xs font-mono">{item.id}</p>
             </div>
           </div>
-          {item.description && (
-            <>
-              <Separator />
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Description</p>
-                <p className="text-foreground whitespace-pre-wrap">{item.description}</p>
-              </div>
-            </>
-          )}
+          
+          <Separator />
+
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Description</p>
+              <p className="text-foreground whitespace-pre-wrap">{item.description || "No description provided."}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">PR Link</p>
+              {isValidUrl(item.pr_link) ? (
+                <a href={item.pr_link!} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline break-all">
+                  {item.pr_link}
+                </a>
+              ) : (
+                <p className="font-semibold">{item.pr_link || "N/A"}</p>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
-
-      <CollapsibleCard
-        title="Project Information"
-        storageKey="kanban-project-info-collapsed"
-        optionsMenu={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => setIsProjectInfoDialogOpen(true)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Project Info
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Task ID</p>
-            <p className="font-semibold text-xs font-mono">{item.id}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Status</p>
-            <KanbanStatusBadge status={item.status} />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Priority</p>
-            <KanbanTaskPriorityBadge priority={item.priority} />
-          </div>
-          <div className="col-span-full">
-            <p className="text-sm text-muted-foreground">PR Link</p>
-            {isValidUrl(item.pr_link) ? (
-              <a href={item.pr_link!} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline break-all">
-                {item.pr_link}
-              </a>
-            ) : (
-              <p className="font-semibold">{item.pr_link || "N/A"}</p>
-            )}
-          </div>
-        </div>
-      </CollapsibleCard>
 
       <CollapsibleCard
         title="Tenant Lead Information"
@@ -851,15 +812,6 @@ export function KanbanItemDetails() {
           onOpenChange={setIsHousingInfoDialogOpen}
           initialData={item}
           onSubmit={handleUpdateHousingInfoSubmit}
-        />
-      )}
-
-      {item && (
-        <ProjectInfoFormDialog
-          isOpen={isProjectInfoDialogOpen}
-          onOpenChange={setIsProjectInfoDialogOpen}
-          initialData={item}
-          onSubmit={handleUpdateProjectInfoSubmit}
         />
       )}
 
