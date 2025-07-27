@@ -215,7 +215,7 @@ export function KanbanItemFormDialog({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status || "none"} onValueChange={(value) => handleInputChange('status', value === "none" ? undefined : value)}>
+                  <Select value={formData.status || "none"} onValueChange={(value) => handleInputChange('status', value === "none" ? null : value)}>
                     <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
@@ -225,7 +225,7 @@ export function KanbanItemFormDialog({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="priority">Priority</Label>
-                  <Select value={formData.priority || "none"} onValueChange={(value) => handleInputChange('priority', value === "none" ? undefined : value)}>
+                  <Select value={formData.priority || "none"} onValueChange={(value) => handleInputChange('priority', value === "none" ? null : value)}>
                     <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
