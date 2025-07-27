@@ -28,11 +28,9 @@ export function Analytics() {
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
-      case 'Done': return "hsl(var(--success))";
-      case 'Backlog': return "hsl(var(--muted))";
-      case 'To Do': return "hsl(var(--secondary))";
-      case 'In Progress': return "hsl(var(--accent))";
-      case 'In Review': return "hsl(var(--warning))";
+      case 'completed': return "hsl(var(--success))";
+      case 'pending': return "hsl(var(--warning))";
+      case 'in_progress': return "hsl(var(--accent))";
       case 'cancelled': return "hsl(var(--destructive))";
       default: return "hsl(var(--foreground))";
     }
