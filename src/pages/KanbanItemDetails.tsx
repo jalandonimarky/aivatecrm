@@ -96,7 +96,7 @@ export function KanbanItemDetails() {
     priority: "medium",
     assigned_to: "unassigned",
     related_contact_id: "unassigned",
-    related_deal_id: id || "unassigned",
+    related_deal_id: "unassigned",
     related_kanban_item_id: "unassigned",
     due_date: undefined,
   });
@@ -215,8 +215,8 @@ export function KanbanItemDetails() {
       priority: "medium",
       assigned_to: "unassigned",
       related_contact_id: "unassigned",
-      related_deal_id: id || "unassigned",
-      related_kanban_item_id: "unassigned",
+      related_deal_id: "unassigned",
+      related_kanban_item_id: id || "unassigned",
       due_date: undefined,
     });
     setEditingTask(null);
