@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 interface CollapsibleCardProps {
   title: string;
   children: React.ReactNode;
-  optionsMenu?: React.ReactNode; // For the three-dotted menu
   storageKey: string; // For persistence
   defaultOpen?: boolean; // Initial state if no stored state
 }
@@ -14,7 +13,6 @@ interface CollapsibleCardProps {
 export function CollapsibleCard({
   title,
   children,
-  optionsMenu,
   storageKey,
   defaultOpen = true,
 }: CollapsibleCardProps) {
@@ -55,11 +53,6 @@ export function CollapsibleCard({
             isOpen ? "rotate-180" : "rotate-0"
           )} />
         </div>
-        {optionsMenu && (
-          <div onClick={(e) => e.stopPropagation()}> {/* Prevent toggle when clicking menu */}
-            {optionsMenu}
-          </div>
-        )}
       </CardHeader>
       <div className={cn(
         "grid overflow-hidden transition-all duration-200 ease-in-out",
