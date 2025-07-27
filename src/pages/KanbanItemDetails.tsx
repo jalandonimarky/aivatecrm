@@ -40,6 +40,7 @@ import { KanbanStatusBadge } from "@/components/kanban/KanbanStatusBadge";
 import { KanbanTaskPriorityBadge } from "@/components/kanban/KanbanTaskPriorityBadge";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
+import { CollapsibleCard } from "@/components/CollapsibleCard";
 import type { KanbanItem, KanbanItemNote, Task, KanbanItemAttachment } from "@/types/crm";
 import { useToast } from "@/hooks/use-toast";
 
@@ -467,9 +468,10 @@ export function KanbanItemDetails() {
         </TabsList>
 
         <TabsContent value="notes">
-          <Card className="bg-gradient-card border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Notes ({sortedNotes.length})</CardTitle>
+          <CollapsibleCard
+            title={`Notes (${sortedNotes.length})`}
+            storageKey="kanban-notes-collapsed"
+            optionsMenu={
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -478,8 +480,9 @@ export function KanbanItemDetails() {
               >
                 <Plus className="w-4 h-4 mr-2" /> Add Note
               </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            }
+          >
+            <div className="space-y-4">
               {sortedNotes.length === 0 && !isAddingNote && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
               {sortedNotes.map((note: KanbanItemNote) => (
                 <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
@@ -510,173 +513,222 @@ export function KanbanItemDetails() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </CollapsibleCard>
         </TabsContent>
 
         <TabsContent value="activity">
-          <Card className="bg-gradient-card border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Related Tasks ({relatedTasks.length})</CardTitle>
+          <CollapsibleCard
+            title={`Related Tasks (${relatedTasks.length})`}
+            storageKey="kanban-related-tasks-collapsed"
+            optionsMenu={
               <Button variant="outline" size="sm" onClick={handleAddTaskClick} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
                 <Plus className="w-4 h-4 mr-2" /> Add Task
               </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Assigned To</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {relatedTasks.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No tasks related to this Kanban item yet.</TableCell></TableRow>
-                    ) : (
-                      relatedTasks.map((task) => (
-                        <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
-                          <TableCell className="font-bold">
-                            <NavLink to={`/tasks/${task.id}`} className="text-foreground hover:underline">
-                              {task.title}
-                            </NavLink>
-                          </TableCell>
-                          <TableCell><TaskStatusBadge status={task.status} /></TableCell>
-                          <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
-                          <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
-                          <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem onClick={() => handleEditTaskClick(task)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+            }
+          >
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Assigned To</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {relatedTasks.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No tasks related to this Kanban item yet.</TableCell></TableRow>
+                  ) : (
+                    relatedTasks.map((task) => (
+                      <TableRow key={task.id} className="hover:bg-muted/50 transition-smooth">
+                        <TableCell className="font-bold">
+                          <NavLink to={`/tasks/${task.id}`} className="text-foreground hover:underline">
+                            {task.title}
+                          </NavLink>
+                        </TableCell>
+                        <TableCell><TaskStatusBadge status={task.status} /></TableCell>
+                        <TableCell><TaskPriorityBadge priority={task.priority} /></TableCell>
+                        <TableCell>{task.assigned_user ? getFullName(task.assigned_user) : "-"}</TableCell>
+                        <TableCell>{task.due_date ? format(new Date(task.due_date), "PPP") : "-"}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem onClick={() => handleEditTaskClick(task)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CollapsibleCard>
         </TabsContent>
 
         <TabsContent value="more-info" className="space-y-6">
-          <Card className="bg-gradient-card border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Tenant Lead Information</CardTitle>
+          <CollapsibleCard
+            title="Tenant Lead Information"
+            storageKey="kanban-tenant-info-collapsed"
+            optionsMenu={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button>
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setIsTenantInfoDialogOpen(true)}><Edit className="mr-2 h-4 w-4" />Edit Tenant Info</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsTenantInfoDialogOpen(true)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Tenant Info
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><p className="text-sm text-muted-foreground">Client Category</p><p className="font-semibold">{item.client_category || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Tenant Name</p><p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Tenant Phone</p><p className="font-semibold">{item.tenant_contact_phone || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Tenant Email</p><p className="font-semibold">{item.tenant_contact_email || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Bedrooms Needed</p><p className="font-semibold">{item.bedrooms_needed || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Bathrooms Needed</p><p className="font-semibold">{item.bathrooms_needed || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Desired Move-in Date</p><p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Do you have pets? If yes, how many?</p><p className="font-semibold">{item.pets_info || "N/A"}</p></div>
-              </div>
-              <Separator className="my-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><p className="text-sm text-muted-foreground">Household Composition</p><p className="font-semibold whitespace-pre-wrap">{item.household_composition || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Preferred Locations</p><p className="font-semibold whitespace-pre-wrap">{item.preferred_locations || "N/A"}</p></div>
-              </div>
-            </CardContent>
-          </Card>
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div><p className="text-sm text-muted-foreground">Client Category</p><p className="font-semibold">{item.client_category || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Tenant Name</p><p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Tenant Phone</p><p className="font-semibold">{item.tenant_contact_phone || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Tenant Email</p><p className="font-semibold">{item.tenant_contact_email || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bedrooms Needed</p><p className="font-semibold">{item.bedrooms_needed || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bathrooms Needed</p><p className="font-semibold">{item.bathrooms_needed || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Desired Move-in Date</p><p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Do you have pets? If yes, how many?</p><p className="font-semibold">{item.pets_info || "N/A"}</p></div>
+            </div>
+            <Separator className="my-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><p className="text-sm text-muted-foreground">Household Composition</p><p className="font-semibold whitespace-pre-wrap">{item.household_composition || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Preferred Locations</p><p className="font-semibold whitespace-pre-wrap">{item.preferred_locations || "N/A"}</p></div>
+            </div>
+          </CollapsibleCard>
 
-          <Card className="bg-gradient-card border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Housing Lead Information</CardTitle>
+          <CollapsibleCard
+            title="Housing Lead Information"
+            storageKey="kanban-housing-info-collapsed"
+            optionsMenu={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button>
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setIsHousingInfoDialogOpen(true)}><Edit className="mr-2 h-4 w-4" />Edit Housing Info</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsHousingInfoDialogOpen(true)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Housing Info
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><p className="text-sm text-muted-foreground">Property Manager / Host</p><p className="font-semibold">{item.property_manager_name || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Contact Phone</p><p className="font-semibold">{item.property_contact_phone || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Contact Email</p><p className="font-semibold">{item.property_contact_email || "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Bedrooms</p><p className="font-semibold">{item.property_bedrooms ?? "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Bathrooms</p><p className="font-semibold">{item.property_bathrooms ?? "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Square Footage</p><p className="font-semibold">{item.property_sq_ft ? `${item.property_sq_ft} sq ft` : "N/A"}</p></div>
-                <div><p className="text-sm text-muted-foreground">MTR-Approved</p><p className="font-semibold">{typeof item.property_mtr_approved === 'boolean' ? (item.property_mtr_approved ? "Yes" : "No") : "N/A"}</p></div>
-              </div>
-              <Separator className="my-4" />
-              <div><p className="text-sm text-muted-foreground">Property Full Address</p><p className="font-semibold whitespace-pre-wrap">{item.property_full_address || "N/A"}</p></div>
-            </CardContent>
-          </Card>
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div><p className="text-sm text-muted-foreground">Property Manager / Host</p><p className="font-semibold">{item.property_manager_name || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Contact Phone</p><p className="font-semibold">{item.property_contact_phone || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Contact Email</p><p className="font-semibold">{item.property_contact_email || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bedrooms</p><p className="font-semibold">{item.property_bedrooms ?? "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bathrooms</p><p className="font-semibold">{item.property_bathrooms ?? "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Square Footage</p><p className="font-semibold">{item.property_sq_ft ? `${item.property_sq_ft} sq ft` : "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">MTR-Approved</p><p className="font-semibold">{typeof item.property_mtr_approved === 'boolean' ? (item.property_mtr_approved ? "Yes" : "No") : "N/A"}</p></div>
+            </div>
+            <Separator className="my-4" />
+            <div>
+              <p className="text-sm text-muted-foreground">Property Full Address</p>
+              <p className="font-semibold whitespace-pre-wrap">{item.property_full_address || "N/A"}</p>
+            </div>
+          </CollapsibleCard>
 
-          <Card className="bg-gradient-card border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Attachments ({sortedAttachments.length})</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => setIsUploadAttachmentDialogOpen(true)} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">
+          <CollapsibleCard
+            title={`Attachments (${sortedAttachments.length})`}
+            storageKey="kanban-attachments-collapsed"
+            defaultOpen={true}
+            optionsMenu={
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsUploadAttachmentDialogOpen(true)}
+                className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+              >
                 <Upload className="w-4 h-4 mr-2" /> Upload Attachment
               </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
+            }
+          >
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>File Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Uploaded By</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedAttachments.length === 0 ? (
                     <TableRow>
-                      <TableHead>File Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Uploaded By</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        No attachments yet for this item.
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedAttachments.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No attachments yet for this item.</TableCell></TableRow>
-                    ) : (
-                      sortedAttachments.map((attachment) => (
-                        <TableRow key={attachment.id} className="hover:bg-muted/50 transition-smooth">
-                          <TableCell className="font-medium flex items-center space-x-2">
-                            <Paperclip className="w-4 h-4 text-muted-foreground" />
-                            <a href={attachment.file_url} target="_blank" rel="noopener noreferrer" className="hover:underline">{attachment.file_name}</a>
-                          </TableCell>
-                          <TableCell><Badge variant="secondary">{attachment.attachment_type.charAt(0).toUpperCase() + attachment.attachment_type.slice(1)}</Badge></TableCell>
-                          <TableCell>{attachment.uploader ? getFullName(attachment.uploader) : "Unknown"}</TableCell>
-                          <TableCell>{format(parseISO(attachment.created_at), "MMM dd, yyyy")}</TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 active:scale-95"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem asChild><a href={attachment.file_url} target="_blank" rel="noopener noreferrer"><Download className="mr-2 h-4 w-4" />Download</a></DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteAttachment(attachment)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                  ) : (
+                    sortedAttachments.map((attachment) => (
+                      <TableRow key={attachment.id} className="hover:bg-muted/50 transition-smooth">
+                        <TableCell className="font-medium flex items-center space-x-2">
+                          <Paperclip className="w-4 h-4 text-muted-foreground" />
+                          <a 
+                            href={attachment.file_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="hover:underline"
+                          >
+                            {attachment.file_name}
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">
+                            {attachment.attachment_type.charAt(0).toUpperCase() + attachment.attachment_type.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{attachment.uploader ? getFullName(attachment.uploader) : "Unknown"}</TableCell>
+                        <TableCell>{format(parseISO(attachment.created_at), "MMM dd, yyyy")}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem asChild>
+                                <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Download
+                                </a>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteAttachment(attachment)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CollapsibleCard>
         </TabsContent>
       </Tabs>
 

@@ -8,6 +8,7 @@ interface CollapsibleCardProps {
   children: React.ReactNode;
   storageKey: string; // For persistence
   defaultOpen?: boolean; // Initial state if no stored state
+  optionsMenu?: React.ReactNode; // Re-add the options menu
 }
 
 export function CollapsibleCard({
@@ -15,6 +16,7 @@ export function CollapsibleCard({
   children,
   storageKey,
   defaultOpen = true,
+  optionsMenu,
 }: CollapsibleCardProps) {
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -43,7 +45,10 @@ export function CollapsibleCard({
 
   return (
     <Card className="bg-gradient-card border-border/50">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 cursor-pointer" onClick={toggleOpen}>
+      <CardHeader 
+        className="flex flex-row items-center justify-between space-y-0 pb-2 cursor-pointer" 
+        onClick={toggleOpen}
+      >
         <div className="flex items-center flex-1 min-w-0 pr-2">
           <CardTitle className="text-lg font-semibold flex-1 min-w-0 pr-2 break-words">
             {title}
@@ -53,6 +58,11 @@ export function CollapsibleCard({
             isOpen ? "rotate-180" : "rotate-0"
           )} />
         </div>
+        {optionsMenu && (
+          <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 ml-2">
+            {optionsMenu}
+          </div>
+        )}
       </CardHeader>
       <div className={cn(
         "grid overflow-hidden transition-all duration-200 ease-in-out",
