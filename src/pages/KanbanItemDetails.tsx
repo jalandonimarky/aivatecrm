@@ -463,7 +463,7 @@ export function KanbanItemDetails() {
       <Tabs defaultValue="notes" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="notes" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Notes</TabsTrigger>
-          <TabsTrigger value="activity" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Activity</TabsTrigger>
+          <TabsTrigger value="subtasks" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Subtasks</TabsTrigger>
           <TabsTrigger value="attachments" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Attachments</TabsTrigger>
           <TabsTrigger value="more-info" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">More Information</TabsTrigger>
         </TabsList>
@@ -518,7 +518,7 @@ export function KanbanItemDetails() {
           </CollapsibleCard>
         </TabsContent>
 
-        <TabsContent value="activity">
+        <TabsContent value="subtasks">
           <CollapsibleCard
             title={`Related Tasks (${relatedTasks.length})`}
             storageKey="kanban-related-tasks-collapsed"
