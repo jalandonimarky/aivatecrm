@@ -303,6 +303,7 @@ export type Database = {
           bathrooms_needed: number | null
           preferred_locations: string | null
           desired_move_in_date: string | null
+          lead_type: string | null
         }
         Insert: {
           id?: string
@@ -327,6 +328,7 @@ export type Database = {
           bathrooms_needed?: number | null
           preferred_locations?: string | null
           desired_move_in_date?: string | null
+          lead_type?: string | null
         }
         Update: {
           id?: string
@@ -351,6 +353,7 @@ export type Database = {
           bathrooms_needed?: number | null
           preferred_locations?: string | null
           desired_move_in_date?: string | null
+          lead_type?: string | null
         }
         Relationships: [
           {
@@ -556,6 +559,45 @@ export type Database = {
           },
         ]
       }
+      task_notes: {
+        Row: {
+          id: string
+          task_id: string
+          content: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          task_id: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          task_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_notes_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string | null
@@ -571,6 +613,7 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          pr_link: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -586,6 +629,7 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          pr_link?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -601,6 +645,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          pr_link?: string | null
         }
         Relationships: [
           {

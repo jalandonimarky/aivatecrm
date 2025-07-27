@@ -108,6 +108,7 @@ export interface Task {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  pr_link?: string | null;
   assigned_user?: Profile;
   related_contact?: Contact;
   related_deal?: Deal;
@@ -129,6 +130,7 @@ export interface KanbanItem {
   assigned_to?: string; // New: Assigned user ID
   assigned_user?: Profile; // New: Assigned user profile
   due_date?: string; // New: Due date for the item
+  event_time?: string | null;
   column?: { name: string; board_id: string }; // Added column name for display
   notes?: KanbanItemNote[]; // New: Added notes array for Kanban items
   tasks?: Task[]; // New: Added tasks array for Kanban items
@@ -144,6 +146,7 @@ export interface KanbanItem {
   bathrooms_needed?: number;
   preferred_locations?: string;
   desired_move_in_date?: string;
+  lead_type?: string | null;
   // Housing Lead Info
   property_manager_name?: string;
   property_contact_phone?: string;
