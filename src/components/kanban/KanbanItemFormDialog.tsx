@@ -11,6 +11,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import type { KanbanItem, Profile } from "@/types/crm";
 
 interface KanbanItemFormDialogProps {
@@ -63,7 +64,7 @@ export function KanbanItemFormDialog({
         title: initialData?.title || "",
         description: initialData?.description || "",
         category: initialData?.category || undefined,
-        priority_level: initialData?.priority_level || undefined,
+        priority_level: initialData?.priority_level || "p2",
         assigned_to: initialData?.assigned_to || "unassigned",
         due_date: initialData?.due_date,
         status: initialData?.status || undefined,
@@ -166,14 +167,14 @@ export function KanbanItemFormDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="item-priority">Priority Level</Label>
+                  <Label htmlFor="item-priority">Priority Level *</Label>
                   <Select
-                    value={formData.priority_level || "none"}
-                    onValueChange={(value) => handleInputChange('priority_level', value === "none" ? undefined : value)}
+                    value={formData.priority_level || "p2"}
+                    onValueChange={(value) => handleInputChange('priority_level', value as KanbanItem['priority_level'])}
+                    required
                   >
                     <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
                       {priorityLevels.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
