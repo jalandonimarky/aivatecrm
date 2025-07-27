@@ -304,6 +304,17 @@ export type Database = {
           preferred_locations: string | null
           desired_move_in_date: string | null
           lead_type: string | null
+          property_manager_name: string | null
+          property_contact_phone: string | null
+          property_contact_email: string | null
+          property_full_address: string | null
+          property_bedrooms: number | null
+          property_bathrooms: number | null
+          property_sq_ft: number | null
+          property_mtr_approved: boolean | null
+          status: string | null
+          priority: string | null
+          pr_link: string | null
         }
         Insert: {
           id?: string
@@ -329,6 +340,17 @@ export type Database = {
           preferred_locations?: string | null
           desired_move_in_date?: string | null
           lead_type?: string | null
+          property_manager_name?: string | null
+          property_contact_phone?: string | null
+          property_contact_email?: string | null
+          property_full_address?: string | null
+          property_bedrooms?: number | null
+          property_bathrooms?: number | null
+          property_sq_ft?: number | null
+          property_mtr_approved?: boolean | null
+          status?: string | null
+          priority?: string | null
+          pr_link?: string | null
         }
         Update: {
           id?: string
@@ -354,6 +376,17 @@ export type Database = {
           preferred_locations?: string | null
           desired_move_in_date?: string | null
           lead_type?: string | null
+          property_manager_name?: string | null
+          property_contact_phone?: string | null
+          property_contact_email?: string | null
+          property_full_address?: string | null
+          property_bedrooms?: number | null
+          property_bathrooms?: number | null
+          property_sq_ft?: number | null
+          property_mtr_approved?: boolean | null
+          status?: string | null
+          priority?: string | null
+          pr_link?: string | null
         }
         Relationships: [
           {

@@ -1396,19 +1396,9 @@ export function useCRMData() {
 
   const updateKanbanItem = async (id: string, updates: Partial<Omit<KanbanItem, 'creator' | 'assigned_user' | 'column' | 'notes' | 'tasks' | 'attachments'>>) => {
     try {
-      // The form sends all fields, so we can safely convert undefined/empty to null for nullable fields.
-      const dataToUpdate = {
-        ...updates,
-        description: updates.description || null,
-        category: updates.category || null,
-        priority_level: updates.priority_level || null,
-        assigned_to: updates.assigned_to === "unassigned" ? null : (updates.assigned_to || null),
-        due_date: updates.due_date ? format(new Date(updates.due_date), "yyyy-MM-dd") : null,
-      };
-
       const { data, error } = await supabase
         .from("kanban_items")
-        .update(dataToUpdate)
+        .update(updates)
         .eq("id", id)
         .select(`
           *,
