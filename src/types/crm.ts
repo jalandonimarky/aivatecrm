@@ -158,7 +158,6 @@ export interface KanbanItem {
   property_mtr_approved?: boolean;
   // Project Info
   status?: 'Backlog' | 'To Do' | 'In Progress' | 'In Review' | 'Done';
-  priority?: 'Low' | 'Medium' | 'High' | 'Critical';
   pr_link?: string | null;
 }
 

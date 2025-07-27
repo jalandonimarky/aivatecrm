@@ -313,7 +313,6 @@ export type Database = {
           property_sq_ft: number | null
           property_mtr_approved: boolean | null
           status: string | null
-          priority: string | null
           pr_link: string | null
         }
         Insert: {
@@ -349,7 +348,6 @@ export type Database = {
           property_sq_ft?: number | null
           property_mtr_approved?: boolean | null
           status?: string | null
-          priority?: string | null
           pr_link?: string | null
         }
         Update: {
@@ -385,7 +383,6 @@ export type Database = {
           property_sq_ft?: number | null
           property_mtr_approved?: boolean | null
           status?: string | null
-          priority?: string | null
           pr_link?: string | null
         }
         Relationships: [

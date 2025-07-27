@@ -37,7 +37,6 @@ import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
 import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog";
 import { KanbanStatusBadge } from "@/components/kanban/KanbanStatusBadge";
-import { KanbanTaskPriorityBadge } from "@/components/kanban/KanbanTaskPriorityBadge";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { CollapsibleCard } from "@/components/CollapsibleCard";
@@ -423,7 +422,7 @@ export function KanbanItemDetails() {
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Priority</p>
-              <KanbanTaskPriorityBadge priority={item.priority} />
+              <KanbanPriorityBadge priority={item.priority_level} />
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Category</p>
