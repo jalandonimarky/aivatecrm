@@ -41,8 +41,6 @@ import { KanbanTaskPriorityBadge } from "@/components/kanban/KanbanTaskPriorityB
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { CollapsibleCard } from "@/components/CollapsibleCard";
-import { MentionInput } from "@/components/MentionInput"; // Import MentionInput
-import { supabase } from "@/integrations/supabase/client"; // Import supabase
 import type { KanbanItem, KanbanItemNote, Task, KanbanItemAttachment } from "@/types/crm";
 import { useToast } from "@/hooks/use-toast";
 
@@ -185,25 +183,9 @@ export function KanbanItemDetails() {
   };
 
   const handleAddNote = async () => {
-    if (!id || !newNoteContent.trim() || !item) return;
+    if (!id || !newNoteContent.trim()) return;
     try {
-      const newNote = await createKanbanItemNote(id, newNoteContent);
-      
-      // After successfully creating the note, trigger the notification function
-      if (newNote) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.functions.invoke('create-mention-notification', {
-            body: {
-              noteContent: newNoteContent,
-              itemId: item.id,
-              itemTitle: item.title,
-              creatorId: user.id,
-            },
-          });
-        }
-      }
-
+      await createKanbanItemNote(id, newNoteContent);
       setNewNoteContent("");
       setIsAddingNote(false);
     } catch (error) {
@@ -218,23 +200,9 @@ export function KanbanItemDetails() {
   };
 
   const handleUpdateNoteSubmit = async () => {
-    if (!editingNote || !editNoteContent.trim() || !item) return;
+    if (!editingNote || !editNoteContent.trim()) return;
     try {
       await updateKanbanItemNote(editingNote.id, editingNote.kanban_item_id, { content: editNoteContent });
-      
-      // After successfully updating the note, trigger the notification function
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.functions.invoke('create-mention-notification', {
-          body: {
-            noteContent: editNoteContent,
-            itemId: item.id,
-            itemTitle: item.title,
-            creatorId: user.id,
-          },
-        });
-      }
-
       setIsEditNoteDialogOpen(false);
       setEditingNote(null);
       setEditNoteContent("");
@@ -402,11 +370,6 @@ export function KanbanItemDetails() {
     parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime()
   );
 
-  const mentionableUsers = profiles.map(p => ({
-    id: p.id,
-    display: getFullName(p),
-  }));
-
   return (
     <div className="space-y-6">
       <Button variant="outline" onClick={() => navigate(`/kanban?boardId=${item.column?.board_id || ''}`)}>
@@ -510,34 +473,17 @@ export function KanbanItemDetails() {
             title={`Notes (${sortedNotes.length})`}
             storageKey="kanban-notes-collapsed"
             optionsMenu={
-              !isAddingNote && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setIsAddingNote(true)}
-                  className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-                >
-                  <Plus className="w-4 h-4 mr-2" /> Add Note
-                </Button>
-              )
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsAddingNote(true)}
+                className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add Note
+              </Button>
             }
           >
             <div className="space-y-4">
-              {isAddingNote && (
-                <div className="space-y-2">
-                  <Label htmlFor="new-note-content">Add New Note</Label>
-                  <MentionInput
-                    value={newNoteContent}
-                    onChange={setNewNoteContent}
-                    placeholder="Type your note here... Use '@' to mention a user."
-                    data={mentionableUsers}
-                  />
-                  <div className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
-                    <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
-                  </div>
-                </div>
-              )}
               {sortedNotes.length === 0 && !isAddingNote && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
               {sortedNotes.map((note: KanbanItemNote) => (
                 <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
@@ -558,6 +504,16 @@ export function KanbanItemDetails() {
                   </DropdownMenu>
                 </div>
               ))}
+              {isAddingNote && (
+                <div className="mt-4 space-y-2">
+                  <Label htmlFor="new-note-content">Add New Note</Label>
+                  <Textarea id="new-note-content" value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)} placeholder="Type your note here..." rows={3} />
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
+                    <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
+                  </div>
+                </div>
+              )}
             </div>
           </CollapsibleCard>
         </TabsContent>
@@ -785,12 +741,7 @@ export function KanbanItemDetails() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-note-content">Note Content</Label>
-              <MentionInput
-                value={editNoteContent}
-                onChange={setEditNoteContent}
-                placeholder="Type your note here... Use '@' to mention a user."
-                data={mentionableUsers}
-              />
+              <Textarea id="edit-note-content" value={editNoteContent} onChange={(e) => setEditNoteContent(e.target.value)} rows={5} />
             </div>
           </div>
           <DialogFooter>
