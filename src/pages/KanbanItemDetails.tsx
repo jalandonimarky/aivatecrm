@@ -461,10 +461,11 @@ export function KanbanItemDetails() {
       </Card>
 
       <Tabs defaultValue="notes" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="more-info">More Information</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="notes" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Notes</TabsTrigger>
+          <TabsTrigger value="activity" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Activity</TabsTrigger>
+          <TabsTrigger value="attachments" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Attachments</TabsTrigger>
+          <TabsTrigger value="more-info" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">More Information</TabsTrigger>
         </TabsList>
 
         <TabsContent value="notes">
@@ -572,78 +573,7 @@ export function KanbanItemDetails() {
           </CollapsibleCard>
         </TabsContent>
 
-        <TabsContent value="more-info" className="space-y-6">
-          <CollapsibleCard
-            title="Tenant Lead Information"
-            storageKey="kanban-tenant-info-collapsed"
-            optionsMenu={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setIsTenantInfoDialogOpen(true)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Tenant Info
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div><p className="text-sm text-muted-foreground">Client Category</p><p className="font-semibold">{item.client_category || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Tenant Name</p><p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Tenant Phone</p><p className="font-semibold">{item.tenant_contact_phone || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Tenant Email</p><p className="font-semibold">{item.tenant_contact_email || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Bedrooms Needed</p><p className="font-semibold">{item.bedrooms_needed || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Bathrooms Needed</p><p className="font-semibold">{item.bathrooms_needed || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Desired Move-in Date</p><p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Do you have pets? If yes, how many?</p><p className="font-semibold">{item.pets_info || "N/A"}</p></div>
-            </div>
-            <Separator className="my-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><p className="text-sm text-muted-foreground">Household Composition</p><p className="font-semibold whitespace-pre-wrap">{item.household_composition || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Preferred Locations</p><p className="font-semibold whitespace-pre-wrap">{item.preferred_locations || "N/A"}</p></div>
-            </div>
-          </CollapsibleCard>
-
-          <CollapsibleCard
-            title="Housing Lead Information"
-            storageKey="kanban-housing-info-collapsed"
-            optionsMenu={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setIsHousingInfoDialogOpen(true)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Housing Info
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div><p className="text-sm text-muted-foreground">Property Manager / Host</p><p className="font-semibold">{item.property_manager_name || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Contact Phone</p><p className="font-semibold">{item.property_contact_phone || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Contact Email</p><p className="font-semibold">{item.property_contact_email || "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Bedrooms</p><p className="font-semibold">{item.property_bedrooms ?? "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Bathrooms</p><p className="font-semibold">{item.property_bathrooms ?? "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">Square Footage</p><p className="font-semibold">{item.property_sq_ft ? `${item.property_sq_ft} sq ft` : "N/A"}</p></div>
-              <div><p className="text-sm text-muted-foreground">MTR-Approved</p><p className="font-semibold">{typeof item.property_mtr_approved === 'boolean' ? (item.property_mtr_approved ? "Yes" : "No") : "N/A"}</p></div>
-            </div>
-            <Separator className="my-4" />
-            <div>
-              <p className="text-sm text-muted-foreground">Property Full Address</p>
-              <p className="font-semibold whitespace-pre-wrap">{item.property_full_address || "N/A"}</p>
-            </div>
-          </CollapsibleCard>
-
+        <TabsContent value="attachments">
           <CollapsibleCard
             title={`Attachments (${sortedAttachments.length})`}
             storageKey="kanban-attachments-collapsed"
@@ -727,6 +657,79 @@ export function KanbanItemDetails() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+          </CollapsibleCard>
+        </TabsContent>
+
+        <TabsContent value="more-info" className="space-y-6">
+          <CollapsibleCard
+            title="Tenant Lead Information"
+            storageKey="kanban-tenant-info-collapsed"
+            optionsMenu={
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setIsTenantInfoDialogOpen(true)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Tenant Info
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div><p className="text-sm text-muted-foreground">Client Category</p><p className="font-semibold">{item.client_category || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Tenant Name</p><p className="font-semibold">{item.tenant_contact_full_name || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Tenant Phone</p><p className="font-semibold">{item.tenant_contact_phone || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Tenant Email</p><p className="font-semibold">{item.tenant_contact_email || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bedrooms Needed</p><p className="font-semibold">{item.bedrooms_needed || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bathrooms Needed</p><p className="font-semibold">{item.bathrooms_needed || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Desired Move-in Date</p><p className="font-semibold">{item.desired_move_in_date ? format(parseISO(item.desired_move_in_date), "PPP") : "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Do you have pets? If yes, how many?</p><p className="font-semibold">{item.pets_info || "N/A"}</p></div>
+            </div>
+            <Separator className="my-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><p className="text-sm text-muted-foreground">Household Composition</p><p className="font-semibold whitespace-pre-wrap">{item.household_composition || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Preferred Locations</p><p className="font-semibold whitespace-pre-wrap">{item.preferred_locations || "N/A"}</p></div>
+            </div>
+          </CollapsibleCard>
+
+          <CollapsibleCard
+            title="Housing Lead Information"
+            storageKey="kanban-housing-info-collapsed"
+            optionsMenu={
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setIsHousingInfoDialogOpen(true)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Housing Info
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div><p className="text-sm text-muted-foreground">Property Manager / Host</p><p className="font-semibold">{item.property_manager_name || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Contact Phone</p><p className="font-semibold">{item.property_contact_phone || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Contact Email</p><p className="font-semibold">{item.property_contact_email || "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bedrooms</p><p className="font-semibold">{item.property_bedrooms ?? "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Bathrooms</p><p className="font-semibold">{item.property_bathrooms ?? "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">Square Footage</p><p className="font-semibold">{item.property_sq_ft ? `${item.property_sq_ft} sq ft` : "N/A"}</p></div>
+              <div><p className="text-sm text-muted-foreground">MTR-Approved</p><p className="font-semibold">{typeof item.property_mtr_approved === 'boolean' ? (item.property_mtr_approved ? "Yes" : "No") : "N/A"}</p></div>
+            </div>
+            <Separator className="my-4" />
+            <div>
+              <p className="text-sm text-muted-foreground">Property Full Address</p>
+              <p className="font-semibold whitespace-pre-wrap">{item.property_full_address || "N/A"}</p>
             </div>
           </CollapsibleCard>
         </TabsContent>
