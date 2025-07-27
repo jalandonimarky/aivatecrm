@@ -180,10 +180,15 @@ export interface Notification {
   id: string;
   user_id: string;
   task_id?: string;
-  kanban_item_id?: string; // Added kanban_item_id
+  kanban_item_id?: string;
   message: string;
   is_read: boolean;
   created_at: string;
+  kanban_items?: {
+    kanban_columns?: {
+      board_id: string;
+    } | null;
+  } | null;
 }
 
 interface ChangeMetric {

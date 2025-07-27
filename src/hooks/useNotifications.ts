@@ -18,7 +18,14 @@ export function useNotifications() {
 
     const { data, error } = await supabase
       .from('notifications')
-      .select('*, kanban_item_id') // Select kanban_item_id
+      .select(`
+        *,
+        kanban_items (
+          kanban_columns (
+            board_id
+          )
+        )
+      `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
