@@ -693,10 +693,6 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      toast({
-        title: "Note added",
-        description: "Your note has been added successfully.",
-      });
       await fetchData(); // Re-fetch all data
       return data as any as DealNote;
     } catch (error: any) {
@@ -806,10 +802,6 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      toast({
-        title: "Task note added",
-        description: "Your task note has been added successfully.",
-      });
       await fetchData(); // Re-fetch all data
       return data as any as TaskNote;
     } catch (error: any) {
@@ -919,10 +911,6 @@ export function useCRMData() {
 
       if (error) throw error;
 
-      toast({
-        title: "Kanban item note added",
-        description: "Your Kanban item note has been added successfully.",
-      });
       await fetchData(); // Re-fetch all data
       return data as any as KanbanItemNote;
     } catch (error: any) {
