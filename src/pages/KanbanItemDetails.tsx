@@ -510,17 +510,34 @@ export function KanbanItemDetails() {
             title={`Notes (${sortedNotes.length})`}
             storageKey="kanban-notes-collapsed"
             optionsMenu={
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsAddingNote(true)}
-                className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Add Note
-              </Button>
+              !isAddingNote && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsAddingNote(true)}
+                  className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Add Note
+                </Button>
+              )
             }
           >
             <div className="space-y-4">
+              {isAddingNote && (
+                <div className="space-y-2">
+                  <Label htmlFor="new-note-content">Add New Note</Label>
+                  <MentionInput
+                    value={newNoteContent}
+                    onChange={setNewNoteContent}
+                    placeholder="Type your note here... Use '@' to mention a user."
+                    data={mentionableUsers}
+                  />
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
+                    <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
+                  </div>
+                </div>
+              )}
               {sortedNotes.length === 0 && !isAddingNote && <p className="text-muted-foreground text-sm">No notes yet for this item.</p>}
               {sortedNotes.map((note: KanbanItemNote) => (
                 <div key={note.id} className="border-b border-border/50 pb-3 last:border-b-0 last:pb-0 flex justify-between items-start">
@@ -541,21 +558,6 @@ export function KanbanItemDetails() {
                   </DropdownMenu>
                 </div>
               ))}
-              {isAddingNote && (
-                <div className="mt-4 space-y-2">
-                  <Label htmlFor="new-note-content">Add New Note</Label>
-                  <MentionInput
-                    value={newNoteContent}
-                    onChange={setNewNoteContent}
-                    placeholder="Type your note here... Use '@' to mention a user."
-                    data={mentionableUsers}
-                  />
-                  <div className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsAddingNote(false)}>Cancel</Button>
-                    <Button onClick={handleAddNote} className="bg-gradient-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth active:scale-95">Add Note</Button>
-                  </div>
-                </div>
-              )}
             </div>
           </CollapsibleCard>
         </TabsContent>
