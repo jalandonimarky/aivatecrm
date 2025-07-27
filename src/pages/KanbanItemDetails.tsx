@@ -35,6 +35,9 @@ import { Badge } from "@/components/ui/badge";
 import { KanbanItemFormDialog } from "@/components/kanban/KanbanItemFormDialog";
 import { TenantInfoFormDialog } from "@/components/kanban/TenantInfoFormDialog";
 import { HousingInfoFormDialog } from "@/components/kanban/HousingInfoFormDialog";
+import { ProjectInfoFormDialog } from "@/components/kanban/ProjectInfoFormDialog";
+import { KanbanStatusBadge } from "@/components/kanban/KanbanStatusBadge";
+import { KanbanTaskPriorityBadge } from "@/components/kanban/KanbanTaskPriorityBadge";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import { CollapsibleCard } from "@/components/CollapsibleCard";
@@ -52,6 +55,17 @@ interface TaskFormData {
   related_kanban_item_id: string;
   due_date: Date | undefined;
 }
+
+// Helper to check for valid URL
+const isValidUrl = (urlString: string | null | undefined): boolean => {
+  if (!urlString) return false;
+  try {
+    new URL(urlString);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
 export function KanbanItemDetails() {
   const {
@@ -81,6 +95,7 @@ export function KanbanItemDetails() {
   const [isItemFormDialogOpen, setIsItemFormDialogOpen] = useState(false);
   const [isTenantInfoDialogOpen, setIsTenantInfoDialogOpen] = useState(false);
   const [isHousingInfoDialogOpen, setIsHousingInfoDialogOpen] = useState(false);
+  const [isProjectInfoDialogOpen, setIsProjectInfoDialogOpen] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
@@ -153,6 +168,12 @@ export function KanbanItemDetails() {
     if (!item) return;
     await updateKanbanItem(item.id, data);
     setIsHousingInfoDialogOpen(false);
+  };
+
+  const handleUpdateProjectInfoSubmit = async (data: Partial<KanbanItem>) => {
+    if (!item) return;
+    await updateKanbanItem(item.id, data);
+    setIsProjectInfoDialogOpen(false);
   };
 
   const handleDeleteItem = async () => {
@@ -435,6 +456,51 @@ export function KanbanItemDetails() {
           )}
         </CardContent>
       </Card>
+
+      <CollapsibleCard
+        title="Project Information"
+        storageKey="kanban-project-info-collapsed"
+        optionsMenu={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setIsProjectInfoDialogOpen(true)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Project Info
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Task ID</p>
+            <p className="font-semibold text-xs font-mono">{item.id}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Status</p>
+            <KanbanStatusBadge status={item.status} />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Priority</p>
+            <KanbanTaskPriorityBadge priority={item.priority} />
+          </div>
+          <div className="col-span-full">
+            <p className="text-sm text-muted-foreground">PR Link</p>
+            {isValidUrl(item.pr_link) ? (
+              <a href={item.pr_link!} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline break-all">
+                {item.pr_link}
+              </a>
+            ) : (
+              <p className="font-semibold">{item.pr_link || "N/A"}</p>
+            )}
+          </div>
+        </div>
+      </CollapsibleCard>
 
       <CollapsibleCard
         title="Tenant Lead Information"
@@ -785,6 +851,15 @@ export function KanbanItemDetails() {
           onOpenChange={setIsHousingInfoDialogOpen}
           initialData={item}
           onSubmit={handleUpdateHousingInfoSubmit}
+        />
+      )}
+
+      {item && (
+        <ProjectInfoFormDialog
+          isOpen={isProjectInfoDialogOpen}
+          onOpenChange={setIsProjectInfoDialogOpen}
+          initialData={item}
+          onSubmit={handleUpdateProjectInfoSubmit}
         />
       )}
 

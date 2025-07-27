@@ -154,6 +154,10 @@ export interface KanbanItem {
   property_bathrooms?: number;
   property_sq_ft?: number;
   property_mtr_approved?: boolean;
+  // Project Info
+  status?: 'Backlog' | 'To Do' | 'In Progress' | 'In Review' | 'Done';
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical';
+  pr_link?: string | null;
 }
 
 export interface KanbanColumn {
