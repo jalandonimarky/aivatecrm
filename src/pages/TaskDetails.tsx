@@ -180,8 +180,8 @@ export function TaskDetails() {
   if (loading || !task) {
     return (
       <div className="space-y-6">
-        <Button variant="outline" onClick={() => navigate("/tasks")} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Tasks
+        <Button variant="outline" onClick={() => navigate(-1)} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
         <Skeleton className="h-24 w-full" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -198,8 +198,8 @@ export function TaskDetails() {
 
   return (
     <div className="space-y-6">
-      <Button variant="outline" onClick={() => navigate("/tasks")}>
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Tasks
+      <Button variant="outline" onClick={() => navigate(-1)}>
+        <ArrowLeft className="w-4 h-4 mr-2" /> Back
       </Button>
 
       <Card className="bg-gradient-card border-border/50">
