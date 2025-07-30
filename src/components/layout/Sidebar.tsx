@@ -7,8 +7,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  KanbanSquare, // Import KanbanSquare icon
-  AppWindow,
+  KanbanSquare // Import KanbanSquare icon
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -35,10 +34,6 @@ const mainNavItems = [
   { title: "Deals", url: "/deals", icon: Briefcase },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
   { title: "Reporting", url: "/analytics", icon: BarChart3 }, // Changed from Analytics to Reporting
-];
-
-const internalAppNavItems = [
-  { title: "Internal Home", url: "/internal", icon: AppWindow },
 ];
 
 export function AppSidebar() {
@@ -126,31 +121,6 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu className="space-y-2">
                 {mainNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink 
-                        to={item.url} 
-                        end={item.url === "/"}
-                        className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${getNavClasses(isActive(item.url))}`}
-                      >
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* Internal Application Section */}
-          <SidebarGroup>
-            <SidebarGroupLabel>
-              Internal Application
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-2">
-                {internalAppNavItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink 

@@ -18,7 +18,6 @@ import { Kanban } from "./pages/Kanban";
 import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import new KanbanItemDetails page
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
-import InternalHome from "./pages/InternalHome";
 import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -75,7 +74,6 @@ const App = () => {
                 <Route path="/tasks/:id" element={<TaskDetails />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/internal" element={<InternalHome />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Route>
