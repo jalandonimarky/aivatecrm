@@ -16,6 +16,7 @@ import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
 import { Kanban } from "./pages/Kanban";
 import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import new KanbanItemDetails page
+import { WebApplications } from "./pages/WebApplications";
 import { AuthPage } from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +74,7 @@ const App = () => {
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/tasks/:id" element={<TaskDetails />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/web-applications" element={<WebApplications />} />
                 <Route path="/settings" element={<Settings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

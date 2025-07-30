@@ -7,7 +7,8 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  KanbanSquare // Import KanbanSquare icon
+  KanbanSquare,
+  AppWindow // Import AppWindow icon
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -34,6 +35,7 @@ const mainNavItems = [
   { title: "Deals", url: "/deals", icon: Briefcase },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
   { title: "Reporting", url: "/analytics", icon: BarChart3 }, // Changed from Analytics to Reporting
+  { title: "Web Applications", url: "/web-applications", icon: AppWindow },
 ];
 
 export function AppSidebar() {
