@@ -125,15 +125,6 @@ export function KanbanBoardView({
               </Draggable>
             ))}
             {provided.placeholder}
-            <div className="flex-shrink-0 w-80 min-w-80">
-              <Button
-                variant="outline"
-                className="w-full h-full border-dashed border-2 border-muted-foreground/50 text-muted-foreground hover:bg-muted/20 transition-smooth"
-                onClick={() => onAddColumn(board.id)}
-              >
-                <Plus className="w-5 h-5 mr-2" /> Add New Column
-              </Button>
-            </div>
           </div>
         )}
       </Droppable>
