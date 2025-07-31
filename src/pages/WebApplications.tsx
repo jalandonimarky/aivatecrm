@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Receipt } from "lucide-react";
+import { Search, Receipt, Building2 } from "lucide-react";
 
 const webApps = [
   {
@@ -9,6 +9,12 @@ const webApps = [
     description: "Create and manage professional invoices.",
     icon: Receipt,
     url: "https://aivateinvoicemaker.vercel.app/",
+  },
+  {
+    title: "BNB Housing Solutions",
+    description: "Tool for lead client tracker.",
+    icon: Building2,
+    url: "https://housingsolutionleadtracker.vercel.app/",
   },
 ];
 
