@@ -18,6 +18,7 @@ import { Kanban } from "./pages/Kanban";
 import { KanbanItemDetails } from "./pages/KanbanItemDetails"; // Import new KanbanItemDetails page
 import { WebApplications } from "./pages/WebApplications";
 import { AuthPage } from "./pages/AuthPage";
+import { ResetPassword } from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -80,8 +81,11 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Route>
             ) : (
-              // Unauthenticated route
-              <Route path="*" element={<AuthPage />} />
+              // Unauthenticated routes
+              <>
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="*" element={<AuthPage />} />
+              </>
             )}
           </Routes>
         </BrowserRouter>
