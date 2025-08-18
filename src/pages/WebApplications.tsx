@@ -11,10 +11,10 @@ const webApps = [
     url: "https://aivateinvoicemaker.vercel.app/",
   },
   {
-    title: "BNB Housing Solutions",
+    title: "Bridgekey Housing Solution Lead Tracker",
     description: "Tool for lead client tracker.",
     icon: Building2,
-    url: "https://housingsolutionleadtracker.vercel.app/",
+    url: "https://bridgekey-ltt.vercel.app/login",
   },
 ];
 
