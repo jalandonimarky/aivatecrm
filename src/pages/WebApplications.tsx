@@ -14,7 +14,7 @@ const webApps = [
     title: "Bridgekey Housing Solution Lead Tracker",
     description: "Tool for lead client tracker.",
     icon: Building2,
-    url: "https://bridgekey-ltt.vercel.app/login",
+    url: "https://bridgekey-ltt.vercel.app",
   },
 ];
 
