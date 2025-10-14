@@ -39,16 +39,17 @@ export function AuthPage() {
           description: "Welcome back!",
         });
       } else {
-        // Email domain validation for registration
-        if (!email.endsWith("@aivate.net")) {
-          toast({
-            title: "Registration Error",
-            description: "Only @aivate.net email addresses are allowed for registration.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return; // Stop the registration process
-        }
+        // --- REMOVED DOMAIN VALIDATION ---
+        // if (!email.endsWith("@aivate.net")) {
+        //   toast({
+        //     title: "Registration Error",
+        //     description: "Only @aivate.net email addresses are allowed for registration.",
+        //     variant: "destructive",
+        //   });
+        //   setLoading(false);
+        //   return;
+        // }
+        // --- END REMOVED DOMAIN VALIDATION ---
 
         // For sign-up, pass first_name and last_name in user_metadata
         const { error } = await supabase.auth.signUp({ 
@@ -101,7 +102,7 @@ export function AuthPage() {
       <Card className="w-full max-w-md bg-gradient-card border-border/50 shadow-medium">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {isForgotPassword ? "Reset Password" : (isLogin ? "AIVate CRM" : "Join AIVate CRM")}
+            {isForgotPassword ? "Reset Password" : (isLogin ? "Aivate" : "Join Aivate")}
           </CardTitle>
           <p className="text-muted-foreground">
             {isForgotPassword 
